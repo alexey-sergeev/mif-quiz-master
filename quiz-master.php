@@ -10,7 +10,7 @@ Author URI: https://vk.com/alexey_sergeev
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/inc/class-quiz-part.php';
+include_once dirname( __FILE__ ) . '/inc/class-quiz.php';
 
 // global $mif_qm_core;
 // $mif_qm_core = new mif_qm_core();
@@ -32,9 +32,11 @@ function add_custom_content( $content )
 
     // $content = $mif_qm_core->parse( $post->post_content ) . $content;
 
-    $quiz_part = new mif_qm_quiz_part();
+    // $quiz_part = new mif_qm_quiz_part();
+    // $quiz_part->parse( $post->post_content );
 
-    $quiz_part->parse( $post->post_content );
+    $quiz = new mif_qm_quiz();
+    $quiz->parse( $post->post_content );
 
     return $content;
 }

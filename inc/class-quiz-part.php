@@ -11,21 +11,14 @@ defined( 'ABSPATH' ) || exit;
 include_once dirname( __FILE__ ) . '/class-question.php';
 
 
-class mif_qm_quiz_part  {
+class mif_qm_quiz_part extends mif_qm_core {
 
-    // Маркер для вопроса
-
-    private $mark_question = '=';
-    
-   
     
     
     function __construct()
     {
 
-        // Шаблоны для выделения вопросов (с ответами)
-
-        $this->pattern_question = '/^[' . $this->mark_question . ']/';
+        parent::__construct();
        
     }
 
@@ -40,20 +33,29 @@ class mif_qm_quiz_part  {
         
         // Получить массив текстовых описаний вопросов (с ответами)
         
-        $questions_raw = $this->get_questions_raw( $text );
+        $part_raw = $this->get_part_raw( $text );
         
-        $quiz = array();
+        $part = array();
+
+        // Записать заголовок раздела
+
+        $part['title'] = ( isset( $part_raw['title'] ) ) ? $part_raw['title'] : 'none';
+
+        // Записать структурированную информацию о параметрах
+
+        $part['param'] = ( isset( $part_raw['param'] ) ) ? $part_raw['param'] : array();
+
+        // Записать структурированную информацию о вопросах
+
         $question = new mif_qm_question();
 
-        foreach( $questions_raw as $item ) {
+        foreach( $part_raw['content'] as $item ) {
 
-            $quiz[] = $question->parse( $item );
+            $part['content'][] = $question->parse( $item );
 
         }
         
-        p($quiz);
-            
-        return $quiz;
+        return $part;
     }
 
 
@@ -62,34 +64,54 @@ class mif_qm_quiz_part  {
     // Составляет массив вопросов (с ответами) в текстовом формате "как есть"
     //
 
-    private function get_questions_raw( $text )
+    private function get_part_raw( $text )
     {
         
         $arr = preg_split( '/\\r\\n?|\\n/', $text );
     
         $n = -1;
         $flag = true;
-        $quizess_txt = array();
+        $part = array();
 
         foreach ( $arr as $item ) {
 
             $item = strim( $item );
 
-            if ( preg_match( '/^=/', $item ) || $flag ) {
+            if ( $item == '' ) continue;
+            
+            if ( preg_match( $this->pattern_quiz_part, $item ) ) {
+
+                // Заголовок раздела
+
+                $part['title'] = trim( preg_replace( $this->pattern_quiz_part, '', $item ) );
+                continue;
+
+            }
+
+            if ( preg_match( $this->pattern_param, $item ) ) {
+
+                // Параметр раздела
+
+                $part['param'][] = $item;
+                continue;
+
+            }
+
+            if ( preg_match( $this->pattern_question, $item ) || $flag ) {
 
                 // Нашелся новый вопрос или мы начинаем работу
 
                 $n++;
-                $quizess_txt[$n] = '';
+                $part['content'][$n] = '';
                 $flag = false;
 
             }
 
-            $quizess_txt[$n] .= $item . "\n";
+            $part['content'][$n] .= $item . "\n";
 
         }
         
-        return $quizess_txt;
+        return $part;
     }
 
 

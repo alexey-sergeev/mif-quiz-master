@@ -8,35 +8,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
+include_once dirname( __FILE__ ) . '/class-core.php';
 
+class mif_qm_question extends mif_qm_core {
 
-class mif_qm_question  {
-
-
-    // Маркеры для выбираемых ответов
-    
-    private $mark_choice = '-+*~';
-
-    // Маркеры для полей ввода
-
-    private $mark_input = '>%';
-
-   
-    
     
     function __construct()
     {
-     
-        // Шаблоны для выделения вариантов ответов
 
-        $this->pattern_choice = '/^[' . $this->mark_choice . ']/';
-        $this->pattern_input = '/^[' . $this->mark_input . ']+/';
-        $this->pattern_answers = '/^[' . $this->mark_choice . $this->mark_input . ']/';
+        parent::__construct();
 
-        // Шаблон мета-информации ответов
-
-        $this->pattern_meta = '/\(.*\)/U';
-       
     }
 
     
@@ -85,7 +66,7 @@ class mif_qm_question  {
             
         }
 
-        $description = trim( preg_replace( '/^=/', '', $description ) );
+        $description = trim( preg_replace( $this->pattern_question, '', $description ) );
         $answers_txt = array_map( 'trim', $answers_txt );
         
         
