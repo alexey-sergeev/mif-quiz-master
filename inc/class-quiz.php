@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-quiz-part.php';
+include_once dirname( __FILE__ ) . '/class-part.php';
 
 
 class mif_qm_quiz extends mif_qm_core {
@@ -32,10 +32,10 @@ class mif_qm_quiz extends mif_qm_core {
         
         // Получить массив текстовых описаний разелов теста
         
-        $quiz_parts_raw = $this->get_quiz_parts_raw( $text );
+        $quiz_parts_raw = $this->get_parts_raw( $text );
         
         $quiz = array();
-        $part = new mif_qm_quiz_part();
+        $part = new mif_qm_part();
 
         foreach( $quiz_parts_raw as $item ) {
 
@@ -55,7 +55,7 @@ class mif_qm_quiz extends mif_qm_core {
     // Составляет массив разделов теста в текстовом формате "как есть"
     //
 
-    private function get_quiz_parts_raw( $text )
+    private function get_parts_raw( $text )
     {
         
         $arr = preg_split( '/\\r\\n?|\\n/', $text );

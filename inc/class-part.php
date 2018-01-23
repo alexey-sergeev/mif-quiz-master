@@ -9,9 +9,10 @@
 defined( 'ABSPATH' ) || exit;
 
 include_once dirname( __FILE__ ) . '/class-question.php';
+include_once dirname( __FILE__ ) . '/class-param.php';
 
 
-class mif_qm_quiz_part extends mif_qm_core {
+class mif_qm_part extends mif_qm_core {
 
     
     
@@ -43,7 +44,10 @@ class mif_qm_quiz_part extends mif_qm_core {
 
         // Записать структурированную информацию о параметрах
 
-        $part['param'] = ( isset( $part_raw['param'] ) ) ? $part_raw['param'] : array();
+        $param = new mif_qm_param();
+        $part['param'] = $param->parse( $part_raw['param'] );
+
+        // $part['param'] = ( isset( $part_raw['param'] ) ) ? $part_raw['param'] : array();
 
         // Записать структурированную информацию о вопросах
 

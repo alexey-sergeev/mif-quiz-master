@@ -18,7 +18,6 @@ include_once dirname( __FILE__ ) . '/inc/class-quiz.php';
 
 
 
-
 // Функция получает текст записи, который можно изменить перед выводом на экран
 
 add_filter( 'the_content', 'add_custom_content' );
