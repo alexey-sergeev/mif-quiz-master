@@ -32,18 +32,30 @@ class mif_qm_quiz extends mif_qm_core {
         
         // Получить массив текстовых описаний разелов теста
         
-        $quiz_parts_raw = $this->get_parts_raw( $text );
+        $quiz_raw = $this->get_parts_raw( $text );
         
         $quiz = array();
         $part = new mif_qm_part();
 
-        foreach( $quiz_parts_raw as $item ) {
+        // Записать заголовок теста
 
-            $quiz[] = $part->parse( $item );
+        $quiz['title'] = ( isset( $quiz_raw['title'] ) ) ? $quiz_raw['title'] : __( 'Тест', 'mif-qm' );
+        
+        // Записать структурированную информацию о параметрах
+
+        $param = new mif_qm_param();
+        $quiz['param'] = $param->parse( $quiz_raw['param'], 'quiz' );
+
+        // Записать структурированную информацию о содержимом теста
+
+        foreach( $quiz_raw['parts'] as $item ) {
+
+            $data = $part->parse( $item );
+            if ( $data ) $quiz['parts'][] = $data;
 
         }
         
-        p($quiz);
+        p( $quiz );
             
         return $quiz;
     }
@@ -62,27 +74,46 @@ class mif_qm_quiz extends mif_qm_core {
     
         $n = -1;
         $flag = true;
-        $quiz_parts_txt = array();
+        $quiz = array();
 
         foreach ( $arr as $item ) {
 
             $item = strim( $item );
 
-            if ( preg_match( $this->pattern_quiz_part, $item ) || $flag ) {
+            if ( $item == '' ) continue;
+
+            if ( preg_match( $this->pattern_quiz, $item ) ) {
+                
+                // Заголовок теста
+                
+                $quiz['title'] = trim( preg_replace( $this->pattern_quiz, '', $item ) );
+                continue;
+
+            }
+            
+            if ( preg_match( $this->pattern_param, $item ) ) {
+                
+                // Параметр теста
+                
+                $quiz['param'][] = $item;
+                
+            }
+
+            if ( preg_match( $this->pattern_part, $item ) || $flag ) {
 
                 // Нашелся новый раздел или мы начинаем работу
-
+                
                 $n++;
-                $quiz_parts_txt[$n] = '';
+                $quiz['parts'][$n] = '';
                 $flag = false;
 
             }
 
-            $quiz_parts_txt[$n] .= $item . "\n";
+            $quiz['parts'][$n] .= $item . "\n";
 
         }
         
-        return $quiz_parts_txt;
+        return $quiz;
     }
 
 

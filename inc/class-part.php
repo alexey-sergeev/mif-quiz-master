@@ -53,13 +53,23 @@ class mif_qm_part extends mif_qm_core {
 
         $question = new mif_qm_question();
 
-        foreach( $part_raw['content'] as $item ) {
+        foreach( (array) $part_raw['questions'] as $item ) {
 
-            $part['content'][] = $question->parse( $item );
+            $part['questions'][] = $question->parse( $item );
 
         }
         
-        return $part;
+        // Если содержимого нет, то ничего не возвращать совсем
+
+        if ( isset( $part['questions'] ) ) {
+
+            return $part;
+
+        } else {
+
+            return false;
+
+        }
     }
 
 
@@ -83,11 +93,11 @@ class mif_qm_part extends mif_qm_core {
 
             if ( $item == '' ) continue;
             
-            if ( preg_match( $this->pattern_quiz_part, $item ) ) {
+            if ( preg_match( $this->pattern_part, $item ) ) {
 
                 // Заголовок раздела
 
-                $part['title'] = trim( preg_replace( $this->pattern_quiz_part, '', $item ) );
+                $part['title'] = trim( preg_replace( $this->pattern_part, '', $item ) );
                 continue;
 
             }
@@ -106,12 +116,12 @@ class mif_qm_part extends mif_qm_core {
                 // Нашелся новый вопрос или мы начинаем работу
 
                 $n++;
-                $part['content'][$n] = '';
+                $part['questions'][$n] = '';
                 $flag = false;
 
             }
 
-            $part['content'][$n] .= $item . "\n";
+            $part['questions'][$n] .= $item . "\n";
 
         }
         

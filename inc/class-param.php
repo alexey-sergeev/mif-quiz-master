@@ -12,7 +12,8 @@ defined( 'ABSPATH' ) || exit;
 
 class mif_qm_param extends mif_qm_core {
 
-    
+    private $params = array();
+    private $settings = array();
 
 
     function __construct()
@@ -27,7 +28,7 @@ class mif_qm_param extends mif_qm_core {
         //      name - имя (глобально уникально)
         //      alias - буква и другие возможные имена через пробел (все глобально уникальны)
         //      pattern - шаблон для идентификации в режиме без имени (маркер параметров и пробелы предварительно удаляются)
-        //      type - область применения ('quiz', 'part' или 'any' (по умолчанию))
+        //      apply - область применения ('quiz', 'part' или 'any' (по умолчанию))
         //      cumulative - множественный или нет (true или false (по умолчанию))
         //      default - значение по умолчанию
         //      description - текстовое пояснение параметра (не обязательно)
@@ -36,9 +37,9 @@ class mif_qm_param extends mif_qm_core {
         // От последовательности описания зависит последовательность применения шаблонов (выбирается первый применимый)
         //
 
-        $list_param = apply_filters( 'mif-qm-list-param', array(
+        $this->params = apply_filters( 'mif-qm-params', array(
 
-                // attempt
+                // attempt (repeat? retry?)
                 // Тест - количество попыток прохождения теста (если 0, то не ограничено)
                 // Раздел - не применимо
                 
@@ -46,6 +47,7 @@ class mif_qm_param extends mif_qm_core {
                     'name' => 'attempt',
                     'alias' => 'a att',
                     'pattern' => '/^\d+$/', // одна или несколько цифр целиком в строке
+                    'apply' => 'quiz',
                     'default' => 0,
                     'description' => __( 'Количество попыток прохождения теста', 'mif-qm' )
                 ),
@@ -61,13 +63,13 @@ class mif_qm_param extends mif_qm_core {
                     'description' => __( 'Количество вопросов для раздела', 'mif-qm' )
                 ),
                 
-                // compenetses
+                // competences
                 // Тест - компетенции по умолчанию для разделов
                 // Раздел - компетенции для раздела
         
                 array(
-                    'name' => 'compenetses',
-                    'alias' => 'c cmp compenetse',
+                    'name' => 'competences',
+                    'alias' => 'c cmp competence',
                     'pattern' => '/ОК-|УК-|ПК-|СК-/', // УК, ОК, ОПК, ПК, ДПК, СК, ПСК
                     'cumulative' => true,
                     'description' => __( 'Компетенции', 'mif-qm' ),
@@ -88,15 +90,27 @@ class mif_qm_param extends mif_qm_core {
                                             'part' => __( 'Количество баллов (вес) раздела и порог положительной оценки', 'mif-qm' ) ),
                 ),
 
-                // time
+                // duration
                 // Тест - ограничение времени
                 // Раздел - не применимо
                 
                 array(
-                    'name' => 'time',
-                    'alias' => 't',
+                    'name' => 'duration',
+                    'alias' => 'd duration',
                     'pattern' => '/^\d+s$|^\d+m$/', // 30s или 15m (30 секунд или 15 минут)
+                    'apply' => 'quiz',
                     'description' => __( 'Ограничение времени', 'mif-qm' )
+                ),
+                
+                // tags
+                // Тест - метки 
+                // Раздел - метки
+                
+                array(
+                    'name' => 'tags',
+                    'alias' => 't tag',
+                    'pattern' => '/^{\w+}/', // {любая цифра, буква или знак подчеркивания}
+                    'description' => __( 'Метки', 'mif-qm' )
                 ),
                 
                 // settings
@@ -106,83 +120,299 @@ class mif_qm_param extends mif_qm_core {
                 array(
                     'name' => 'settings',
                     'alias' => 's set setting',
-                    'pattern' => '/random|rand|ordered|order|question|part|quiz|auto|manual|email|navigation|repair|resume|notice/',
-                    'default' => array( 'quiz' => 'ordered question manual', 'part' => 'random question' ),
+                    'pattern' => '/random|ordered|question|part|quiz|auto|manual|email|navigation|correction|resume|interactive|dialog/',
+                    'cumulative' => true,
+                    'default' => array( 'quiz' => 'ordered question manual', 'part' => 'random' ),
                     'description' => __( 'Настройки', 'mif-qm' ),
-                    'description_val' => array( 'random rand' => __( 'Случайное отображение', 'mif-qm' ), 
-                                                'ordered order' => __( 'Последовательное отображение', 'mif-qm' ),
-                                                'question' => __( 'Каждый вопрос отдельно', 'mif-qm' ), 
-                                                'part' => __( 'Все вопросы разделов вместе', 'mif-qm' ),
-                                                'quiz' => __( 'Все вопросы теста вместе', 'mif-qm' ),
-                                                'auto' => __( 'Автоматическое начало теста', 'mif-qm' ),
-                                                'manual' => __( 'Ручное начало теста', 'mif-qm' ),
-                                                'email' => __( 'Уведомлять администратора о новых результатах', 'mif-qm' ),
-                                                'navigation' => __( 'Навигация по тесту', 'mif-qm' ),
-                                                'repair' => __( 'Навигация с исправлением ответов', 'mif-qm' ),
-                                                'resume' => __( 'Показывать анализ результатов ответов по завершении теста', 'mif-qm' ),
-                                                'notice' => __( 'Показывать результат при ответе на каждый вопрос', 'mif-qm' ),
-                                                )
                 ),
                 
-                // // shuffle
-                // // Тест - способ замешивания разделов
-                // // Раздел - способ замешивания вопросов в разделе
-        
-                // array(
-                //     'name' => 'shuffle',
-                //     'alias' => 's shuf',
-                //     'pattern' => '/^random$|^rand$|^ordered$|^order$/', 
-                //     'default' => array( 'quiz' => 'ordered', 'part' => 'random' ),
-                //     'description' => array( 'quiz' => __( 'Выбор разделов', 'mif-qm' ), 'part' => __( 'Выбор вопросов', 'mif-qm' ) ),
-                //     'description_val' => array( 'random rand' => __( 'Случайно', 'mif-qm' ), 
-                //                                 'ordered order' => __( 'Последовательно', 'mif-qm' ) )
-                // ),
-        
-                // // minimum
-                // // Тест - Порог положительной оценки для всего теста
-                // // Раздел - Порог положительной оценки для раздела (если хотя бы для одного из разделов,  
-                // // где это указано, порог не преодолевается, то и весь тест не засчитывается; по умолчанию - не применимо)
-        
-                // array(
-                //     'name' => 'minimum',
-                //     'alias' => 'm min',
-                //     'pattern' => '/^\d+\+$|^\d+\%/', // Число и + или число и %(3+, 5+ и др. или 50%, 80%)
-                //     'default' => '50%',
-                //     'description' => __( 'Порог положительной оценки', 'mif-qm' ),
-                // ),
-        
-                // display
-                // Тест - Показывать отдельно вопросы, разделы целиком или весь тест целиком (по умолчанию - question)
-                // Раздел - не применимо
-        
-                // array(
-                //     'name' => 'display',
-                //     'alias' => 'd disp',
-                //     'pattern' => '/^question$|^part$|^quiz$/',
-                //     'type' => 'quiz', // Применимо только ко всему тесту
-                //     'default' => 'question',
-                //     'description' => __( 'Режим отображения теста', 'mif-qm' ),
-                //     'description_val' => array( 'question' => __( 'Каждый вопрос отдельно', 'mif-qm' ), 
-                //                                 'part' => __( 'Все вопросы разделов вместе', 'mif-qm' ),
-                //                                 'quiz' => __( 'Все вопросы теста вместе', 'mif-qm' ) )
-                // ),
+                ) );
                 
-                
+        $this->settings = apply_filters( 'mif-qm-settings', array( 
+                    
+                'random' => array( 'apply' => 'any', 'description' => __( 'Случайное отображение', 'mif-qm' ) ), 
+                'ordered' => array( 'apply' => 'any', 'description' => __( 'Последовательное отображение', 'mif-qm' ) ),
+                'question' => array( 'apply' => 'quiz', 'description' => __( 'Каждый вопрос отдельно', 'mif-qm' ) ), 
+                'part' => array( 'apply' => 'quiz', 'description' => __( 'Показывать вместе все вопросы разделов', 'mif-qm' ) ),
+                'quiz' => array( 'apply' => 'quiz', 'description' => __( 'Показывать вместе все вопросы теста', 'mif-qm' ) ),
+                'auto' => array( 'apply' => 'quiz', 'description' => __( 'Автоматическое начало теста', 'mif-qm' ) ),
+                'manual' => array( 'apply' => 'quiz', 'description' => __( 'Ручное начало теста', 'mif-qm' ) ),
+                'email' => array( 'apply' => 'quiz', 'description' => __( 'Уведомлять администратора о новых результатах', 'mif-qm' ) ),
+                'navigation' => array( 'apply' => 'quiz', 'description' => __( 'Навигация по тесту', 'mif-qm' ) ),
+                'correction' => array( 'apply' => 'quiz', 'description' => __( 'Навигация с возможностью исправления ответов', 'mif-qm' ) ),
+                'resume' => array( 'apply' => 'quiz', 'description' => __( 'Показывать анализ результатов ответов по завершении теста', 'mif-qm' ) ),
+                'interactive' => array( 'apply' => 'quiz', 'description' => __( 'Показывать результат при ответе на каждый вопрос', 'mif-qm' ) ),
 
-            ) );
-
+        ) );
 
     }
 
+    
+    //
+    // Преобразует массив параметров в структурированное описание
+    //
+    // $mode - part, quiz (режим обработки параметров - для раздела или всего теста)
+    //
 
-    function parse( $arr = array() )
+    function parse( $params_raw = array(), $mode = "part" )
     {
-        $param = array();
+        $keys = $this->get_param_keys( $mode );
+        $params = $this->param_init( $mode );
+        $arr = array();
+        
+        // Нормализация строковых значений параметров
+        
+        foreach ( $params_raw as $key => $value ) {
+            
+            $value = strim( preg_replace( '/[\s=:,;.]/', ' ', $value ) );
+            $value = preg_replace( '/' . $this->mark_param . ' /', $this->mark_param, $value );
+            
+            $params_raw[$key] = $value;
+            
+        }
+        
+        // Выбор строк, где параметр указан явно
+        
+        foreach ( $params_raw as $key => $value ) {
+            
+            $param = $this->get_name( $value );
+
+            if ( ! $param ) continue;
+            
+            // В режиме теста пропустить то, что не относится к тесту явно
+
+            if ( $mode == 'quiz' && ! $this->is_only_quiz_param( $value ) ) continue;
+            
+            // В режиме раздела пропустить то, что относится только к тесту
+            
+            if ( $mode == 'part' && $this->is_only_quiz_param( $value ) ) continue;
+
+            // Сохранить данные параметра
+
+            if ( array_key_exists( $param['name'], $keys ) ) {
+
+                if ( $keys[$param['name']]['cumulative'] ) {
+                    
+                    $arr[$param['method']][$keys[$param['name']]['name']][] = $this->param_normalize( $value );
+
+                } else {
+
+                    $arr[$param['method']][$keys[$param['name']]['name']] = $this->param_normalize( $value );
+
+                }
+
+                // unset( $params_raw[$key] );
+
+            }
+
+        }
+
+        // Собрать данные параметров в общий список
+
+        foreach ( $params as $key => $value ) {
+
+            if ( is_array( $value ) ) {
+
+                $params[$key] = array_merge( (array) $arr['manual'][$key], (array) $arr['auto'][$key] );
+
+                // p($arr['manual'][$key]);
+                // p($arr['auto'][$key]);
+
+            } else {
+
+                if ( isset( $arr['auto'][$key] ) ) $params[$key] = $arr['auto'][$key];
+                if ( isset( $arr['manual'][$key] ) ) $params[$key] = $arr['manual'][$key];
+
+            }
+
+        }
+
+        // Навести порядок в значениях settings
+
+        $setings_auto = implode( ' ', $arr['auto']['settings'] );
+        $setings_manual = implode( ' ', $arr['manual']['settings'] );
+        $settings = trim( $setings_auto . ' ' . $setings_manual );
+        
+        $params['settings'] = $settings;
+
+        // Удалить пустые элементы из параметров
+
+        foreach ( $params as $key => $value ) if ( $value == '' || $value == array() ) unset( $params[$key] );
+
+        // p($params_raw);
+        // p($params);
+
+        return $params;
+    }
+
+    
+    //
+    // Инициализирует массив параметров
+    //
+
+    private function param_init( $mode = 'part' )
+    {
+        $arr = array();
+
+        foreach ( $this->params as $item ) {
+
+            if ( $this->not_apply( $item, $mode ) ) continue;
+
+            $name = trim( $item['name'] );
+            $arr[$name] = ( isset( $item['cumulative'] ) && $item['cumulative'] ) ? array() : '';
+
+        }
+
+        return $arr;
+    }
+
+    
+    //
+    // Возвращает массив всех возможных ключей параметров с указанием на базовый параметр и режим кумулятивности
+    //
+
+    private function get_param_keys( $mode = 'part' )
+    {
+        $arr = array();
+
+        foreach ( $this->params as $item ) {
+
+            $name = trim( $item['name'] );
+            $cumulative = ( isset( $item['cumulative'] ) && $item['cumulative'] == true ) ? true : false;
+
+            if ( $this->not_apply( $item, $mode ) ) continue;
+            
+            $arr[$name] = array( 'name' => $name, 'cumulative' => $cumulative );
+
+            // $aliases = strim( $item['alias'] );
+            // $aliases_arr = explode( ' ', $aliases );
+            
+            // foreach ( (array) $aliases_arr as $alias ) $arr[$alias] = array( 'name' => $name, 'cumulative' => $cumulative );
+            
+        }
+
+        return $arr;
+    }
 
 
-        p($arr);
+    //
+    // Проверяет, что параметр предназначен или применим только для теста
+    //
 
-        return $param;
+    private function is_only_quiz_param( $value )
+    {
+        $param_quiz_only = array();
+
+        foreach ( $this->params as $item ) {
+
+            if ( ! $this->not_apply( $item, 'part' ) ) continue;
+            $param_quiz_only[] = trim( $item['name'] );
+            
+        }
+        
+        $param = $this->get_name( $value );
+
+        $ret = ( preg_match( '/' . $this->mark_param . $this->mark_param . '/', $value ) || in_array( $param['name'], $param_quiz_only ) ) ? true : false;
+
+        return $ret;
+    }
+
+
+
+    //
+    // Проверяет, применим ли параметр для указанного режима
+    //
+
+    private function not_apply( $item, $mode  = 'part' )
+    {
+        $ret = false;
+        $apply = ( isset( $item['apply'] ) ) ? trim( $item['apply'] ) : 'any';
+        if ( ! ( $apply == $mode || $apply == 'any' ) ) $ret = true;
+
+        return $ret;
+    }
+
+
+    //
+    // Получить vассив сопоставления базовых имен и алиасов
+    //
+
+    private function get_alias_map()
+    {
+        $arr = array();        
+
+        foreach ( $this->params as $param ) {
+            
+            $name = trim( $param['name'] );
+            $arr[$name] = $name;
+            
+            $aliases = strim( $param['alias'] );
+            $aliases_arr = explode( ' ', $aliases );
+            
+            foreach ( (array) $aliases_arr as $alias ) $arr[$alias] = $name;
+            
+        }
+
+        return $arr;
+    }
+
+
+    //
+    // Определяет имя параметра строки параметров
+    //
+
+    private function get_name( $item )
+    {
+        $out = array();        
+        $arr = $this->get_alias_map();
+        
+        // Выделить первое слово в строке параметров
+        
+        preg_match( '/' . $this->mark_param . '([\w]+) /', $item, $ret ); 
+        $name_raw = $ret[1];
+
+        // Если первое слово является именем параметра
+        
+        if ( isset( $arr[$name_raw] ) ) {
+            
+            $out['name'] = $arr[$name_raw];
+            $out['method'] = 'manual';
+            
+            return $out;
+        }
+        
+        // Имя параметра не указано - определяем по значениям
+        
+        foreach ( $this->params as $param ) {
+            
+            if ( preg_match( $param['pattern'], $item ) ) {
+                
+                $out['name'] = $param['name'];
+                $out['method'] = 'auto';
+                
+                return $out;
+            }
+
+        }
+        
+        return false;
+    }
+
+    // 
+    // Нормализация значений параметров
+    // 
+
+    private function param_normalize( $item )
+    {
+        $arr = $this->get_alias_map();
+        
+        preg_match( '/' . $this->mark_param . '([\w]+) /', $item, $ret ); 
+        $name_raw = $ret[1];
+        
+        if ( array_key_exists( $name_raw, $arr ) ) $item = preg_replace( '/@' . $name_raw . '/', '', $item );
+        $item = trim( preg_replace( '/@/', '', $item ) );
+
+        return $item;
     }
 
 

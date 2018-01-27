@@ -12,31 +12,37 @@ defined( 'ABSPATH' ) || exit;
 
 class mif_qm_core  {
 
-    // Маркер для раздела теста
-    private $mark_quiz_part = '==';
+    // Маркер для теста
+    public $mark_quiz = '===';
     
-    // Маркер для описания параметров раздела теста
-    private $mark_param = '@';
+    // Маркер для раздела теста
+    public $mark_part = '==';
+    
+    // Маркер для описания параметров
+    public $mark_param = '@';
 
     // Маркер для вопроса
-    private $mark_question = '=';
+    public $mark_question = '=';
     
     // Маркеры для выбираемых ответов
-    private $mark_choice = '-+*~';
+    public $mark_choice = '-+*~';
     
     // Маркеры для полей ввода
-    private $mark_input = '>%';
+    public $mark_input = '>%';
     
     
     function __construct()
     {
 
-        // Шаблон для выделения разделов теста
-        $this->pattern_quiz_part = '/^' . $this->mark_quiz_part . '/';
+        // Шаблон для выделения теста
+        $this->pattern_quiz = '/^' . $this->mark_quiz . '/';
         
-        // Шаблон для выделения инормации о параметрах
-        $this->pattern_param = '/^[' . $this->mark_param . ']/';
-
+        // Шаблон для выделения разделов теста
+        $this->pattern_part = '/^' . $this->mark_part . '/';
+        
+        // Шаблонs для выделения инормации о параметрах
+        $this->pattern_param = '/^' . $this->mark_param . '/';
+        
         // Шаблон для выделения вопросов (с ответами)
         $this->pattern_question = '/^[' . $this->mark_question . ']/';
         
