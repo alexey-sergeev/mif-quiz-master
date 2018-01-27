@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 include_once dirname( __FILE__ ) . '/class-core.php';
 
-class mif_qm_question extends mif_qm_core {
+class mif_qm_question_core extends mif_qm_core {
 
     
     function __construct()
@@ -32,7 +32,7 @@ class mif_qm_question extends mif_qm_core {
 
         $arr = preg_split( '/\\r\\n?|\\n/', $text );
 
-        $description = '';
+        $title = '';
         $answers_txt = array();
         $answers_flag = false;
         $n = -1;
@@ -60,20 +60,20 @@ class mif_qm_question extends mif_qm_core {
 
                 // Собираем сам вопрос (формулировку задания)
 
-                $description .= $item . "\n";
+                $title .= $item . "\n";
 
             }
             
         }
 
-        $description = trim( preg_replace( $this->pattern_question, '', $description ) );
+        $title = trim( preg_replace( $this->pattern_question, '', $title ) );
         $answers_txt = array_map( 'trim', $answers_txt );
         
         
         $answers = $this->parse_answers( $answers_txt );
         
-        $question['question'] = $description;
-        $question['mode'] = $answers['mode'];
+        $question['title'] = $title;
+        $question['type'] = $answers['type'];
         $question['answers'] = $answers['answers'];
 
         return $question;
@@ -96,13 +96,13 @@ class mif_qm_question extends mif_qm_core {
         
         // Определить тип вопроса (одиночный, множественный или др.)
 
-        $mode = $this->get_answers_mode( $answers_raw );
+        $type = $this->get_answers_type( $answers_raw );
         
         // Составить массив описаний в зависимости от типа
 
         // Текст с автоматической проверкой
 
-        if ( $mode == 'text' ) {
+        if ( $type == 'text' ) {
             
             // Выбрать все текстовые поля с автоматической проверкой
 
@@ -121,7 +121,7 @@ class mif_qm_question extends mif_qm_core {
 
         // Текст с ручной проверкой и (или) файлы
 
-        if ( $mode == 'open' ) {
+        if ( $type == 'open' ) {
 
             // Выбрать только первое текстовое поле с ручной проверкой и все поля с загрузкой файлов
             
@@ -150,7 +150,7 @@ class mif_qm_question extends mif_qm_core {
 
         // Матричная сортировка
 
-        if ( $mode == 'matching' ) {
+        if ( $type == 'matching' ) {
 
             $arr = array();
 
@@ -165,10 +165,12 @@ class mif_qm_question extends mif_qm_core {
 
             for ( $i = 0; $i < $matchings; $i++ ) {
 
-                $key = $arr[$i*2]['answer'];
-                $value = $arr[$i*2+1]['answer'];
+                $answer = $arr[$i*2]['answer'];
+                $status = $arr[$i*2+1]['answer'];
 
-                $answers[] = array( 'type' => 'matching', 'key' => $key, 'value' => $value );
+                // $answers[] = array( 'type' => 'matching', 'key' => $key, 'value' => $value );
+                // $answers[] = array( 'key' => $key, 'value' => $value );
+                $answers[] = array( 'answer' => $answer, 'status' => $status );
 
             }
 
@@ -176,7 +178,7 @@ class mif_qm_question extends mif_qm_core {
 
         // Простая сортировка
 
-        if ( $mode == 'sort' ) {
+        if ( $type == 'sort' ) {
 
             // Выбрать поля сортировки, указать порядковые номера
 
@@ -186,8 +188,9 @@ class mif_qm_question extends mif_qm_core {
                 
                 if ( $item['type'] == '~' ) {
                     
-                    $item['type'] = 'sort';
-                    $item['index'] = $index++;
+                    // $item['type'] = 'sort';
+                    unset( $item['type'] );
+                    $item['status'] = $index++;
 
                     $answers[] = $item;
 
@@ -199,7 +202,7 @@ class mif_qm_question extends mif_qm_core {
 
         // Множественный выбор
 
-        if ( $mode == 'multiple' ) {
+        if ( $type == 'multiple' ) {
 
             // Выбрать поля правильных и неправильных ответов, указать статус правильности
 
@@ -207,8 +210,9 @@ class mif_qm_question extends mif_qm_core {
                 
                 if ( $item['type'] == '-' || $item['type'] == '+' || $item['type'] == '*' ) {
                     
-                    $item['well'] = ( $item['type'] == '-' ) ? 'no' : 'yes';
-                    $item['type'] = 'multiple';
+                    $item['status'] = ( $item['type'] == '-' ) ? 'no' : 'yes';
+                    // $item['type'] = 'multiple';
+                    unset( $item['type'] );
 
                     $answers[] = $item;
 
@@ -220,7 +224,7 @@ class mif_qm_question extends mif_qm_core {
 
         // Одиночный выбор
 
-        if ( $mode == 'single' ) {
+        if ( $type == 'single' ) {
             
             // Выбрать поля правильного и неправильных ответов, указать статус правильности
 
@@ -233,8 +237,9 @@ class mif_qm_question extends mif_qm_core {
                     
                     if ( $item['type'] == '+' ) $flag = true;
 
-                    $item['well'] = ( $item['type'] == '-' ) ? 'no' : 'yes';
-                    $item['type'] = 'single';
+                    $item['status'] = ( $item['type'] == '-' ) ? 'no' : 'yes';
+                    // $item['type'] = 'single';
+                    unset( $item['type'] );
 
                     $answers[] = $item;
 
@@ -244,11 +249,11 @@ class mif_qm_question extends mif_qm_core {
 
             // Если не указан правильный ответ, то правильным считается первый
 
-            if ( ! $flag ) $answers[0]['well'] = 'yes';
+            if ( ! $flag ) $answers[0]['status'] = 'yes';
             
         }
 
-        return array( 'mode' => $mode, 'answers' => $answers );
+        return array( 'type' => $type, 'answers' => $answers );
 
     }
 
@@ -266,7 +271,7 @@ class mif_qm_question extends mif_qm_core {
     //      matching - матричная сортировка
     //
     
-    private function get_answers_mode( $answers_raw = array() )
+    private function get_answers_type( $answers_raw = array() )
     {
         $types = array();
 
@@ -284,47 +289,47 @@ class mif_qm_question extends mif_qm_core {
 
             // Есть текстовое поле с данными для автоматической проверки
 
-            $mode = 'text';
+            $type = 'text';
             
         } elseif ( isset( $types['>~'] ) || isset( $types['%'] ) ) {
             
             // Есть текстовое поле с ручной проверкой или поля для загрузки файлов
 
-            $mode = 'open';
+            $type = 'open';
 
         } elseif( isset( $types['~'] ) && ( isset( $types['-'] ) || isset( $types['+'] ) || isset( $types['*'] ) ) ) {
 
             // Есть поле сортировки и какие-то еще другие поля
 
-            $mode = 'matching';
+            $type = 'matching';
                             
         } elseif( isset( $types['~'] ) ) {
             
             // Есть поле сортировки, а других полей нет
 
-            $mode = 'sort';
+            $type = 'sort';
                             
         } elseif( isset( $types['*'] ) || ( isset( $types['+'] ) && $types['+'] > 1 ) ) {
 
             // Есть маркер множественного выбора или несколько маркеров одиночного выбора
 
-            $mode = 'multiple';
+            $type = 'multiple';
                             
         } elseif( isset( $types['+'] ) || isset( $types['-'] ) ) {
 
             // Есть только один маркер одиночного выбора или такого маркера нет совсем
             
-            $mode = 'single';
+            $type = 'single';
                             
         } else {
 
             // Вообще ничего нет
 
-            $mode = 'open';
+            $type = 'open';
 
         }
 
-        return $mode;
+        return $type;
     }
 
 
@@ -377,8 +382,9 @@ class mif_qm_question extends mif_qm_core {
                 $data = array();
 
                 $data['size'] = strlen( $res[0] );
-                if ( $item != '' ) $data['caption'] = $item;
-                if ( ! empty( $meta_arr ) ) $data['meta'] = $meta_arr;
+                if ( $item != '' ) $data['answer'] = $item;
+                // if ( ! empty( $meta_arr ) ) $data['meta'] = $meta_arr;
+                if ( ! empty( $meta_arr ) ) $data['meta'] = implode( '|', $meta_arr );
 
                 $data['type'] = $type;
                 if ( $type == '>' ) $data['type'] = ( empty( $meta_arr ) ) ? '>~' : '>!';

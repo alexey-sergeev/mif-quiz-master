@@ -8,10 +8,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-part.php';
+include_once dirname( __FILE__ ) . '/class-part-core.php';
 
 
-class mif_qm_quiz extends mif_qm_core {
+class mif_qm_quiz_core extends mif_qm_core {
 
 
     function __construct()
@@ -35,7 +35,7 @@ class mif_qm_quiz extends mif_qm_core {
         $quiz_raw = $this->get_parts_raw( $text );
         
         $quiz = array();
-        $part = new mif_qm_part();
+        $part = new mif_qm_part_core();
 
         // Записать заголовок теста
 
@@ -43,7 +43,7 @@ class mif_qm_quiz extends mif_qm_core {
         
         // Записать структурированную информацию о параметрах
 
-        $param = new mif_qm_param();
+        $param = new mif_qm_param_core();
         $quiz['param'] = $param->parse( $quiz_raw['param'], 'quiz' );
 
         // Записать структурированную информацию о содержимом теста
@@ -55,7 +55,7 @@ class mif_qm_quiz extends mif_qm_core {
 
         }
         
-        p( $quiz );
+        // p( $quiz );
             
         return $quiz;
     }

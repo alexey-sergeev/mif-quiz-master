@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-class mif_qm_param extends mif_qm_core {
+class mif_qm_param_core extends mif_qm_core {
 
     private $params = array();
     private $settings = array();
@@ -110,6 +110,7 @@ class mif_qm_param extends mif_qm_core {
                     'name' => 'tags',
                     'alias' => 't tag',
                     'pattern' => '/^{\w+}/', // {любая цифра, буква или знак подчеркивания}
+                    'cumulative' => true,
                     'description' => __( 'Метки', 'mif-qm' )
                 ),
                 
@@ -213,7 +214,7 @@ class mif_qm_param extends mif_qm_core {
 
             if ( is_array( $value ) ) {
 
-                $params[$key] = array_merge( (array) $arr['manual'][$key], (array) $arr['auto'][$key] );
+                $params[$key] = array_merge( (array) $arr['auto'][$key], (array) $arr['manual'][$key] );
 
                 // p($arr['manual'][$key]);
                 // p($arr['auto'][$key]);
@@ -227,13 +228,13 @@ class mif_qm_param extends mif_qm_core {
 
         }
 
-        // Навести порядок в значениях settings
+        // // Навести порядок в значениях settings
 
-        $setings_auto = implode( ' ', $arr['auto']['settings'] );
-        $setings_manual = implode( ' ', $arr['manual']['settings'] );
-        $settings = trim( $setings_auto . ' ' . $setings_manual );
+        // $setings_auto = implode( ' ', $arr['auto']['settings'] );
+        // $setings_manual = implode( ' ', $arr['manual']['settings'] );
+        // $settings = trim( $setings_auto . ' ' . $setings_manual );
         
-        $params['settings'] = $settings;
+        // $params['settings'] = $settings;
 
         // Удалить пустые элементы из параметров
 
@@ -250,7 +251,7 @@ class mif_qm_param extends mif_qm_core {
     // Инициализирует массив параметров
     //
 
-    private function param_init( $mode = 'part' )
+    public function param_init( $mode = 'part' )
     {
         $arr = array();
 
@@ -271,7 +272,7 @@ class mif_qm_param extends mif_qm_core {
     // Возвращает массив всех возможных ключей параметров с указанием на базовый параметр и режим кумулятивности
     //
 
-    private function get_param_keys( $mode = 'part' )
+    public function get_param_keys( $mode = 'part' )
     {
         $arr = array();
 
@@ -284,11 +285,6 @@ class mif_qm_param extends mif_qm_core {
             
             $arr[$name] = array( 'name' => $name, 'cumulative' => $cumulative );
 
-            // $aliases = strim( $item['alias'] );
-            // $aliases_arr = explode( ' ', $aliases );
-            
-            // foreach ( (array) $aliases_arr as $alias ) $arr[$alias] = array( 'name' => $name, 'cumulative' => $cumulative );
-            
         }
 
         return $arr;
@@ -334,7 +330,7 @@ class mif_qm_param extends mif_qm_core {
 
 
     //
-    // Получить vассив сопоставления базовых имен и алиасов
+    // Получить массив сопоставления базовых имен и алиасов
     //
 
     private function get_alias_map()
