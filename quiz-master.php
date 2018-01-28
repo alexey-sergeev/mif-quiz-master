@@ -10,9 +10,10 @@ Author URI: https://vk.com/alexey_sergeev
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/inc/class-quiz-core.php';
-include_once dirname( __FILE__ ) . '/inc/class-xml-explode.php';
-include_once dirname( __FILE__ ) . '/inc/class-xml-implode.php';
+include_once dirname( __FILE__ ) . '/inc/class-core-quiz.php';
+include_once dirname( __FILE__ ) . '/inc/class-screen-quiz.php';
+// include_once dirname( __FILE__ ) . '/inc/class-xml-explode.php';
+// include_once dirname( __FILE__ ) . '/inc/class-xml-implode.php';
 
 
 // Функция получает текст записи, который можно изменить перед выводом на экран
@@ -23,17 +24,21 @@ function add_custom_content( $content )
 {
     global $post;
    
-    $quiz = new mif_qm_quiz_core();
-    $xml = new mif_qm_xml_implode();
-    $arr = new mif_qm_xml_explode();
+    $quiz = new mif_qm_core_quiz();
+    // $xml = new mif_qm_core_xml_implode();
+    // $arr = new mif_qm_core_xml_explode();
     
-    $quiz_array = $quiz->parse( $post->post_content );
-    $quiz_xml = $xml->parse( $quiz_array );
-    $quiz_array_2 = $arr->parse( $quiz_xml );
+    $quiz = $quiz->parse( $post->post_content );
+    
+    $quiz_screen = new mif_qm_screen_quiz( $quiz );
+    $quiz_screen->show();
+
+    // $quiz_xml = $xml->parse( $quiz_array );
+    // $quiz_array_2 = $arr->parse( $quiz_xml );
 
     // p( $quiz_array );
     // p( esc_html( $quiz_xml ) );
-    p( $quiz_array_2 );
+    // p( $quiz_array_2 );
 
     return $content;
 }

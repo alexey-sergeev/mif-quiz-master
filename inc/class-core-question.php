@@ -8,9 +8,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-core.php';
+include_once dirname( __FILE__ ) . '/class-core-core.php';
 
-class mif_qm_question_core extends mif_qm_core {
+class mif_qm_core_question extends mif_qm_core_core {
 
     
     function __construct()
@@ -170,7 +170,7 @@ class mif_qm_question_core extends mif_qm_core {
 
                 // $answers[] = array( 'type' => 'matching', 'key' => $key, 'value' => $value );
                 // $answers[] = array( 'key' => $key, 'value' => $value );
-                $answers[] = array( 'answer' => $answer, 'status' => $status );
+                $answers[] = array( 'label' => $answer, 'answer' => $status );
 
             }
 
@@ -256,7 +256,6 @@ class mif_qm_question_core extends mif_qm_core {
         return array( 'type' => $type, 'answers' => $answers );
 
     }
-
 
 
 
@@ -370,6 +369,7 @@ class mif_qm_question_core extends mif_qm_core {
                     
                     $meta_txt = implode( '|', $meta[0] );
                     $meta_txt = preg_replace( '/[()]/', '', $meta_txt );
+                    $meta_txt = preg_replace( '/[,;:!]/', '|', $meta_txt );
 
                     $meta_arr = explode( '|', $meta_txt );
                     $meta_arr = array_map( 'trim', $meta_arr );

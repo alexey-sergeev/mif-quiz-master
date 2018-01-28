@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-class mif_qm_xml_implode  {
+class mif_qm_core_xml_implode  {
 
     
     function parse( $quiz )

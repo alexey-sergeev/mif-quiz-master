@@ -8,9 +8,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
+include_once dirname( __FILE__ ) . '/class-core-xml.php';
 
 
-class mif_qm_core  {
+
+class mif_qm_core_core  {
 
     // Маркер для теста
     public $mark_quiz = '===';

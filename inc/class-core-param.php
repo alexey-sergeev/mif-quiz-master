@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-class mif_qm_param_core extends mif_qm_core {
+class mif_qm_core_param extends mif_qm_core_core {
 
     private $params = array();
     private $settings = array();

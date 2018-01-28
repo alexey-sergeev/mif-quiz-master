@@ -1,17 +1,17 @@
 <?php
 
 //
-// Класс для обработки полных тестов
+// Класс ядра обработки тестов
 // 
 //
 
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-part-core.php';
+include_once dirname( __FILE__ ) . '/class-core-part.php';
 
 
-class mif_qm_quiz_core extends mif_qm_core {
+class mif_qm_core_quiz extends mif_qm_core_core {
 
 
     function __construct()
@@ -35,7 +35,7 @@ class mif_qm_quiz_core extends mif_qm_core {
         $quiz_raw = $this->get_parts_raw( $text );
         
         $quiz = array();
-        $part = new mif_qm_part_core();
+        $part = new mif_qm_core_part();
 
         // Записать заголовок теста
 
@@ -43,7 +43,7 @@ class mif_qm_quiz_core extends mif_qm_core {
         
         // Записать структурированную информацию о параметрах
 
-        $param = new mif_qm_param_core();
+        $param = new mif_qm_core_param();
         $quiz['param'] = $param->parse( $quiz_raw['param'], 'quiz' );
 
         // Записать структурированную информацию о содержимом теста
