@@ -14,11 +14,22 @@ defined( 'ABSPATH' ) || exit;
 // Выводит заголовок вопроса
 //
 
-function mif_qm_the_question_title()
+function mif_qm_the_question_header()
+{
+    global $mif_qm_screen_question;
+    echo $mif_qm_screen_question->get_question_header();
+}
+
+
+//
+// Выводит формулировку вопроса
+//
+
+function mif_qm_the_question_question()
 {
     global $mif_qm_screen_question;
     echo $mif_qm_screen_question->get_question_data( 'title' );
-}
+}    
 
 
 //
@@ -30,6 +41,17 @@ function mif_qm_the_question_classes()
     global $mif_qm_screen_question;
     echo $mif_qm_screen_question->get_question_classes();
 }
+
+
+// //
+// // Выводит классы значка пеермещения
+// //
+
+// function mif_qm_the_mover_classes()
+// {
+//     global $mif_qm_screen_question;
+//     echo $mif_qm_screen_question->get_mover_classes();
+// }
 
 
 //
@@ -47,10 +69,21 @@ function mif_qm_the_answer_classes()
 // Выводит маркер ответа
 //
 
-function mif_qm_the_answer_mark()
+function mif_qm_the_answer_marker()
 {
     global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_mark();
+    echo $mif_qm_screen_question->get_answer_marker();
+}
+
+
+//
+// Выводит значок перемещения для ответа
+//
+
+function mif_qm_the_answer_mover()
+{
+    global $mif_qm_screen_question;
+    echo $mif_qm_screen_question->get_answer_mover();
 }
 
 

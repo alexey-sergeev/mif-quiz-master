@@ -163,7 +163,7 @@ class mif_qm_core_param extends mif_qm_core_core {
         
         // Нормализация строковых значений параметров
         
-        foreach ( $params_raw as $key => $value ) {
+        foreach ( (array) $params_raw as $key => $value ) {
             
             $value = strim( preg_replace( '/[\s=:,;.]/', ' ', $value ) );
             $value = preg_replace( '/' . $this->mark_param . ' /', $this->mark_param, $value );
@@ -174,7 +174,7 @@ class mif_qm_core_param extends mif_qm_core_core {
         
         // Выбор строк, где параметр указан явно
         
-        foreach ( $params_raw as $key => $value ) {
+        foreach ( (array) $params_raw as $key => $value ) {
             
             $param = $this->get_name( $value );
 

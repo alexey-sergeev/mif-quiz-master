@@ -1,0 +1,21 @@
+/* Оформление вопросов */
+
+.question.sort td.marker {
+    width: 3rem;
+    text-align: center;
+}
+
+.question.sort .answer,
+.question.matching .answer {
+    margin-right: 2rem;
+}
+
+.question.sort .mover,
+.question.matching .mover {
+    width: 24px;
+    line-height: 24px;
+    text-align: center;
+    background-color: #dee2e6;
+    float: right;
+}
+

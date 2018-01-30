@@ -45,6 +45,29 @@ function add_custom_content( $content )
 
 
 
+add_action( 'wp_enqueue_scripts', 'mif_qm_customizer_styles' );
+
+function mif_qm_customizer_styles() 
+{
+    // Font Awesome
+    
+    wp_register_style( 'font-awesome', plugins_url( 'lib/fontawesome/css/font-awesome.min.css', __FILE__ ) );
+	wp_enqueue_style( 'font-awesome' );
+
+    // Twitter bootstrap
+    
+    wp_register_style( 'bootstrap', plugins_url( 'lib/bootstrap/css/bootstrap.min.css', __FILE__ ) );
+	wp_enqueue_style( 'bootstrap' );
+    
+    // Локальные стили
+
+    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ) );
+	wp_enqueue_style( 'qm-styles' );
+}
+
+
+
+
 if ( ! function_exists( 'p' ) ) {
 
     function p( $data )

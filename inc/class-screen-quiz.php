@@ -42,14 +42,17 @@ class mif_qm_screen_quiz extends mif_qm_screen_core {
 
         global $mif_qm_screen_question;
         //
+        $num = 1;
 
         foreach ( (array) $this->quiz['parts'] as $part ) {
 
             foreach ( (array) $part['questions'] as $question ) 
             {
-    
+                if ( ! isset( $question['num'] ) ) $question['num'] = $num++;
+
                 $mif_qm_screen_question = new mif_qm_screen_question( $question );
                 $mif_qm_screen_question->show();
+                // $mif_qm_screen_question->show( 'run' );
     
             }
 

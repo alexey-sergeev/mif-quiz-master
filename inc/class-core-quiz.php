@@ -48,7 +48,7 @@ class mif_qm_core_quiz extends mif_qm_core_core {
 
         // Записать структурированную информацию о содержимом теста
 
-        foreach( $quiz_raw['parts'] as $item ) {
+        foreach( (array) $quiz_raw['parts'] as $item ) {
 
             $data = $part->parse( $item );
             if ( $data ) $quiz['parts'][] = $data;
