@@ -55,7 +55,18 @@ function mif_qm_the_question_classes()
 
 
 //
-// Выводит классы ответа
+// Выводит классы блока ответов
+//
+
+function mif_qm_the_answers_classes()
+{
+    global $mif_qm_screen_question;
+    echo $mif_qm_screen_question->get_answers_classes();
+}
+
+
+//
+// Выводит классы конкретного ответа
 //
 
 function mif_qm_the_answer_classes()
@@ -91,10 +102,10 @@ function mif_qm_the_answer_mover()
 // Выводит формулировку ответа
 //
 
-function mif_qm_the_answer_answer()
+function mif_qm_the_answer_caption()
 {
     global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_answer();
+    echo $mif_qm_screen_question->get_answer_caption();
 }
 
 

@@ -4,9 +4,9 @@
 
     <p><br />
 
-    <?php do_action( 'mif_qm_before_header' ); ?>
+    <?php do_action( 'mif_qm_before_question_header' ); ?>
     <?php mif_qm_the_question_header(); ?>
-    <?php do_action( 'mif_qm_before_question' ); ?>
+    <?php do_action( 'mif_qm_before_question_question' ); ?>
     <p><?php mif_qm_the_question_question(); ?></p>
     <?php do_action( 'mif_qm_before_answers' ); ?>
 

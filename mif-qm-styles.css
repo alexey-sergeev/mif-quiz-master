@@ -6,12 +6,15 @@
 }
 
 .question.sort .answer,
-.question.matching .answer {
+.question.s-sort .answer,
+.question.m-sort .answer {
     margin-right: 2rem;
 }
 
 .question.sort .mover,
-.question.matching .mover {
+.question.s-sort .mover,
+.question.m-sort .mover,
+.meta .marker {
     width: 24px;
     line-height: 24px;
     text-align: center;

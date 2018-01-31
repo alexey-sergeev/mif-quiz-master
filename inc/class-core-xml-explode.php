@@ -82,8 +82,21 @@ class mif_qm_core_xml_explode  {
 
             $answer = array();
 
-            if ( ! empty( (string) $item ) ) $answer['answer'] = (string) $item;
             foreach ( $item->attributes() as $key => $value ) $answer[$key] = (string) $value;
+
+            foreach ( $item as $key => $value ) {
+
+                if ( in_array( $key, array( 'meta', 'result' ) ) ) {
+
+                    $answer[$key][] = (string) $value;
+                    
+                } else {
+                    
+                    $answer[$key] = (string) $value;
+
+                }
+
+            }
 
             $answers[] = $answer;
 

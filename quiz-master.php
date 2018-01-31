@@ -25,19 +25,21 @@ function add_custom_content( $content )
     global $post;
    
     $quiz = new mif_qm_core_quiz();
-    // $xml = new mif_qm_core_xml_implode();
-    // $arr = new mif_qm_core_xml_explode();
+    $xml = new mif_qm_core_xml_implode();
+    $arr = new mif_qm_core_xml_explode();
     
     $quiz = $quiz->parse( $post->post_content );
     
+    // p($quiz);
+    // $quiz_xml = $xml->parse( $quiz );
+    // p( esc_html( $quiz_xml ) );
+    // $quiz_array = $arr->parse( $quiz_xml );
+    // p( $quiz_array );
+
     $quiz_screen = new mif_qm_screen_quiz( $quiz );
     $quiz_screen->show();
 
-    // $quiz_xml = $xml->parse( $quiz_array );
-    // $quiz_array_2 = $arr->parse( $quiz_xml );
 
-    // p( $quiz_array );
-    // p( esc_html( $quiz_xml ) );
     // p( $quiz_array_2 );
 
     return $content;

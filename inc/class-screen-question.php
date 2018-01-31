@@ -9,6 +9,7 @@
 defined( 'ABSPATH' ) || exit;
 
 include_once dirname( __FILE__ ) . '/class-screen-core.php';
+include_once dirname( __FILE__ ) . '/templates-question.php';
 
 
 class mif_qm_screen_question extends mif_qm_screen_core {
@@ -71,9 +72,9 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     public function get_answer_marker()
     {
         $type = $this->question['type'];
-        $id = md5( $this->answer['data']['answer'] );
+        $id = md5( $this->answer['data']['caption'] );
         $disabled = ( $this->mode == 'view' ) ? ' disabled' : '';
-        $question_num = ( isset( $this->question['num'] ) ) ? $this->question['num'] : md5( serizlize( $this->question ) );
+        $question_num = ( isset( $this->question['num'] ) ) ? $this->question['num'] : md5( serialize( $this->question ) );
 
         $checked = '';
         if ( $this->mode == 'view' && $this->answer['data']['status'] == 'yes' ) $checked = ' checked';
@@ -88,14 +89,9 @@ class mif_qm_screen_question extends mif_qm_screen_core {
             // $marker = '<input type="checkbox" name="" value="' . $id . '" id="' . $id . '" ' . $disabled . $checked . ' />';
             $marker = '<input type="checkbox" name="question' . $question_num . '[]" value="' . $id . '" class="form-check-input" ' . $disabled . $checked . ' />';
             
-        } elseif ( $type == 'sort' ) {
-            
-            $answer_num = ( (int) $this->answer['num'] ) + 1;
-            $marker = '<span class="num">' . $answer_num . '</span>';
-            
-        } elseif ( $type == 'matching' ) {
-            
-            $marker = '<span class="label">' . $this->answer['data']['label'] . '</span>';
+        } elseif ( in_array( $type, array( 'sort', 's-sort', 'm-sort' ) ) ) {
+
+            $marker = '<span class="marker">' . $this->answer['data']['status'] . '</span>';
             
         } else {
             
@@ -111,13 +107,13 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     // Возвращает формулировку ответа
     // 
     
-    public function get_answer_answer()
+    public function get_answer_caption()
     {
         // $id = md5( $this->answer['data']['answer'] );
         // $answer = '<label for="' . $id . '">' . $this->answer['data']['answer'] . '</label>';
-        $answer = $this->answer['data']['answer'];
+        $answer = $this->answer['data']['caption'];
 
-        return apply_filters( 'mif_qm_screen_question_get_answer_answer', $answer, $this->answer );
+        return apply_filters( 'mif_qm_screen_question_get_answer_caption', $answer, $this->answer );
     }
     
     
@@ -140,7 +136,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
         
         if ( $answer['type'] == 'text' ) {
             
-            $placeholder = ( isset( $answer['answer'] ) ) ? ' placeholder="' . $answer['answer'] . '"' : '';
+            $placeholder = ( isset( $answer['caption'] ) ) ? ' placeholder="' . $answer['caption'] . '"' : '';
             
             if ( $size == 1 ) {
                 
@@ -159,8 +155,9 @@ class mif_qm_screen_question extends mif_qm_screen_core {
             
             if ( isset( $answer['meta'] ) ) {
 
-                $meta = explode( '|', $answer['meta'] );
-                $accept = ' accept=".' . implode( ',.', $meta ) . '"';;
+                // $meta = explode( '|', $answer['meta'] );
+                $meta = $answer['meta'];
+                $accept = ' accept=".' . implode( ',.', $meta ) . '"';
 
             }
 
@@ -168,7 +165,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
             // $text .= '<span class="input"><input type="file" name=""' . $multiple . $accept . $disabled . ' /></span>';
             // if ( isset( $answer['answer'] ) ) $text = '<label for="' . $id . '">' . $answer['answer'] . '</label>';
             $text .= '<input type="file" name=""' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" />';
-            if ( isset( $answer['answer'] ) ) $text .= '<small id="' . $id . '" class="form-text text-muted">' . $answer['answer'] . '</small>';
+            if ( isset( $answer['caption'] ) ) $text .= '<small id="' . $id . '" class="form-text text-muted">' . $answer['caption'] . '</small>';
 
         } else {
 
@@ -181,16 +178,43 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
         if ( $this->mode == 'view' ) {
 
-            if ( isset( $answer['meta'] ) ) {
+            if ( $this->question['type'] == 'open' ) {
 
-                $meta = explode( '|', $answer['meta'] );
+                $arr = array();
+                $arr[] = __( 'Ручная проверка ответа', 'mif-qm' );
+
+                if ( $answer['type'] == 'file' ) {
+
+                    // Указать параметры загрузки файлов
+
+                    $arr[] = ( $answer['size'] > 1 ) ? __( 'Загрузка нескольких файлов', 'mif-qm' ) : __( 'Загрузка одного файла', 'mif-qm' );
+                    
+                    if ( isset( $answer['meta'] ) ) {
+
+                        // $meta = explode( '|', $answer['meta'] );
+                        $meta = $answer['meta'];
+                        $arr[] = __( 'Допустимые типы файлов файлов', 'mif-qm' ) . ': <strong>' . implode( '</strong>, <strong>', $meta ) . '</strong>';
+                        
+                    }
+                    
+                }
                 
-                // $text .= '<div class="meta ' . $answer['type'] . '"><ul><li>' . implode( '</li><li>', $meta ) . '</li></ul></div>';
                 $text .= '<div class="media meta ' . $answer['type'] . '">
-                                <div class="d-flex pl-2 pr-2 mr-1 text-success"><i class="fa fa-2x fa-check-circle" aria-hidden="true"></i></div>    
-                                <div  class="media-body"><ul><li>' . implode( '</li><li>', $meta ) . '</li></ul></div>
-                            </div>';
-
+                <div class="marker ml-2 mr-3 bg-warning text-white"><i class="fa fa-hand-paper-o" aria-hidden="true"></i></div>
+                <div  class="media-body"><ul><li>' . implode( '</li><li>', $arr ) . '</li></ul></div>
+                </div>';
+                
+            } elseif ( $this->question['type'] == 'text' ) {
+                
+                // Указать правильные ответы
+                
+                // $meta = explode( '|', $answer['meta'] );
+                $meta = $answer['meta'];
+                $text .= '<div class="media meta ' . $answer['type'] . '">
+                            <div class="marker ml-2 mr-3 bg-success text-white"><i class="fa fa-check" aria-hidden="true"></i></div>
+                            <div  class="media-body"><ul><li>' . implode( '</li><li>', $meta ) . '</li></ul></div>
+                        </div>';
+            
             }
 
         }
@@ -255,8 +279,24 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     }
     
     
+
     // 
-    // Возвращает классы для ответа
+    // Возвращает классы для блока ответов
+    // 
+    
+    public function get_answers_classes()
+    {
+        $classes = array();
+
+        if ( $this->mode == 'run' ) $classes[] = 'table-hover';
+
+        return apply_filters( 'mif_qm_screen_question_get_answers_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
+    }
+
+
+
+    // 
+    // Возвращает классы для конкретного ответа
     // 
     
     public function get_answer_classes()

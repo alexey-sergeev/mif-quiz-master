@@ -75,18 +75,38 @@ class mif_qm_core_xml_implode  {
 
         foreach ( $arr as $item ) {
             
-            if ( isset( $item['answer'] ) ) {
-
-                $answer = $answers->addChild( 'answer', $item['answer'] );
-                unset( $item['answer'] );
-
-            } else {
-
-                $answer = $answers->addChild( 'answer' );
-
-            }
+            $answer = $answers->addChild( 'answer' );
             
-            foreach ( $item as $key => $value ) $answer->addAttribute( $key, esc_attr( $value ) );
+            foreach ( $item as $key => $value ) {
+
+                if ( in_array( $key, array( 'type', 'size' ) ) ) {
+
+                    $answer->addAttribute( $key, esc_attr( $value ) );
+                    
+                } elseif ( in_array( $key, array( 'meta', 'result' ) ) ) {
+
+                    foreach ( (array) $value as $item ) $answer->addChild( $key, esc_attr( $item ) );
+
+                } else {
+                    
+                    $answer->addChild( $key, esc_attr( $value ) );
+
+                }
+            
+            }
+
+            // if ( isset( $item['answer'] ) ) {
+
+            //     $answer = $answers->addChild( 'answer', $item['answer'] );
+            //     unset( $item['answer'] );
+
+            // } else {
+
+            //     $answer = $answers->addChild( 'answer' );
+
+            // }
+            
+            // foreach ( $item as $key => $value ) $answer->addAttribute( $key, esc_attr( $value ) );
 
         }
 

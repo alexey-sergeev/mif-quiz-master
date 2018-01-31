@@ -43,14 +43,18 @@ class mif_qm_core_quiz extends mif_qm_core_core {
         
         // Записать структурированную информацию о параметрах
 
-        $param = new mif_qm_core_param();
-        $quiz['param'] = $param->parse( $quiz_raw['param'], 'quiz' );
+        $param = new mif_qm_core_param( $quiz_raw['param'], 'quiz' );
+        // $quiz['param'] = $param->parse();
+        $quiz['param'] = $param->explication();
+
+        // p( $param->parse() );
+        // p( $param->explication() );
 
         // Записать структурированную информацию о содержимом теста
 
         foreach( (array) $quiz_raw['parts'] as $item ) {
 
-            $data = $part->parse( $item );
+            $data = $part->parse( $item, $quiz['param'] );
             if ( $data ) $quiz['parts'][] = $data;
 
         }

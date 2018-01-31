@@ -28,8 +28,10 @@ class mif_qm_core_part extends mif_qm_core_core {
     //
     // Преобразует текстовое описание теста в структурированный массив
     //
+    //      $params_quiz - массив параметров всего теста
+    //
 
-    function parse( $text )
+    function parse( $text, $params_quiz = array() )
     {
         
         // Получить массив текстовых описаний вопросов (с ответами)
@@ -44,8 +46,11 @@ class mif_qm_core_part extends mif_qm_core_core {
 
         // Записать структурированную информацию о параметрах
 
-        $param = new mif_qm_core_param();
-        $part['param'] = $param->parse( $part_raw['param'] );
+        $param = new mif_qm_core_param( $part_raw['param'], 'part', $params_quiz );
+        // $part['param'] = $param->parse();
+        $part['param'] = $param->explication();
+
+        // $param->explication($part['param']);
 
         // $part['param'] = ( isset( $part_raw['param'] ) ) ? $part_raw['param'] : array();
 
@@ -59,8 +64,8 @@ class mif_qm_core_part extends mif_qm_core_core {
 
         }
         
-        // Если содержимого нет, то ничего не возвращать совсем
-
+        // Если вопросов нет, то ничего не возвращать совсем
+        
         if ( isset( $part['questions'] ) ) {
 
             return $part;
