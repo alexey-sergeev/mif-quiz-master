@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-core-xml.php';
+include_once dirname( __FILE__ ) . '/xml-core.php';
 
 
 

@@ -8,11 +8,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-screen-core.php';
-include_once dirname( __FILE__ ) . '/templates-question.php';
+//include_once dirname( __FILE__ ) . '/class-screen-core.php';
+include_once dirname( __FILE__ ) . '/question-templates.php';
 
 
-class mif_qm_screen_question extends mif_qm_screen_core {
+class mif_qm_question_screen {
 
     // Данные всего вопроса
 
@@ -31,8 +31,8 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     function __construct( $question )
     {
 
-        parent::__construct();
-        $this->question = apply_filters( 'mif_qm_screen_question_question', $question );
+     //   parent::__construct();
+        $this->question = apply_filters( 'mif_qm_question_screen_question', $question );
 
     }
 
@@ -99,7 +99,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
         }
         
-        return apply_filters( 'mif_qm_screen_question_get_answer_mark', $marker, $this->answer );
+        return apply_filters( 'mif_qm_question_screen_get_answer_mark', $marker, $this->answer );
     }
 
     
@@ -113,7 +113,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
         // $answer = '<label for="' . $id . '">' . $this->answer['data']['answer'] . '</label>';
         $answer = $this->answer['data']['caption'];
 
-        return apply_filters( 'mif_qm_screen_question_get_answer_caption', $answer, $this->answer );
+        return apply_filters( 'mif_qm_question_screen_get_answer_caption', $answer, $this->answer );
     }
     
     
@@ -188,15 +188,8 @@ class mif_qm_screen_question extends mif_qm_screen_core {
                     // Указать параметры загрузки файлов
 
                     $arr[] = ( $answer['size'] > 1 ) ? __( 'Загрузка нескольких файлов', 'mif-qm' ) : __( 'Загрузка одного файла', 'mif-qm' );
-                    
-                    if ( isset( $answer['meta'] ) ) {
+                    $arr[] = ( isset( $answer['meta'] ) ) ? __( 'Допустимые типы файлов', 'mif-qm' ) . ': <strong>' . implode( '</strong>, <strong>', $answer['meta'] ) . '</strong>' : __( 'Любые типы файлов', 'mif-qm' );
 
-                        // $meta = explode( '|', $answer['meta'] );
-                        $meta = $answer['meta'];
-                        $arr[] = __( 'Допустимые типы файлов файлов', 'mif-qm' ) . ': <strong>' . implode( '</strong>, <strong>', $meta ) . '</strong>';
-                        
-                    }
-                    
                 }
                 
                 $text .= '<div class="media meta ' . $answer['type'] . '">
@@ -219,7 +212,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
         }
 
-        return apply_filters( 'mif_qm_screen_question_get_answer_text', $text, $this->answer );
+        return apply_filters( 'mif_qm_question_screen_get_answer_text', $text, $this->answer );
     }
     
     
@@ -254,7 +247,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     public function get_question_header()
     {
         if ( isset( $this->question['num'] ) ) $header = '<h3>' . __( 'Вопрос', 'mif-qm' ) . ' ' . $this->question['num'] . '</h3>';
-        return apply_filters( 'mif_qm_screen_question_get_question_header', $header, $this->question );
+        return apply_filters( 'mif_qm_question_screen_get_question_header', $header, $this->question );
     }
         
     
@@ -264,7 +257,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     
     public function get_question_data( $key )
     {
-        return apply_filters( 'mif_qm_screen_question_get_question_data', $this->question[$key], $this->question, $key );
+        return apply_filters( 'mif_qm_question_screen_get_question_data', $this->question[$key], $this->question, $key );
     }
     
     
@@ -275,7 +268,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
     public function get_question_classes()
     {
         $classes = array( 'question', $this->question['type'] );
-        return apply_filters( 'mif_qm_screen_question_get_question_classes', implode( ' ', $classes ), $classes );
+        return apply_filters( 'mif_qm_question_screen_get_question_classes', implode( ' ', $classes ), $classes );
     }
     
     
@@ -290,7 +283,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
         if ( $this->mode == 'run' ) $classes[] = 'table-hover';
 
-        return apply_filters( 'mif_qm_screen_question_get_answers_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
+        return apply_filters( 'mif_qm_question_screen_get_answers_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
     }
 
 
@@ -321,7 +314,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
         }
 
-        return apply_filters( 'mif_qm_screen_question_get_answer_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
+        return apply_filters( 'mif_qm_question_screen_get_answer_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
     }
     
     
@@ -343,7 +336,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
         }
 
-        return apply_filters( 'mif_qm_screen_question_get_answer_mover', $mover, $this->answer, $this->mode );
+        return apply_filters( 'mif_qm_question_screen_get_answer_mover', $mover, $this->answer, $this->mode );
     }
     
     
@@ -357,7 +350,7 @@ class mif_qm_screen_question extends mif_qm_screen_core {
 
     //     if ( $this->mode == 'view' ) $classes[] = 'bg-success text-white';
 
-    //     return apply_filters( 'mif_qm_screen_question_get_mover_classes', implode( ' ', $classes ), $this->answer, $classes );
+    //     return apply_filters( 'mif_qm_question_screen_get_mover_classes', implode( ' ', $classes ), $this->answer, $classes );
     // }
 
 }

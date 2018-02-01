@@ -8,11 +8,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-core-question.php';
-include_once dirname( __FILE__ ) . '/class-core-param.php';
+include_once dirname( __FILE__ ) . '/question-core.php';
+include_once dirname( __FILE__ ) . '/param-core.php';
 
 
-class mif_qm_core_part extends mif_qm_core_core {
+class mif_qm_part_core extends mif_qm_core_core {
 
     
     
@@ -46,7 +46,7 @@ class mif_qm_core_part extends mif_qm_core_core {
 
         // Записать структурированную информацию о параметрах
 
-        $param = new mif_qm_core_param( $part_raw['param'], 'part', $params_quiz );
+        $param = new mif_qm_param_core( $part_raw['param'], 'part', $params_quiz );
         // $part['param'] = $param->parse();
         $part['param'] = $param->explication();
 
@@ -56,7 +56,7 @@ class mif_qm_core_part extends mif_qm_core_core {
 
         // Записать структурированную информацию о вопросах
 
-        $question = new mif_qm_core_question();
+        $question = new mif_qm_question_core();
 
         foreach( (array) $part_raw['questions'] as $item ) {
 

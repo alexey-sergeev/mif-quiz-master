@@ -8,9 +8,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-core-core.php';
+include_once dirname( __FILE__ ) . '/core-core.php';
 
-class mif_qm_core_question extends mif_qm_core_core {
+class mif_qm_question_core extends mif_qm_core_core {
 
     
     function __construct()

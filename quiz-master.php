@@ -10,10 +10,11 @@ Author URI: https://vk.com/alexey_sergeev
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/inc/class-core-quiz.php';
-include_once dirname( __FILE__ ) . '/inc/class-screen-quiz.php';
+include_once dirname( __FILE__ ) . '/inc/quiz-core.php';
+include_once dirname( __FILE__ ) . '/inc/quiz-screen.php';
 // include_once dirname( __FILE__ ) . '/inc/class-xml-explode.php';
 // include_once dirname( __FILE__ ) . '/inc/class-xml-implode.php';
+// include_once dirname( __FILE__ ) . '/inc/quiz-templates.php';
 
 
 // Функция получает текст записи, который можно изменить перед выводом на экран
@@ -23,12 +24,13 @@ add_filter( 'the_content', 'add_custom_content' );
 function add_custom_content( $content ) 
 {
     global $post;
+    global $mif_qm_quiz_screen;
    
-    $quiz = new mif_qm_core_quiz();
-    $xml = new mif_qm_core_xml_implode();
-    $arr = new mif_qm_core_xml_explode();
+    $quiz_core = new mif_qm_quiz_core();
+    // $xml = new mif_qm_xml_implode();
+    // $arr = new mif_qm_xml_explode();
     
-    $quiz = $quiz->parse( $post->post_content );
+    $quiz = $quiz_core->parse( $post->post_content );
     
     // p($quiz);
     // $quiz_xml = $xml->parse( $quiz );
@@ -36,8 +38,8 @@ function add_custom_content( $content )
     // $quiz_array = $arr->parse( $quiz_xml );
     // p( $quiz_array );
 
-    $quiz_screen = new mif_qm_screen_quiz( $quiz );
-    $quiz_screen->show();
+    $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz );
+    $mif_qm_quiz_screen->show( array( 'mode' => 'run' ) );
 
 
     // p( $quiz_array_2 );
@@ -60,6 +62,11 @@ function mif_qm_customizer_styles()
     
     wp_register_style( 'bootstrap', plugins_url( 'lib/bootstrap/css/bootstrap.min.css', __FILE__ ) );
 	wp_enqueue_style( 'bootstrap' );
+
+    // Выноски bootstrap
+    
+    wp_register_style( 'callout', plugins_url( 'lib/callout.css', __FILE__ ) );
+	wp_enqueue_style( 'callout' );
     
     // Локальные стили
 

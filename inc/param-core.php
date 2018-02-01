@@ -10,9 +10,9 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-class mif_qm_core_param extends mif_qm_core_core {
+class mif_qm_param_core extends mif_qm_core_core {
 
-    private $params_map = array();
+    private $params_arr = array();
     private $settings_map = array();
     private $params_raw = array();
     private $params = array();
@@ -32,7 +32,6 @@ class mif_qm_core_param extends mif_qm_core_core {
         //
         // Описание списка всех возможных параметров
         //
-        //
         // Структура:
         //
         //      name - имя (глобально уникально)
@@ -43,12 +42,9 @@ class mif_qm_core_param extends mif_qm_core_core {
         //      inheritance - наследуется ли значение от теста к разделу? (false или true (по умолчанию))
         //      default - значение по умолчанию
         //      description - текстовое пояснение параметра (не обязательно)
-        //      description_val - массив возможных значений и их описаний (не обязательно)
-        //
-        // От последовательности описания зависит последовательность применения шаблонов (выбирается первый применимый)
         //
 
-        $this->params_map = apply_filters( 'mif-qm-params', array(
+        $this->params_arr = apply_filters( 'mif-qm-params', array(
 
                 // attempt (repeat? retry?)
                 // Тест - количество попыток прохождения теста (если 0, то не ограничено)
@@ -88,19 +84,30 @@ class mif_qm_core_param extends mif_qm_core_core {
                 ),
         
                 // rating
-                // Тест - общее количество баллов за весь тест / порог положительной оценки (по умолчанию - сумма баллов за все вопросы / 0)
-                // Раздел - количество баллов за каждый вопрос раздела / порог положительной оценки (если баллы противоречат настройкам теста, 
-                // то используются как вес; при указании порога тест не отмечается как пройденный, если не пройден порог хотя бы по одному разделу)
+                // Тест - общее количество баллов за весь тест (по умолчанию 0 - сумма баллов за все вопросы)
+                // Раздел - количество баллов за каждый вопрос раздела (по умолчанию - 1; если баллы противоречат настройкам теста, то используются как вес)
         
                 array(
                     'name' => 'rating',
                     'alias' => 'r rat',
-                    // 'pattern' => '/^\d+\/\d+$/', // 10/8
-                    'pattern' => '/\d+[\s]?[\/][\s]?\d+/', // 10/8, 10 / 8 или др.
-                    'default' => array( 'quiz' => '0/0', 'part' => '1/0' ),
+                    'pattern' => '/^[\d]+[\s]?att$/', // 10rat, 10 rat
+                    'default' => array( 'quiz' => '0', 'part' => '1' ),
                     'inheritance' => false,
-                    'description' => array( 'quiz' => __( 'Количество баллов за тест и порог положительной оценки', 'mif-qm' ), 
-                                            'part' => __( 'Количество баллов (вес) раздела и порог положительной оценки', 'mif-qm' ) ),
+                    'description' => array( 'quiz' => __( 'Количество баллов за тест', 'mif-qm' ), 
+                                            'part' => __( 'Количество баллов за каждый вопрос', 'mif-qm' ) ),
+                ),
+
+                // success
+                // Тест - порог положительной оценки (0 - без порога; по умолчанию - 60%)
+                // Раздел - порог положительной оценки (если не преодолевается по разделу, то и тест не положителен) (по умолчанию - 0)
+        
+                array(
+                    'name' => 'success',
+                    'alias' => 's suc',
+                    'pattern' => '/^[\d]+[\s]?[%]$/', // 50%
+                    'default' => array( 'quiz' => '60%', 'part' => '0' ),
+                    'inheritance' => false,
+                    'description' => __( 'Порог положительной оценки', 'mif-qm' ),
                 ),
 
                 // time
@@ -134,8 +141,8 @@ class mif_qm_core_param extends mif_qm_core_core {
         
                 array(
                     'name' => 'settings',
-                    'alias' => 's set setting',
-                    'pattern' => '/random|ordered|question|part|quiz|auto|manual|email|navigation|correction|resume|interactive|dialog/',
+                    'alias' => 'set setting',
+                    'pattern' => '/auto|correction|email|interactive|manual|navigation|numeration|ordered|part|question|quiz|random|resume/',
                     'cumulative' => true,
                     'inheritance' => false,
                     'default' => array( 'quiz' => 'ordered question manual', 'part' => 'random' ),
@@ -143,24 +150,89 @@ class mif_qm_core_param extends mif_qm_core_core {
                 ),
                 
                 ) );
+
+        //
+        // Описание списка параметров настройки
+        //
+        // Структура:
+        //
+        //      group - группа (логическая связь параметров)
+        //      apply - область применения ('quiz', 'part' или 'any' (по умолчанию))
+        //      description - текстовое пояснение параметра
+        //
                 
+
         $this->settings_map = apply_filters( 'mif-qm-settings', array( 
                     
-                'random' => array( 'group' => 'group1', 'apply' => 'any', 'description' => __( 'Случайное отображение', 'mif-qm' ) ), 
-                'ordered' => array( 'group' => 'group1', 'apply' => 'any', 'description' => __( 'Последовательное отображение', 'mif-qm' ) ),
-                'question' => array( 'group' => 'group2', 'apply' => 'quiz', 'description' => __( 'Каждый вопрос отдельно', 'mif-qm' ) ), 
-                'part' => array( 'group' => 'group2', 'apply' => 'quiz', 'description' => __( 'Показывать вместе все вопросы разделов', 'mif-qm' ) ),
-                'quiz' => array( 'group' => 'group2', 'apply' => 'quiz', 'description' => __( 'Показывать вместе все вопросы теста', 'mif-qm' ) ),
-                'auto' => array( 'group' => 'group3', 'apply' => 'quiz', 'description' => __( 'Автоматическое начало теста', 'mif-qm' ) ),
-                'manual' => array( 'group' => 'group3', 'apply' => 'quiz', 'description' => __( 'Ручное начало теста', 'mif-qm' ) ),
-                'email' => array( 'group' => 'group4', 'apply' => 'quiz', 'description' => __( 'Уведомлять администратора о новых результатах', 'mif-qm' ) ),
-                'navigation' => array( 'group' => 'group5', 'apply' => 'quiz', 'description' => __( 'Навигация по тесту', 'mif-qm' ) ),
-                'correction' => array( 'group' => 'group5', 'apply' => 'quiz', 'description' => __( 'Навигация с возможностью исправления ответов', 'mif-qm' ) ),
-                'resume' => array( 'group' => 'group6', 'apply' => 'quiz', 'description' => __( 'Показывать анализ результатов ответов по завершении теста', 'mif-qm' ) ),
-                'interactive' => array( 'group' => 'group7', 'apply' => 'quiz', 'description' => __( 'Показывать результат при ответе на каждый вопрос', 'mif-qm' ) ),
+                'random' => array( 
+                                'group' => 'group1', 
+                                'apply' => 'any', 
+                                'description' => array( 'quiz' => __( 'Случайный порядок всех вопросов теста', 'mif-qm' ),
+                                                        'part' => __( 'Случайный порядок вопросов раздела', 'mif-qm' ) )
+                            ), 
+                'ordered' => array( 
+                                'group' => 'group1', 
+                                'apply' => 'any', 
+                                'description' => array( 'quiz' => __( 'Последовательный порядок разделов', 'mif-qm' ),
+                                                        'part' => __( 'Последовательный порядок вопросов в разделе', 'mif-qm' ) )
+                            ),
+                'question' => array( 
+                                'group' => 'group2', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Показывать отдельно каждый вопрос', 'mif-qm' ) 
+                            ), 
+                'part' => array( 
+                                'group' => 'group2', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Показывать вместе все вопросы разделов', 'mif-qm' ) 
+                            ),
+                'quiz' => array( 
+                                'group' => 'group2', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Показывать вместе все вопросы теста', 'mif-qm' ) 
+                            ),
+                'auto' => array( 
+                                'group' => 'group3', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Автоматическое начало теста', 'mif-qm' ) 
+                            ),
+                'manual' => array( 
+                                'group' => 'group3', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Начало теста после нажания кнопки', 'mif-qm' ) 
+                            ),
+                'email' => array( 
+                                'group' => 'group4', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Уведомлять администратора о новых результатах', 'mif-qm' ) 
+                            ),
+                'navigation' => array( 
+                                'group' => 'group5', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Навигация по тесту', 'mif-qm' ) 
+                            ),
+                'correction' => array( 
+                                'group' => 'group5', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Навигация с возможностью исправления ответов', 'mif-qm' ) 
+                            ),
+                'numeration' => array( 
+                                'group' => 'group6', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Нумерация вопросов', 'mif-qm' ) 
+                            ),
+                'resume' => array( 
+                                'group' => 'group7', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Показывать правильные ответы по завершению теста', 'mif-qm' ) 
+                            ),
+                'interactive' => array( 
+                                'group' => 'group8', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Показывать результат при ответе на каждый вопрос', 'mif-qm' ) 
+                            ),
 
         ) );
-
 
         $this->mode = $mode;
         $this->params_raw = $params_raw;
@@ -189,8 +261,8 @@ class mif_qm_core_param extends mif_qm_core_core {
     public function explication()
     {
         $out = $this->param_init( $this->mode );
-        $keys = $this->get_param_keys( $this->mode );
-        $default = $this->get_param_keys( $this->mode );
+        // $keys = $this->get_param_keys( $this->mode );
+        $default = $this->get_params_map( $this->mode );
         $params_quiz = $this->params_quiz;
         $params = $this->parse();
 
@@ -206,7 +278,7 @@ class mif_qm_core_param extends mif_qm_core_core {
                 
                 if ( $this->mode == 'part' ) {
                     
-                    if ( isset( $params_quiz[$key] ) && isset( $keys[$key]['inheritance'] ) && $keys[$key]['inheritance'] ) $out[$key] = $params_quiz[$key];
+                    if ( isset( $params_quiz[$key] ) && isset( $default[$key]['inheritance'] ) && $default[$key]['inheritance'] ) $out[$key] = $params_quiz[$key];
 
                 }
 
@@ -248,7 +320,7 @@ class mif_qm_core_param extends mif_qm_core_core {
         
         // Получить индексированный массив настроек по умолчанию
         
-        $default = $this->get_param_keys( $this->mode );
+        $default = $this->get_params_map( $this->mode );
         $default_settings = $default['settings']['default'];
         $default_settings_index = array();
         foreach ( (array) $default_settings as $item ) if ( isset( $map[$item]['group'] ) ) $default_settings_index[$map[$item]['group']] = $item;
@@ -273,6 +345,17 @@ class mif_qm_core_param extends mif_qm_core_core {
         $out = array();
         foreach ( $default_settings_index as $item ) $out[] = $item;
 
+        // Удалить настройки, которые в данном случае не применимы
+
+        foreach ( (array) $out as $key => $value ) {
+
+            $apply = $map[$value]['apply'];
+            if ( $apply == 'any' || $apply == $this->mode ) continue;
+
+            unset( $out[$key] );
+
+        }
+
         // p($out);
 
         return $out;
@@ -291,7 +374,7 @@ class mif_qm_core_param extends mif_qm_core_core {
         $params_raw = $this->params_raw;
         $mode = $this->mode;
         
-        $keys = $this->get_param_keys( $mode );
+        $map = $this->get_params_map( $mode );
         $params = $this->param_init( $mode );
         $arr = array();
         
@@ -307,7 +390,7 @@ class mif_qm_core_param extends mif_qm_core_core {
             
         }
         
-        // Выбор строк, где параметр указан явно
+        // Выбор параметров
         
         foreach ( (array) $params_raw as $key => $value ) {
             
@@ -325,15 +408,15 @@ class mif_qm_core_param extends mif_qm_core_core {
 
             // Сохранить данные параметра
 
-            if ( array_key_exists( $param['name'], $keys ) ) {
+            if ( array_key_exists( $param['name'], $map ) ) {
 
-                if ( $keys[$param['name']]['cumulative'] ) {
+                if ( $map[$param['name']]['cumulative'] ) {
                     
-                    $arr[$param['method']][$keys[$param['name']]['name']][] = $this->param_normalize( $value );
+                    $arr[$param['method']][$map[$param['name']]['name']][] = $this->param_normalize( $value );
 
                 } else {
 
-                    $arr[$param['method']][$keys[$param['name']]['name']] = $this->param_normalize( $value );
+                    $arr[$param['method']][$map[$param['name']]['name']] = $this->param_normalize( $value );
 
                 }
 
@@ -395,7 +478,7 @@ class mif_qm_core_param extends mif_qm_core_core {
     {
         $arr = array();
 
-        foreach ( $this->params_map as $item ) {
+        foreach ( $this->params_arr as $item ) {
 
             if ( $this->not_apply( $item, $mode ) ) continue;
 
@@ -409,14 +492,14 @@ class mif_qm_core_param extends mif_qm_core_core {
 
     
     //
-    // Возвращает массив всех возможных ключей параметров с их параметрами
+    // Возвращает массив всех возможных параметров с информацией о них
     //
 
-    public function get_param_keys( $mode = 'part' )
+    public function get_params_map( $mode = 'quiz' )
     {
-        $arr = array();
+        $map = array();
 
-        foreach ( $this->params_map as $item ) {
+        foreach ( $this->params_arr as $item ) {
             
             if ( $this->not_apply( $item, $mode ) ) continue;
 
@@ -424,32 +507,80 @@ class mif_qm_core_param extends mif_qm_core_core {
             $cumulative = ( isset( $item['cumulative'] ) && $item['cumulative'] == true ) ? true : false;
             $inheritance = ( isset( $item['inheritance'] ) && $item['inheritance'] == false ) ? false : true;
 
-            if ( isset( $item['default'] ) && is_array( $item['default'] ) ) {
-                
-                // Значение по умолчанию есть и оно в массиве (разное для part и quiz)
-                
-                $default = ( isset( $item['default'][$mode] ) ) ? strim( $item['default'][$mode] ) : '';
+            // // Значение по умолчанию
 
-            } elseif ( isset( $item['default'] ) ) {
+            // if ( isset( $item['default'] ) && is_array( $item['default'] ) ) {
                 
-                // Значение по умолчанию есть и оно обычная строка (одинаковое для part и quiz)
+            //     // Значение по умолчанию есть и оно в массиве (разное для part и quiz)
+                
+            //     $default = ( isset( $item['default'][$mode] ) ) ? strim( $item['default'][$mode] ) : '';
 
-                $default = strim( $item['default'] );
+            // } elseif ( isset( $item['default'] ) ) {
                 
-            } else {
+            //     // Значение по умолчанию есть и оно обычная строка (одинаковое для part и quiz)
+
+            //     $default = strim( $item['default'] );
                 
-                $default = '';
+            // } else {
+                
+            //     $default = '';
                
-            }
+            // }
 
+            
+            // Описание
+            
+            $arr = array();
+            
+            foreach ( array( 'default', 'description' ) as $key ) {
+                
+                if ( isset( $item[$key] ) && is_array( $item[$key] ) ) {
+                    
+                    // Значение есть и оно в массиве (разное для part и quiz)
+                    
+                    $arr[$key] = ( isset( $item[$key][$mode] ) ) ? strim( $item[$key][$mode] ) : '';
+                    
+                } elseif ( isset( $item[$key] ) ) {
+                    
+                    // Значение по умолчанию есть и оно обычная строка (одинаковое для part и quiz)
+                    
+                    $arr[$key] = strim( $item[$key] );
+                    
+                } else {
+                    
+                    $arr[$key] = '';
+                    
+                }
+                
+            }
+            
+            // Развернуь arr в переменные
+            
+            extract( $arr );
+            
+            // Накопительные значения по умолчанию превратить в массив
+            
             if ( $default && $cumulative ) $default = explode( ' ', $default );
 
-            $arr[$name] = array( 'name' => $name, 'cumulative' => $cumulative, 'default' => $default, 'inheritance' => $inheritance );
+            // Записать данные о параметре
+
+            $map[$name] = array( 'name' => $name, 'cumulative' => $cumulative, 'default' => $default, 'inheritance' => $inheritance, 'description' => $description );
 
         }
 
-        return $arr;
+        return $map;
     }
+
+
+
+    //
+    // Возвращает карту параметров
+    //
+
+    public function get_params_arr()
+    {
+        return $this->params_arr;
+    }    
 
 
 
@@ -472,7 +603,7 @@ class mif_qm_core_param extends mif_qm_core_core {
     {
         $param_quiz_only = array();
 
-        foreach ( $this->params_map as $item ) {
+        foreach ( $this->params_arr as $item ) {
 
             if ( ! $this->not_apply( $item, 'part' ) ) continue;
             $param_quiz_only[] = trim( $item['name'] );
@@ -510,7 +641,7 @@ class mif_qm_core_param extends mif_qm_core_core {
     {
         $arr = array();        
 
-        foreach ( $this->params_map as $param ) {
+        foreach ( $this->params_arr as $param ) {
             
             $name = trim( $param['name'] );
             $arr[$name] = $name;
@@ -554,7 +685,7 @@ class mif_qm_core_param extends mif_qm_core_core {
         
         $item = $this->param_normalize( $item );
 
-        foreach ( $this->params_map as $param ) {
+        foreach ( $this->params_arr as $param ) {
             
             if ( preg_match( $param['pattern'], $item ) ) {
                 

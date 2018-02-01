@@ -16,8 +16,8 @@ defined( 'ABSPATH' ) || exit;
 
 function mif_qm_the_part_header()
 {
-    global $mif_qm_screen_part;
-    echo $mif_qm_screen_part->get_part_header();
+    global $mif_qm_part_screen;
+    echo $mif_qm_part_screen->get_part_header();
 }
 
 
@@ -27,8 +27,8 @@ function mif_qm_the_part_header()
 
 function mif_qm_the_part_param()
 {
-    global $mif_qm_screen_part;
-    echo $mif_qm_screen_part->get_part_param();
+    global $mif_qm_part_screen;
+    echo $mif_qm_part_screen->get_part_param();
 }
 
 
@@ -38,8 +38,8 @@ function mif_qm_the_part_param()
 
 function mif_qm_the_questions()
 {
-    global $mif_qm_screen_part;
-    $mif_qm_screen_part->the_questions();
+    global $mif_qm_part_screen;
+    $mif_qm_part_screen->the_questions();
 }
 
 

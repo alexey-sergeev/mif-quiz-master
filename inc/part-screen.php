@@ -8,11 +8,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-screen-question.php';
-include_once dirname( __FILE__ ) . '/templates-part.php';
+include_once dirname( __FILE__ ) . '/question-screen.php';
+include_once dirname( __FILE__ ) . '/part-templates.php';
+include_once dirname( __FILE__ ) . '/param-screen.php';
 
 
-class mif_qm_screen_part extends mif_qm_screen_core {
+class mif_qm_part_screen {
 
     // Данные всего раздела
 
@@ -25,7 +26,7 @@ class mif_qm_screen_part extends mif_qm_screen_core {
 
     function __construct( $part )
     {
-        parent::__construct();
+     //   parent::__construct();
         $this->part = apply_filters( 'mif_qm_screen_part_part', $part );
     }
 
@@ -41,19 +42,15 @@ class mif_qm_screen_part extends mif_qm_screen_core {
 
         $this->mode = $mode;
         
-        // Определить имя требуемого шаблона
-        
-        $file_tpl = 'part.php';
-        
         // Подключить шаблон из темы оформления или локальный
 
-        if ( $template = locate_template( $file_tpl ) ) {
+        if ( $template = locate_template( 'part.php' ) ) {
            
             load_template( $template, false );
 
         } else {
 
-            load_template( dirname( __FILE__ ) . '/../templates/' . $file_tpl, false );
+            load_template( dirname( __FILE__ ) . '/../templates/part.php', false );
 
         }
 
@@ -66,15 +63,15 @@ class mif_qm_screen_part extends mif_qm_screen_core {
 
     function the_questions()
     {
-        global $mif_qm_screen_question;
+        global $mif_qm_question_screen;
 
         // !!! Здесть проверку того, что надо выводить все вопросы, а не конкретный один вопрос
 
         foreach ( (array) $this->part['questions'] as $question ) 
         {
 
-            $mif_qm_screen_question = new mif_qm_screen_question( $question );
-            $mif_qm_screen_question->show( $this->mode );
+            $mif_qm_question_screen = new mif_qm_question_screen( $question );
+            $mif_qm_question_screen->show( $this->mode );
 
         }
 
@@ -89,11 +86,19 @@ class mif_qm_screen_part extends mif_qm_screen_core {
     
     public function get_part_header()
     {
-        $header = '<p><br />';
-        $header .= ( isset( $this->part['title'] ) ) ? '<h2>' . $this->part['title'] . '</h2>' : '';
-        $header .= '<hr />';
+        if ( $this->mode == 'view' ) {
 
-        return apply_filters( 'mif_qm_screen_question_get_question_header', $header, $this->part );
+            $header = '<p><br />';
+            $header .= ( isset( $this->part['title'] ) ) ? '<h2>' . $this->part['title'] . '</h2>' : '';
+            // $header .= '<hr />';
+
+        } else {
+
+            $header = '';
+
+        }
+
+        return apply_filters( 'mif_qm_question_screen_get_question_header', $header, $this->part, $this->mode );
     }
 
         
@@ -104,11 +109,18 @@ class mif_qm_screen_part extends mif_qm_screen_core {
     
     public function get_part_param()
     {
-        p($this->part['param']);
-        
-        $param = 'ok';
+        if ( $this->mode == 'view' ) {
 
-        return apply_filters( 'mif_qm_screen_question_get_question_header', $param, $this->part );
+            $screen = new mif_qm_param_screen( $this->part['param'], 'part' );
+            $out = $screen->get_show();
+
+        } else {
+
+            $out = '';
+
+        }
+        
+        return apply_filters( 'mif_qm_part_get_part_param', $out, $this->part, $this->mode );
     }
     
 

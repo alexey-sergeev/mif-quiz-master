@@ -16,8 +16,8 @@ defined( 'ABSPATH' ) || exit;
 
 function mif_qm_the_question_header()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_question_header();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_question_header();
 }
 
 
@@ -27,8 +27,8 @@ function mif_qm_the_question_header()
 
 function mif_qm_the_question_question()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_question_data( 'title' );
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_question_data( 'title' );
 }    
 
 
@@ -38,8 +38,8 @@ function mif_qm_the_question_question()
 
 function mif_qm_the_question_classes()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_question_classes();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_question_classes();
 }
 
 
@@ -49,8 +49,8 @@ function mif_qm_the_question_classes()
 
 // function mif_qm_the_mover_classes()
 // {
-//     global $mif_qm_screen_question;
-//     echo $mif_qm_screen_question->get_mover_classes();
+//     global $mif_qm_question_screen;
+//     echo $mif_qm_question_screen->get_mover_classes();
 // }
 
 
@@ -60,8 +60,8 @@ function mif_qm_the_question_classes()
 
 function mif_qm_the_answers_classes()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answers_classes();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answers_classes();
 }
 
 
@@ -71,8 +71,8 @@ function mif_qm_the_answers_classes()
 
 function mif_qm_the_answer_classes()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_classes();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_classes();
 }
 
 
@@ -82,8 +82,8 @@ function mif_qm_the_answer_classes()
 
 function mif_qm_the_answer_marker()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_marker();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_marker();
 }
 
 
@@ -93,8 +93,8 @@ function mif_qm_the_answer_marker()
 
 function mif_qm_the_answer_mover()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_mover();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_mover();
 }
 
 
@@ -104,8 +104,8 @@ function mif_qm_the_answer_mover()
 
 function mif_qm_the_answer_caption()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_caption();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_caption();
 }
 
 
@@ -115,8 +115,8 @@ function mif_qm_the_answer_caption()
 
 function mif_qm_the_answer_handmake()
 {
-    global $mif_qm_screen_question;
-    echo $mif_qm_screen_question->get_answer_handmake();
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_handmake();
 }
 
 
@@ -126,8 +126,8 @@ function mif_qm_the_answer_handmake()
 
 function mif_qm_the_answer()
 {
-    global $mif_qm_screen_question;
-    return $mif_qm_screen_question->the_answer();
+    global $mif_qm_question_screen;
+    return $mif_qm_question_screen->the_answer();
 }
 
 

@@ -8,11 +8,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/class-core-param.php';
+include_once dirname( __FILE__ ) . '/param-core.php';
 
 
 
-class mif_qm_core_xml_explode  {
+class mif_qm_xml_explode {
 
    
     function parse( $quiz_xml )
@@ -114,7 +114,7 @@ class mif_qm_core_xml_explode  {
     private function get_param( $param_xml, $mode = 'part' ) 
     {
 
-        $param_core = new mif_qm_core_param();
+        $param_core = new mif_qm_param_core();
 
         $param = $param_core->param_init( $mode );
 
