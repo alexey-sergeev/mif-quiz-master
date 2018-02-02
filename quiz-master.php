@@ -10,42 +10,51 @@ Author URI: https://vk.com/alexey_sergeev
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/inc/quiz-core.php';
-include_once dirname( __FILE__ ) . '/inc/quiz-screen.php';
+include_once dirname( __FILE__ ) . '/inc/qm-core.php';
+// include_once dirname( __FILE__ ) . '/inc/quiz-core.php';
+// include_once dirname( __FILE__ ) . '/inc/quiz-screen.php';
 // include_once dirname( __FILE__ ) . '/inc/class-xml-explode.php';
 // include_once dirname( __FILE__ ) . '/inc/class-xml-implode.php';
 // include_once dirname( __FILE__ ) . '/inc/quiz-templates.php';
 
 
+add_action( 'init', 'qm_init' );
+
+function qm_init()
+{
+    $qm = new mif_qm_core();
+}
+
+
 // Функция получает текст записи, который можно изменить перед выводом на экран
 
-add_filter( 'the_content', 'add_custom_content' );
+// add_filter( 'the_content', 'add_custom_content' );
 
-function add_custom_content( $content ) 
-{
-    global $post;
-    global $mif_qm_quiz_screen;
+// function add_custom_content( $content ) 
+// {
+//     global $post;
+//     global $mif_qm_quiz_screen;
    
-    $quiz_core = new mif_qm_quiz_core();
-    // $xml = new mif_qm_xml_implode();
-    // $arr = new mif_qm_xml_explode();
+//     $quiz_core = new mif_qm_quiz_core();
+//     // $xml = new mif_qm_xml_implode();
+//     // $arr = new mif_qm_xml_explode();
     
-    $quiz = $quiz_core->parse( $post->post_content );
+//     $quiz = $quiz_core->parse( $post->post_content );
     
-    // p($quiz);
-    // $quiz_xml = $xml->parse( $quiz );
-    // p( esc_html( $quiz_xml ) );
-    // $quiz_array = $arr->parse( $quiz_xml );
-    // p( $quiz_array );
+//     // p($quiz);
+//     // $quiz_xml = $xml->parse( $quiz );
+//     // p( esc_html( $quiz_xml ) );
+//     // $quiz_array = $arr->parse( $quiz_xml );
+//     // p( $quiz_array );
 
-    $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz );
-    $mif_qm_quiz_screen->show( array( 'mode' => 'run' ) );
+//     $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz );
+//     $mif_qm_quiz_screen->show( array( 'mode' => 'run' ) );
 
 
-    // p( $quiz_array_2 );
+//     // p( $quiz_array_2 );
 
-    return $content;
-}
+//     return $content;
+// }
 
 
 
@@ -57,6 +66,11 @@ function mif_qm_customizer_styles()
     
     wp_register_style( 'font-awesome', plugins_url( 'lib/fontawesome/css/font-awesome.min.css', __FILE__ ) );
 	wp_enqueue_style( 'font-awesome' );
+
+    // wp_enqueue_script( 'fa-v4-shim', plugins_url( 'lib/fontawesome/js/fa-v4-shim.js', __FILE__ ) );
+    // wp_enqueue_script( 'font-awesome-js', plugins_url( 'lib/fontawesome/js/fontawesome-all.js', __FILE__ ) );
+
+
 
     // Twitter bootstrap
     

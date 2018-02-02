@@ -8,6 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+include_once dirname( __FILE__ ) . '/function.php';
 include_once dirname( __FILE__ ) . '/xml-core.php';
 
 
@@ -58,6 +59,26 @@ class mif_qm_core_core  {
 
     }
 
+
+
+    // //
+    // // Права доступа
+    // //
+
+    // public function user_can( $token )
+    // {
+    //     global $post;
+
+    //     switch ( $token ) {
+
+    //         case 'edit-quiz':
+
+    //             return current_user_can( 'edit_post', $post->ID );
+                                
+    //         break;
+    //     }
+
+    // }
 }
 
 ?>

@@ -50,7 +50,9 @@ class mif_qm_param_screen {
             if ( $key == 'settings' ) continue;
 
             $param_interpretation = new mif_qm_param_interpretation( $key, $value, $this->mode );
-            
+
+            if ( $param_interpretation->get_description() == '' ) continue;
+
             $out .= '<div class="p-1">';
             $out .= '' . $param_interpretation->get_description() . ': ';
             $out .= '<span class="bg-secondary text-light rounded p-1 pl-2 pr-2">' . $param_interpretation->get_interpretation( '</span>, <span class="bg-secondary text-light rounded p-1 pl-2 pr-2">' ) . '</span>';

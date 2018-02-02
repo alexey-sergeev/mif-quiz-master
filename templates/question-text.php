@@ -16,7 +16,7 @@
             <p><?php mif_qm_the_answer_handmake(); ?></p>
         </div>
         <?php endwhile; ?>
-    <div>
+    </div>
 
     <?php do_action( 'mif_qm_after_answers' );  ?>
 

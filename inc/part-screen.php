@@ -21,7 +21,7 @@ class mif_qm_part_screen {
     
     // Режим отображения теста (view, run)
     
-    private $mode = '';
+    private $action = '';
     
 
     function __construct( $part )
@@ -33,14 +33,14 @@ class mif_qm_part_screen {
 
     function show( $args = array() )
     {
-        $defaults = array( 'mode' => 'view' );
+        $defaults = array( 'action' => 'view' );
 
         $r = wp_parse_args( $args, $defaults );
 		extract( $r, EXTR_SKIP );
 
         // Установить текущий режим отображения
 
-        $this->mode = $mode;
+        $this->action = $action;
         
         // Подключить шаблон из темы оформления или локальный
 
@@ -71,7 +71,7 @@ class mif_qm_part_screen {
         {
 
             $mif_qm_question_screen = new mif_qm_question_screen( $question );
-            $mif_qm_question_screen->show( $this->mode );
+            $mif_qm_question_screen->show( $this->action );
 
         }
 
@@ -86,7 +86,7 @@ class mif_qm_part_screen {
     
     public function get_part_header()
     {
-        if ( $this->mode == 'view' ) {
+        if ( $this->action == 'view' ) {
 
             $header = '<p><br />';
             $header .= ( isset( $this->part['title'] ) ) ? '<h2>' . $this->part['title'] . '</h2>' : '';
@@ -98,7 +98,7 @@ class mif_qm_part_screen {
 
         }
 
-        return apply_filters( 'mif_qm_question_screen_get_question_header', $header, $this->part, $this->mode );
+        return apply_filters( 'mif_qm_question_screen_get_question_header', $header, $this->part, $this->action );
     }
 
         
@@ -109,7 +109,7 @@ class mif_qm_part_screen {
     
     public function get_part_param()
     {
-        if ( $this->mode == 'view' ) {
+        if ( $this->action == 'view' ) {
 
             $screen = new mif_qm_param_screen( $this->part['param'], 'part' );
             $out = $screen->get_show();
@@ -120,7 +120,7 @@ class mif_qm_part_screen {
 
         }
         
-        return apply_filters( 'mif_qm_part_get_part_param', $out, $this->part, $this->mode );
+        return apply_filters( 'mif_qm_part_get_part_param', $out, $this->part, $this->action );
     }
     
 

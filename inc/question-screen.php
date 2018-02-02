@@ -24,7 +24,7 @@ class mif_qm_question_screen {
     
     // Режим отображения теста (view, run)
     
-    private $mode = '';
+    private $action = '';
     
 
 
@@ -37,11 +37,11 @@ class mif_qm_question_screen {
     }
 
 
-    function show( $mode = 'view' )
+    function show( $action = 'view' )
     {
         // Установить текущий режим отображения
 
-        $this->mode = $mode;
+        $this->action = $action;
         
         // Определить имя требуемого шаблона
         
@@ -73,11 +73,11 @@ class mif_qm_question_screen {
     {
         $type = $this->question['type'];
         $id = md5( $this->answer['data']['caption'] );
-        $disabled = ( $this->mode == 'view' ) ? ' disabled' : '';
+        $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
         $question_num = ( isset( $this->question['num'] ) ) ? $this->question['num'] : md5( serialize( $this->question ) );
 
         $checked = '';
-        if ( $this->mode == 'view' && $this->answer['data']['status'] == 'yes' ) $checked = ' checked';
+        if ( $this->action == 'view' && $this->answer['data']['status'] == 'yes' ) $checked = ' checked';
 
         if ( $type == 'single' ) {
             
@@ -129,7 +129,7 @@ class mif_qm_question_screen {
 
         $answer = $this->answer['data'];
         
-        $disabled = ( $this->mode == 'view' ) ? ' disabled' : '';
+        $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
         $size = ( isset( $answer['size'] ) ) ? (int) $answer['size'] : 1;
         $id = md5( serialize( $this->answer ) );
         $text = '';
@@ -176,7 +176,7 @@ class mif_qm_question_screen {
 
         // В режиме просмотра - показать мета-информацию (правильные ответы или типы допустимых файлов)
 
-        if ( $this->mode == 'view' ) {
+        if ( $this->action == 'view' ) {
 
             if ( $this->question['type'] == 'open' ) {
 
@@ -281,9 +281,9 @@ class mif_qm_question_screen {
     {
         $classes = array();
 
-        if ( $this->mode == 'run' ) $classes[] = 'table-hover';
+        if ( $this->action == 'run' ) $classes[] = 'table-hover';
 
-        return apply_filters( 'mif_qm_question_screen_get_answers_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
+        return apply_filters( 'mif_qm_question_screen_get_answers_classes', implode( ' ', $classes ), $this->answer, $this->action, $classes );
     }
 
 
@@ -307,14 +307,14 @@ class mif_qm_question_screen {
 
         // Признак правильности
 
-        if ( $this->mode == 'view' && isset( $this->answer['data']['status'] ) ) {
+        if ( $this->action == 'view' && isset( $this->answer['data']['status'] ) ) {
 
             if ( $this->answer['data']['status'] == 'yes' ) $classes[] = 'correct table-success';
             if ( $this->answer['data']['status'] == 'no' ) $classes[] = 'incorrect';
 
         }
 
-        return apply_filters( 'mif_qm_question_screen_get_answer_classes', implode( ' ', $classes ), $this->answer, $this->mode, $classes );
+        return apply_filters( 'mif_qm_question_screen_get_answer_classes', implode( ' ', $classes ), $this->answer, $this->action, $classes );
     }
     
     
@@ -326,7 +326,7 @@ class mif_qm_question_screen {
     {
         $mover = '';
 
-        if ( $this->mode == 'view' ) {
+        if ( $this->action == 'view' ) {
 
             $mover .= '<div class="mover bg-success text-white"><i class="fa fa-check" aria-hidden="true"></i></div>';
             
@@ -336,7 +336,7 @@ class mif_qm_question_screen {
 
         }
 
-        return apply_filters( 'mif_qm_question_screen_get_answer_mover', $mover, $this->answer, $this->mode );
+        return apply_filters( 'mif_qm_question_screen_get_answer_mover', $mover, $this->answer, $this->action );
     }
     
     
@@ -348,7 +348,7 @@ class mif_qm_question_screen {
     // {
     //     $classes = array();
 
-    //     if ( $this->mode == 'view' ) $classes[] = 'bg-success text-white';
+    //     if ( $this->action == 'view' ) $classes[] = 'bg-success text-white';
 
     //     return apply_filters( 'mif_qm_question_screen_get_mover_classes', implode( ' ', $classes ), $this->answer, $classes );
     // }

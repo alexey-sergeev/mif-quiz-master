@@ -68,7 +68,8 @@ class mif_qm_param_core extends mif_qm_core_core {
                     'alias' => 'n num',
                     'pattern' => '/^[\d+][\s]?(num)?$/', // одна или несколько цифр целиком в строке
                     'default' => 0,
-                    'description' => __( 'Количество вопросов для раздела', 'mif-qm' )
+                    'description' => array( 'quiz' => __( '', 'mif-qm' ),
+                                            'part' => __( 'Количество вопросов для раздела', 'mif-qm' ) )
                 ),
                 
                 // competences
@@ -168,13 +169,13 @@ class mif_qm_param_core extends mif_qm_core_core {
                                 'group' => 'group1', 
                                 'apply' => 'any', 
                                 'description' => array( 'quiz' => __( 'Случайный порядок всех вопросов теста', 'mif-qm' ),
-                                                        'part' => __( 'Случайный порядок вопросов раздела', 'mif-qm' ) )
+                                                        'part' => __( 'Случайный порядок вопросов', 'mif-qm' ) )
                             ), 
                 'ordered' => array( 
                                 'group' => 'group1', 
                                 'apply' => 'any', 
                                 'description' => array( 'quiz' => __( 'Последовательный порядок разделов', 'mif-qm' ),
-                                                        'part' => __( 'Последовательный порядок вопросов в разделе', 'mif-qm' ) )
+                                                        'part' => __( 'Последовательный порядок вопросов', 'mif-qm' ) )
                             ),
                 'question' => array( 
                                 'group' => 'group2', 
