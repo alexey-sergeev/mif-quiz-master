@@ -12,6 +12,42 @@ defined( 'ABSPATH' ) || exit;
 
 
 //
+// Выводит меню теста
+//
+
+function mif_qm_the_quiz_menu()
+{
+    global $mif_qm_quiz_screen;
+    echo $mif_qm_quiz_screen->get_quiz_menu();
+}
+
+
+
+//
+// Выводит навигацию теста
+//
+
+function mif_qm_the_quiz_navigation()
+{
+    global $mif_qm_quiz_screen;
+    echo $mif_qm_quiz_screen->get_quiz_navigation();
+}
+
+
+
+//
+// Выводит кнопку продолжения теста
+//
+
+function mif_qm_the_next_button()
+{
+    global $mif_qm_quiz_screen;
+    echo $mif_qm_quiz_screen->get_quiz_next_button();
+}
+
+
+
+//
 // Выводит заголовок теста
 //
 
@@ -61,23 +97,8 @@ function mif_qm_the_edit_post_link()
 
 function mif_qm_the_menu_class( $action = 'view', $class = '', $flag = true )
 {
-    $process_core = new mif_qm_process_core();
-    
-    if ( $process_core->get_action() === $action ) {
-
-        $res1 = ' ' . $class;
-        $res2 = '';
-        
-    } else {
-        
-        $res1 = '';
-        $res2 = ' ' . $class;
-
-    }
-
-    $out = ( $flag ) ? $res1 : $res2;
-    echo $out;
-
+    global $mif_qm_quiz_screen;
+    echo $mif_qm_quiz_screen->get_menu_class( $action, $class, $flag );
 }
 
 

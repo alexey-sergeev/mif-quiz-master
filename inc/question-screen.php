@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 include_once dirname( __FILE__ ) . '/question-templates.php';
 
 
-class mif_qm_question_screen {
+class mif_qm_question_screen extends mif_qm_question_core {
 
     // Данные всего вопроса
 
@@ -31,7 +31,7 @@ class mif_qm_question_screen {
     function __construct( $question )
     {
 
-     //   parent::__construct();
+        parent::__construct();
         $this->question = apply_filters( 'mif_qm_question_screen_question', $question );
 
     }
@@ -72,26 +72,30 @@ class mif_qm_question_screen {
     public function get_answer_marker()
     {
         $type = $this->question['type'];
-        $id = md5( $this->answer['data']['caption'] );
         $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
-        $question_num = ( isset( $this->question['num'] ) ) ? $this->question['num'] : md5( serialize( $this->question ) );
-
+        $name = $this->question['id'];
+        
         $checked = '';
         if ( $this->action == 'view' && $this->answer['data']['status'] == 'yes' ) $checked = ' checked';
-
+        
         if ( $type == 'single' ) {
             
-            // $marker = '<input type="radio" name="" value="' . $id . '" id="' . $id . '" ' . $disabled . $checked . ' />';
-            $marker = '<input type="radio" name="question' . $question_num . '" value="' . $id . '" class="form-check-input" ' . $disabled . $checked . ' />';
+            $value = $this->get_hash( $this->answer['data']['caption'] );
+            $marker = '<input type="radio" name="' . $name . '" value="' . $value . '" class="form-check-input" ' . $disabled . $checked . ' />';
             
         } elseif ( $type == 'multiple' ) {
             
-            // $marker = '<input type="checkbox" name="" value="' . $id . '" id="' . $id . '" ' . $disabled . $checked . ' />';
-            $marker = '<input type="checkbox" name="question' . $question_num . '[]" value="' . $id . '" class="form-check-input" ' . $disabled . $checked . ' />';
+            $value = $this->get_hash( $this->answer['data']['caption'] );
+            $marker = '<input type="checkbox" name="' . $name . '[]" value="' . $value . '" class="form-check-input" ' . $disabled . $checked . ' />';
             
         } elseif ( in_array( $type, array( 'sort', 's-sort', 'm-sort' ) ) ) {
-
-            $marker = '<span class="marker">' . $this->answer['data']['status'] . '</span>';
+            
+            $name = $name . '_' . $this->get_hash( $this->answer['data']['status'] );
+            $value = $this->get_hash( $this->answer['data']['caption'] ); // !!! Здесь из-за замешивания надо будет менять
+            
+            $marker = '';
+            $marker .= '<span class="marker">' . $this->answer['data']['status'] . '</span>';
+            $marker .= '<input type="hidden" name="' . $name . '" value="' . $value . '">';
             
         } else {
             
@@ -124,14 +128,15 @@ class mif_qm_question_screen {
     public function get_answer_handmake()
     {
         $type = $this->question['type'];
-
+        
         if ( ! in_array( $type, array( 'open', 'text' ) ) ) return;
-
+        
         $answer = $this->answer['data'];
         
         $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
         $size = ( isset( $answer['size'] ) ) ? (int) $answer['size'] : 1;
-        $id = md5( serialize( $this->answer ) );
+        // $id = md5( serialize( $this->answer ) );
+        $name = $this->question['id'] . '_' . $this->get_hash( serialize( $this->answer ) );
         $text = '';
         
         if ( $answer['type'] == 'text' ) {
@@ -140,11 +145,11 @@ class mif_qm_question_screen {
             
             if ( $size == 1 ) {
                 
-                $text = '<input type="text" name=""' . $placeholder . $disabled . ' class="form-control" />';
+                $text = '<input type="text" name="' . $name . '"' . $placeholder . $disabled . ' class="form-control" />';
                 
             } else {
                 
-                $text = '<textarea name=""' . $placeholder . ' rows="' . $size . '"' . $disabled . '></textarea>';
+                $text = '<textarea name="' . $name . '"' . $placeholder . ' rows="' . $size . '"' . $disabled . '></textarea>';
                 
             }
             
@@ -152,20 +157,25 @@ class mif_qm_question_screen {
             
             $multiple = ( $size > 1 ) ? 'multiple' : '';
             $accept = '';
+            $caption = '';
             
             if ( isset( $answer['meta'] ) ) {
 
                 // $meta = explode( '|', $answer['meta'] );
                 $meta = $answer['meta'];
                 $accept = ' accept=".' . implode( ',.', $meta ) . '"';
+                $caption = __( 'Допустимые форматы', 'mif-qm' ) . ': ' . implode( ', ', $meta );
 
             }
 
             // if ( isset( $answer['answer'] ) ) $text = '<span class="caption">' . $answer['answer'] . '</span>';
             // $text .= '<span class="input"><input type="file" name=""' . $multiple . $accept . $disabled . ' /></span>';
             // if ( isset( $answer['answer'] ) ) $text = '<label for="' . $id . '">' . $answer['answer'] . '</label>';
-            $text .= '<input type="file" name=""' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" />';
-            if ( isset( $answer['caption'] ) ) $text .= '<small id="' . $id . '" class="form-text text-muted">' . $answer['caption'] . '</small>';
+            if ( isset( $answer['caption'] ) ) $text .= '<div>' . $answer['caption'] . '</div>';
+            $text .= '<input type="file" name="' . $name . '"' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" />';
+            if ( $caption ) $text .= '<div><small>' . $caption . '</small></div>';
+            if ( $multiple ) $text .= '<div><small>' . __( 'Можно выбрать несколько файлов', 'mif-qm' ) . '</small></div>';
+            // if ( isset( $answer['caption'] ) ) $text .= '<small id="' . $id . '" class="form-text text-muted">' . $answer['caption'] . '</small>';
 
         } else {
 

@@ -146,7 +146,7 @@ class mif_qm_param_core extends mif_qm_core_core {
                     'pattern' => '/auto|correction|email|interactive|manual|navigation|numeration|ordered|part|question|quiz|random|resume/',
                     'cumulative' => true,
                     'inheritance' => false,
-                    'default' => array( 'quiz' => 'ordered question manual', 'part' => 'random' ),
+                    'default' => array( 'quiz' => 'ordered question manual better', 'part' => 'random' ),
                     'description' => __( 'Настройки', 'mif-qm' ),
                 ),
                 
@@ -212,11 +212,11 @@ class mif_qm_param_core extends mif_qm_core_core {
                                 'apply' => 'quiz', 
                                 'description' => __( 'Навигация по тесту', 'mif-qm' ) 
                             ),
-                'correction' => array( 
-                                'group' => 'group5', 
-                                'apply' => 'quiz', 
-                                'description' => __( 'Навигация с возможностью исправления ответов', 'mif-qm' ) 
-                            ),
+                // 'correction' => array( 
+                //                 'group' => 'group5', 
+                //                 'apply' => 'quiz', 
+                //                 'description' => __( 'Навигация с возможностью исправления ответов', 'mif-qm' ) 
+                //             ),
                 'numeration' => array( 
                                 'group' => 'group6', 
                                 'apply' => 'quiz', 
@@ -231,6 +231,21 @@ class mif_qm_param_core extends mif_qm_core_core {
                                 'group' => 'group8', 
                                 'apply' => 'quiz', 
                                 'description' => __( 'Показывать результат при ответе на каждый вопрос', 'mif-qm' ) 
+                            ),
+                'better' => array( 
+                                'group' => 'group9', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Учитывать лучший результат нескольких попыток', 'mif-qm' ) 
+                            ),
+                'latest' => array( 
+                                'group' => 'group9', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Учитывать последний результат нескольких попыток', 'mif-qm' ) 
+                            ),
+                'average' => array( 
+                                'group' => 'group9', 
+                                'apply' => 'quiz', 
+                                'description' => __( 'Учитывать средний результат нескольких попыток', 'mif-qm' ) 
                             ),
 
         ) );

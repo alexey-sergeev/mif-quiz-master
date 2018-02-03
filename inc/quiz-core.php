@@ -51,7 +51,7 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
         $exemplar = array();
 
-        $settings = (array) $quiz['param']['settings'];
+        $quiz_settings = (array) $quiz['param']['settings'];
         $parts = (array) $quiz['parts'];
 
         $quiz_index = array();
@@ -63,10 +63,12 @@ class mif_qm_quiz_core extends mif_qm_core_core {
             $questions = array();
 
             $questions_index = array_keys( (array) $part['questions'] );
-            $number = (int) $part['param']['number'];
-            $settings = (array) $part['param']['settings'];
+            // $number = (int) $part['param']['number'];
+            $number = $this->get_clean( 'number', $part['param']['number'], 'part' );
+
+            $part_settings = (array) $part['param']['settings'];
             
-            if ( in_array( 'random', $settings ) ) {
+            if ( in_array( 'random', $part_settings ) ) {
                 
                 shuffle( $questions_index );    
                 
@@ -80,6 +82,41 @@ class mif_qm_quiz_core extends mif_qm_core_core {
         }
 
         $quiz['parts'] = $parts;
+
+        // Добавить метку о создании экземпляра
+
+        $quiz['processed']['created'] = $this->get_signature();
+        
+        // Замешать вопросы в зависимости от режима и добавить индекс
+
+        if ( in_array( 'random', $quiz_settings ) && in_array( 'part', $quiz_settings ) ) {
+            
+            // Если выбраны режим part и random - замешать разделы
+            
+            $index = array_keys( $quiz['parts'] );
+            shuffle( $index );
+            $quiz['processed']['index'] = $index;
+            
+        } elseif ( in_array( 'random', $quiz_settings ) ) {
+            
+            // Замешать вопросы - выбраны random и не part (quiz или question
+            
+            $index = array();
+            
+            foreach ( (array) $quiz['parts'] as $p_key => $part )
+            foreach ( (array) $part['questions'] as $q_key => $question ) $index[] = $p_key . '.' . $q_key;
+            
+            shuffle( $index );
+            $quiz['processed']['index'] = $index;
+                
+        } 
+        // else {
+
+            // Делать ничего не надо, т.к. уже всё хорошо. Разделы - последовательны, вопросы замешаны так, как это в их настройках
+            
+        // }
+
+        // p($quiz);
 
         return $quiz;
     }
@@ -121,6 +158,12 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
         }
         
+        // Расставить идентификаторы вопросов
+
+        foreach ( (array) $quiz['parts'] as $p_key => $part )
+            foreach ( (array) $part['questions'] as $q_key => $question )
+                $quiz['parts'][$p_key]['questions'][$q_key]['id'] = 'question_' . $p_key . '_' . $q_key;
+
         // p( $quiz );
             
         return $quiz;

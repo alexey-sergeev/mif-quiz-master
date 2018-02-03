@@ -65,16 +65,12 @@ class mif_qm_part_screen {
     {
         global $mif_qm_question_screen;
 
-        // !!! Здесть проверку того, что надо выводить все вопросы, а не конкретный один вопрос
-
-        foreach ( (array) $this->part['questions'] as $question ) 
-        {
+        foreach ( (array) $this->part['questions'] as $question ) {
 
             $mif_qm_question_screen = new mif_qm_question_screen( $question );
             $mif_qm_question_screen->show( $this->action );
 
         }
-
 
     }
 

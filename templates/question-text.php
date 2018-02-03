@@ -1,8 +1,6 @@
 <?php do_action( 'mif_qm_before_question' );  ?>
 
-<div class="<?php mif_qm_the_question_classes(); ?>">
-
-    <p><br />
+<div class="mt-5 <?php mif_qm_the_question_classes(); ?>">
 
     <?php do_action( 'mif_qm_before_question_header' ); ?>
     <?php mif_qm_the_question_header(); ?>

@@ -59,6 +59,112 @@ class mif_qm_core_core  {
 
     }
 
+    
+    //
+    // Получить данные для подписи теста
+    //
+
+    public function get_signature()
+    {
+        $arr = array();
+
+        $arr['time'] = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
+
+        if ( $user = $this->get_user_token() ) $arr['user'] = $user;
+        if ( $quiz = $this->get_quiz_token() ) $arr['quiz'] = $quiz;
+
+        return apply_filters( 'mif_qm_core_core_get_signature', $arr );
+    }
+
+
+    
+    //
+    // Получить идентификатор текущего теста
+    //
+
+    public function get_quiz_token( $quiz_id = false )
+    {
+        global $post;
+        
+        if ( $quiz_id ) {
+
+            $ret = $quiz_id;
+        
+        } elseif ( isset( $post->ID ) ) {
+
+            $ret = $post->ID;
+
+        } else {
+
+            $ret = false;
+
+        }
+
+        return apply_filters( 'mif_qm_core_core_get_quiz_token', $ret, $quiz_id );
+    }
+
+
+    
+    //
+    // Получить идентификатор текущего пользователя
+    //
+
+    public function get_user_token( $user_id = false )
+    {
+        
+        if ( $user_id && $user = get_user_by( 'ID', $user_id ) ) {
+            
+            $ret = $user->user_login;
+            
+        } elseif ( is_user_logged_in() ) {
+            
+            $user = wp_get_current_user();
+            $ret = $user->user_login;
+            
+        } else {
+            
+            $ret = false;
+    
+        }
+        
+        return apply_filters( 'mif_qm_core_core_get_user_token', $ret, $user_id );
+    }
+
+
+    
+    //
+    // Получить чистые данные
+    //  $flag - вернуть с пояснениями (в массиве)
+
+    public function get_clean( $key = '', $value = '', $mode = 'quiz', $flag = false )
+    {
+        $interpretation = new mif_qm_param_interpretation( $key, $value, $mode );
+        $arr = $interpretation->get_clean_value();
+
+        if ( $flag ) {
+
+            return $arr;
+            
+        } else {
+            
+            return $arr['value'];
+
+        }
+
+    }
+
+
+    //
+    // Получить пользовательское hash-значение для текстовой строки
+    //  
+
+    public function get_hash( $value )
+    {
+        // !!! Здесь еще солить!
+
+        $out = md5( $value );
+        return $out;
+    }
 
 
     // //

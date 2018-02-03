@@ -37,7 +37,7 @@ class mif_qm_param_screen {
         
         $title = ( $this->mode == 'part' ) ? __( 'Параметры раздела', 'mif-qm' ) : __( 'Параметры теста', 'mif-qm' );
         
-        $out .= '<div class="bg-light p-3">';
+        $out .= '<div class="bg-light p-3 mb-3">';
         $out .= '<h4 class="pt-2">' . $title . '</h4>';
         // $out .= '<div class="bs-callout bs-callout-warning">';
         // $out .= '<h4 class="pt-1 pb-1">' . $title . '</h4>';

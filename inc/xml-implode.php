@@ -15,26 +15,39 @@ class mif_qm_xml_implode {
     
     function parse( $quiz )
     {
-        $quiz_xml = new SimpleXMLElement( '<quiz/>' );
+        $quiz_xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8"?><quiz/>' );
 
+        // Добавить заголовок
+        
         if ( isset( $quiz['title'] ) ) $quiz_xml->addChild( 'title', $quiz['title'] );
+
+        // Добавить параметры
+
         if ( isset( $quiz['param'] ) ) $this->add_param( $quiz_xml->addChild( 'param' ), $quiz['param'] );
         
+        // Добавить разделы
+        
         if ( isset( $quiz['parts'] ) ) {
-
+            
             $parts_xml = $quiz_xml->addChild( 'parts' );
-
+            
             foreach ( $quiz['parts'] as $part )  {
-
+                
                 $part_xml = $parts_xml->addChild( 'part' );
-
+                
                 if ( isset( $part['title'] ) ) $part_xml->addChild( 'title', $part['title'] );
                 if ( isset( $part['param'] ) ) $this->add_param( $part_xml->addChild( 'param' ), $part['param'] );
                 if ( isset( $part['questions'] ) ) $this->add_questions( $part_xml->addChild( 'questions' ), $part['questions'] );
-
+                
             }
             
         }
+        
+        // Добавить информацию о процессе
+        
+        if ( isset( $quiz['processed'] ) ) $this->add_processed( $quiz_xml->addChild( 'processed' ), $quiz['processed'] );
+        
+        // Форматировать документ (переносы и отступы)
         
         $quiz_formatted_xml = $this->get_formatted_xml( $quiz_xml );
 
@@ -58,6 +71,7 @@ class mif_qm_xml_implode {
 
             if ( isset( $item['title'] ) ) $question->addChild( 'title', $item['title'] );
             if ( isset( $item['type'] ) ) $question->addAttribute( 'type', $item['type'] );
+            if ( isset( $item['id'] ) ) $question->addAttribute( 'id', $item['id'] );
 
             if ( isset( $item['answers'] ) ) $this->add_answers( $question->addChild( 'answers' ), $item['answers'] );
 
@@ -95,19 +109,6 @@ class mif_qm_xml_implode {
             
             }
 
-            // if ( isset( $item['answer'] ) ) {
-
-            //     $answer = $answers->addChild( 'answer', $item['answer'] );
-            //     unset( $item['answer'] );
-
-            // } else {
-
-            //     $answer = $answers->addChild( 'answer' );
-
-            // }
-            
-            // foreach ( $item as $key => $value ) $answer->addAttribute( $key, esc_attr( $value ) );
-
         }
 
     }
@@ -129,6 +130,39 @@ class mif_qm_xml_implode {
             } else {
 
                 $param->addChild( $key, $value );
+
+            }
+
+        }
+
+    }
+
+
+    //
+    // Добавляет в xml-структуру блок информации о процессе
+    //
+
+    private function add_processed( $processed, $arr )
+    {
+
+        foreach ( $arr as $key => $value ) {
+
+            if ( is_array( $value ) ) {
+
+                // foreach ( $value as $item ) $processed->addChild( $key, $item );
+
+                $arr_item = $processed->addChild( $key );
+                foreach ( $value as $key_item => $value_item ) {
+
+                    $item = $arr_item->addChild( 'item', $value_item );
+                    $item->addAttribute( 'key', $key_item );
+
+                }
+
+
+            } else {
+
+                $processed->addChild( $key, $value );
 
             }
 
