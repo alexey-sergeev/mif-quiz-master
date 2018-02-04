@@ -15,7 +15,7 @@
             <div class="form-check">
                 <label class="form-check-label col-12 p-3 row no-gutters">
                     <?php mif_qm_the_answer_marker(); ?>
-                    <div class="answer"><?php mif_qm_the_answer_caption(); ?></div>
+                    <div class="answer ml-2"><?php mif_qm_the_answer_caption(); ?></div>
                 </label>
             </div>
         </td></tr></tbody>

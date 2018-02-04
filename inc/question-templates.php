@@ -43,6 +43,17 @@ function mif_qm_the_question_classes()
 }
 
 
+//
+// Выводит идентификатор вопроса
+//
+
+function mif_qm_the_question_id()
+{
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_question_id();
+}
+
+
 // //
 // // Выводит классы значка пеермещения
 // //

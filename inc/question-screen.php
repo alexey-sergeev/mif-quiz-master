@@ -81,21 +81,21 @@ class mif_qm_question_screen extends mif_qm_question_core {
         if ( $type == 'single' ) {
             
             $value = $this->get_hash( $this->answer['data']['caption'] );
-            $marker = '<input type="radio" name="' . $name . '" value="' . $value . '" class="form-check-input" ' . $disabled . $checked . ' />';
+            $marker = '<input type="radio" name="answers[' . $name . ']" value="' . $value . '" class="form-check-input" ' . $disabled . $checked . ' />';
             
         } elseif ( $type == 'multiple' ) {
             
             $value = $this->get_hash( $this->answer['data']['caption'] );
-            $marker = '<input type="checkbox" name="' . $name . '[]" value="' . $value . '" class="form-check-input" ' . $disabled . $checked . ' />';
+            $marker = '<input type="checkbox" name="answers[' . $name . '][]" value="' . $value . '" class="form-check-input" ' . $disabled . $checked . ' />';
             
         } elseif ( in_array( $type, array( 'sort', 's-sort', 'm-sort' ) ) ) {
             
             $name = $name . '_' . $this->get_hash( $this->answer['data']['status'] );
-            $value = $this->get_hash( $this->answer['data']['caption'] ); // !!! Здесь из-за замешивания надо будет менять
+            $value = $this->get_hash( $this->answer['data']['caption'] );
             
             $marker = '';
             $marker .= '<span class="marker">' . $this->answer['data']['status'] . '</span>';
-            $marker .= '<input type="hidden" name="' . $name . '" value="' . $value . '">';
+            $marker .= '<input type="hidden" name="answers[' . $name . ']" value="' . $value . '">';
             
         } else {
             
@@ -113,13 +113,35 @@ class mif_qm_question_screen extends mif_qm_question_core {
     
     public function get_answer_caption()
     {
-        // $id = md5( $this->answer['data']['answer'] );
-        // $answer = '<label for="' . $id . '">' . $this->answer['data']['answer'] . '</label>';
         $answer = $this->answer['data']['caption'];
 
         return apply_filters( 'mif_qm_question_screen_get_answer_caption', $answer, $this->answer );
     }
     
+    
+    // 
+    // Возвращает значок перемещения
+    // 
+    
+    public function get_answer_mover()
+    {
+        $mover = '';
+
+        if ( $this->action == 'view' ) {
+
+            $mover .= '<div class="mover bg-success text-white"><i class="fa fa-check" aria-hidden="true"></i></div>';
+            
+        } else {
+            
+            $caption = $this->get_hash( $this->answer['data']['caption'] );
+            $mover .= '<div class="mover" data-caption="' . $caption . '"><i class="fa fa-sort" aria-hidden="true"></i></div>';
+
+        }
+
+        return apply_filters( 'mif_qm_question_screen_get_answer_mover', $mover, $this->answer, $this->action );
+    }
+    
+
     
     // 
     // Возвращает поле для ручного ввода (текст или файл)
@@ -136,7 +158,8 @@ class mif_qm_question_screen extends mif_qm_question_core {
         $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
         $size = ( isset( $answer['size'] ) ) ? (int) $answer['size'] : 1;
         // $id = md5( serialize( $this->answer ) );
-        $name = $this->question['id'] . '_' . $this->get_hash( serialize( $this->answer ) );
+        $name = $this->question['id'] . '_' . $this->get_hash( serialize( $answer ) );
+
         $text = '';
         
         if ( $answer['type'] == 'text' ) {
@@ -145,11 +168,11 @@ class mif_qm_question_screen extends mif_qm_question_core {
             
             if ( $size == 1 ) {
                 
-                $text = '<input type="text" name="' . $name . '"' . $placeholder . $disabled . ' class="form-control" />';
+                $text = '<input type="text" name="answers[' . $name . ']"' . $placeholder . $disabled . ' class="form-control" />';
                 
             } else {
                 
-                $text = '<textarea name="' . $name . '"' . $placeholder . ' rows="' . $size . '"' . $disabled . '></textarea>';
+                $text = '<textarea name="answers[' . $name . ']"' . $placeholder . ' rows="' . $size . '"' . $disabled . '></textarea>';
                 
             }
             
@@ -272,13 +295,24 @@ class mif_qm_question_screen extends mif_qm_question_core {
     
     
     // 
+    // Возвращает идентификатор для вопроса
+    // 
+    
+    public function get_question_id()
+    {
+        $id = $this->question['id'];
+        return apply_filters( 'mif_qm_question_screen_get_question_id', $id, $this->question );
+    }
+    
+    
+    // 
     // Возвращает классы для вопроса
     // 
     
     public function get_question_classes()
     {
         $classes = array( 'question', $this->question['type'] );
-        return apply_filters( 'mif_qm_question_screen_get_question_classes', implode( ' ', $classes ), $classes );
+        return apply_filters( 'mif_qm_question_screen_get_question_classes', implode( ' ', $classes ), $classes, $this->question );
     }
     
     
@@ -326,28 +360,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
         return apply_filters( 'mif_qm_question_screen_get_answer_classes', implode( ' ', $classes ), $this->answer, $this->action, $classes );
     }
-    
-    
-    // 
-    // Возвращает значок перемещения
-    // 
-    
-    public function get_answer_mover()
-    {
-        $mover = '';
 
-        if ( $this->action == 'view' ) {
-
-            $mover .= '<div class="mover bg-success text-white"><i class="fa fa-check" aria-hidden="true"></i></div>';
-            
-        } else {
-            
-            $mover .= '<div class="mover"><i class="fa fa-sort" aria-hidden="true"></i></div>';
-
-        }
-
-        return apply_filters( 'mif_qm_question_screen_get_answer_mover', $mover, $this->answer, $this->action );
-    }
     
     
     // // 

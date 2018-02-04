@@ -8,6 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+include_once dirname( __FILE__ ) . '/process-requester.php';
 
 
 class mif_qm_process_core extends mif_qm_core_core { 
@@ -34,21 +35,31 @@ class mif_qm_process_core extends mif_qm_core_core {
     public function get_quiz_stage( $args = array() )
     {
 
-        $current_result = $this->get_quiz_result_data( $args );
+        $result_data = $this->get_quiz_result_data( $args );
         
         // Была ошибка - вернуть ее код
 
-        if ( is_numeric( $current_result ) ) return $current_result;
+        if ( is_numeric( $result_data ) ) return $result_data;
         
-        // Построить массив теста из полученных данных
+        // // Построить массив теста из полученных данных
 
-        $xml_core = new mif_qm_xml_core();
-        $quiz = $xml_core->to_array( $current_result->post_content );
+        // $xml_core = new mif_qm_xml_core();
+        // $quiz = $xml_core->to_array( $result_data->post_content );
+
+        // Получить массив теста с учетом результата и последних данных пользователя
+
+        $quiz = $this->get_quiz( $result_data );
 
         // Проверить корректность индекса
 
         $quiz = $this->check_index( $quiz );
-        // Сформировать раздел как текущий этап теста
+
+        // Сформировать только один раздел как текущий этап теста
+        // Этот раздел может :
+        //      1) быть простым разделом (режим part)
+        //      2) содержать только один вопрос (режим question)
+        //      3) содержать все вопросы (режим quiz)
+        //
         
         $stage = array();
         $quiz_stage = $quiz;
@@ -134,6 +145,37 @@ class mif_qm_process_core extends mif_qm_core_core {
         return $quiz_stage;
     }
 
+
+    //
+    // Получить массив теста из объекта текущих результатов с учетом последних данных пользователя
+    //
+    //
+
+    public function get_quiz( $result_data )
+    {
+        // Сформировать массив теста из хранимых данных
+
+        $xml_core = new mif_qm_xml_core();
+        $quiz = $xml_core->to_array( $result_data->post_content );
+        
+        // Проверить данные пользовательского запроса (новые ответы)
+        
+        $process_requester = new mif_qm_process_requester( $quiz );
+        $quiz = $process_requester->parse_request_answers();
+        
+        // Если получены новые данные пользователя
+        
+        if ( $process_requester->is_modified() ) {
+            
+            // Сохранить их в базе данных
+            // !!! Здесь проверять, свои ли данные сохраняет пользователь ???
+
+            p('123');
+
+        }
+
+        return $quiz;
+    }
 
 
     // 

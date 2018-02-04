@@ -251,13 +251,52 @@ class mif_qm_question_core extends mif_qm_core_core {
         }
 
         return array( 'type' => $type, 'answers' => $answers );
-
     }
+
+
+    //
+    // Замешивание ответов в вопросе
+    //
+
+    public function shuffle( $question = array() )
+    {
+        $type = ( isset( $question['type'] ) ) ? (string) $question['type'] : '';
+
+        // Составить список сопоставлений для сортировок
+
+        if ( in_array( $type, array( 'sort', 's-sort', 'm-sort' ) ) ) {
+            
+            $captions = array();
+            foreach ( (array) $question['answers'] as $key => $answer ) {
+
+                $captions[] = $answer['caption'];
+                $question['answers'][$key]['meta'] = $answer['caption'];
+
+            }
+            
+            shuffle( $captions );
+            
+            foreach ( (array) $captions as $key => $caption ) $question['answers'][$key]['caption'] = $caption;
+           
+        }
+        
+        // Замешать ответы для выбора и матричной сортировки
+        
+        if ( in_array( $type, array( 'single', 'multiple', 'm-sort' ) ) ) {
+            
+            shuffle( $question['answers'] );
+
+        }
+
+        return $question;
+    }
+    
+
 
 
 
     //
-    // Опеределяет тип вопроса (одиночный, множественный, сортировка и др.)
+    // Определяет тип вопроса (одиночный, множественный, сортировка и др.)
     //
     //      open - открытый ввод текста (возможно, с прикреплением файлов)
     //      text - ввод текста с автоматической проверкой

@@ -254,7 +254,6 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
     
     public function get_quiz_header()
     {
-        p($_REQUEST);
         $header .= ( isset( $this->quiz['title'] ) ) ? $this->quiz['title'] : '';
         return apply_filters( 'mif_qm_question_screen_get_quiz_header', $header, $this->quiz );
     }

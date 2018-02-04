@@ -116,6 +116,18 @@ class mif_qm_quiz_core extends mif_qm_core_core {
             
         // }
 
+        // Замешать ответы в вопросах теста
+
+        foreach ( (array) $quiz['parts'] as $p_key => $part ) 
+            foreach ( (array) $part['questions'] as $q_key => $question ) {
+
+                $question_core = new mif_qm_question_core();
+                $quiz['parts'][$p_key]['questions'][$q_key] = $question_core->shuffle( $question );
+
+            }
+
+
+
         // p($quiz);
 
         return $quiz;
