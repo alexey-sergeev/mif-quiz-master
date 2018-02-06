@@ -68,16 +68,27 @@ class mif_qm_core_core  {
     {
         $arr = array();
 
-        $arr['time'] = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
-
+        // $arr['time'] = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
+        $arr['time'] = $this->get_time();
+        
         if ( $user = $this->get_user_token() ) $arr['user'] = $user;
         if ( $quiz = $this->get_quiz_token() ) $arr['quiz'] = $quiz;
-
+        
         return apply_filters( 'mif_qm_core_core_get_signature', $arr );
+    }
+    
+    
+    //
+    // Получить время в человекопонятном формате
+    //
+    
+    public function get_time()
+    {
+        $time = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
+        return apply_filters( 'mif_qm_core_core_get_time', $time );
     }
 
 
-    
     //
     // Получить идентификатор текущего теста
     //
@@ -165,6 +176,35 @@ class mif_qm_core_core  {
         $out = md5( $value );
         return $out;
     }
+
+    
+
+    //
+    // Узнать, имеется ли данный параметр?
+    //
+
+    public function is_param( $param, $quiz = array() )
+    {
+        $ret = false;
+        if ( in_array( $param, $quiz['param']['settings'] ) ) $ret = true;
+
+        return $ret;
+    }    
+
+    
+
+    //
+    // Узнать, имеется ли результат по попросу, разделу или тесту?
+    //
+
+    public function is_submitted( $item = array() )
+    {
+        $ret = false;
+        if ( isset( $item['processed']['submitted'] ) && $item['processed']['submitted'] ) $ret = true;
+
+        return $ret;
+    }    
+
 
 
     // //

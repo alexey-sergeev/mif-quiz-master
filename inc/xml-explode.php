@@ -40,7 +40,8 @@ class mif_qm_xml_explode {
                 if ( isset( $part_xml->title ) ) $part['title'] = (string) $part_xml->title;
                 if ( isset( $part_xml->param ) ) $part['param'] = $this->get_param( $part_xml->param, 'part' );
                 if ( isset( $part_xml->questions ) ) $part['questions'] = $this->get_questions( $part_xml->questions->question );
-                
+                if ( isset( $part_xml->processed ) ) $part['processed'] = $this->get_processed( $part_xml->processed );
+
                 $quiz['parts'][] = $part;
             }
             
@@ -48,11 +49,7 @@ class mif_qm_xml_explode {
         
         // Информация о процессе
 
-        if ( isset( $xml->processed ) ) {
-
-            $quiz['processed'] = $this->get_processed( $xml->processed );
-
-        }
+        if ( isset( $xml->processed ) ) $quiz['processed'] = $this->get_processed( $xml->processed );
 
         return $quiz;
     }
@@ -68,15 +65,34 @@ class mif_qm_xml_explode {
         $processed = array();
 
         foreach ( $processed_xml->children() as $key_processed => $items ) {
+            
+            if ( isset( $items->item ) ) {
+                
+                $arr = array();
 
                 foreach ( $items as $item ) {
-
+                    
                     $key = (string) $item['key'];
                     $value = (string) $item;
+                    $arr[$key] = $value;
+                    
+                }
+                
+                if ( $key_processed == 'messages' ) {
 
-                    $processed[$key_processed][$key] = $value;
+                    $processed[$key_processed][] = $arr;
+
+                } else {
+
+                    $processed[$key_processed] = $arr;
 
                 }
+
+            } else {
+                
+                $processed[$key_processed] = (string) $items;
+
+            }
 
         }
 
@@ -101,6 +117,7 @@ class mif_qm_xml_explode {
             $question['type'] = ( isset( $item['type'] ) ) ? (string) $item['type'] : 'none';
             if ( isset( $item['id'] ) ) $question['id'] = (string) $item['id'];
             if ( isset( $item->answers ) ) $question['answers'] = $this->get_answers( $item->answers->answer );
+            if ( isset( $item->processed ) ) $question['processed'] = $this->get_processed( $item->processed );
 
             $questions[] = $question;
         }
@@ -127,7 +144,7 @@ class mif_qm_xml_explode {
 
             foreach ( $item as $key => $value ) {
 
-                if ( in_array( $key, array( 'meta', 'result' ) ) ) {
+                if ( in_array( $key, array( 'meta' ) ) ) {
 
                     $answer[$key][] = (string) $value;
                     

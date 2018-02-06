@@ -91,54 +91,69 @@ var DragManager = new function() {
     if (dragObject.avatar) { // если перенос идет
       // finishDrag(e);
 
-      var targetElem = findDroppable(e);
-      
-      // Удалить аватар
-      var elem = dragObject.avatar.parentNode;
-      if (elem) elem.removeChild(dragObject.avatar);
-      dragObject.elem.classList.remove('reflexion');
-      
-      elem = dragObject.elem.closest('table').querySelector('.target');
-      if (elem) elem.classList.remove('target');
+        var targetElem = findDroppable(e);
+        
+        // Удалить аватар
+        var elem = dragObject.avatar.parentNode;
+        if (elem) elem.removeChild(dragObject.avatar);
+        dragObject.elem.classList.remove('reflexion');
+        
+        elem = dragObject.elem.closest('table').querySelector('.target');
+        if (elem) elem.classList.remove('target');
 
-      // Отпустили мышь не на месте приземления
-      if (!targetElem) {
+        // Отпустили мышь не на месте приземления
+        if (!targetElem) {
+            dragObject = {};
+            return;
+        }
+        
+        // Поменять элементы местами
+        var box1 = dragObject.elem.parentNode;
+        var box2 = targetElem.parentNode;;
+        
+        if (!box1) return;
+        if (!box2) return;
+        
+        box1.appendChild(targetElem);
+        box2.appendChild(dragObject.elem);
+        
+        // Анимация приземления
+
+        dragObject.elem.classList.add('landed');
+        setTimeout( function( elem ){ elem.classList.remove('landed') }, 300, dragObject.elem );
+
+        // Записать данные выбора
+
+        var table = box1.closest('table');
+        var elements = table.querySelectorAll('tr');
+
+        for (var i = 0; i < elements.length; i++) {
+
+            var input = elements[i].querySelector('input[type=hidden]');
+            var mover = elements[i].querySelector('.mover');
+            var linker = elements[i].querySelector('.linker');
+            var data = mover.getAttribute('data-caption');
+            input.setAttribute('value',data);
+            linker.classList.add('checked'); 
+        }
+
+        //   var tr = box1.closest('tr');
+        //   var input = tr.querySelector('input[type=hidden]');
+        //   var mover = tr.querySelector('.mover');
+        //   var data = mover.getAttribute('data-caption');
+        //   input.setAttribute('value',data);
+
+        //   var tr = box2.closest('tr');
+        //   var input = tr.querySelector('input[type=hidden]');
+        //   var mover = tr.querySelector('.mover');
+        //   var data = mover.getAttribute('data-caption');
+        //   input.setAttribute('value',data);
+
+        }
+
+        // перенос либо не начинался, либо завершился
+        // в любом случае очистим "состояние переноса" dragObject
         dragObject = {};
-        return;
-      }
-      
-      // Поменять элементы местами
-      var box1 = dragObject.elem.parentNode;
-      var box2 = targetElem.parentNode;;
-      
-      if (!box1) return;
-      if (!box2) return;
-      
-      box1.appendChild(targetElem);
-      box2.appendChild(dragObject.elem);
-      
-      dragObject.elem.classList.add('landed');
-      setTimeout( function( elem ){ elem.classList.remove('landed') }, 300, dragObject.elem );
-
-      // Записать данные выбора
-
-      var tr = box1.closest('tr');
-      var input = tr.querySelector('input[type=hidden]');
-      var mover = tr.querySelector('.mover');
-      var data = mover.getAttribute('data-caption');
-      input.setAttribute('value',data);
-
-      var tr = box2.closest('tr');
-      var input = tr.querySelector('input[type=hidden]');
-      var mover = tr.querySelector('.mover');
-      var data = mover.getAttribute('data-caption');
-      input.setAttribute('value',data);
-
-    }
-
-    // перенос либо не начинался, либо завершился
-    // в любом случае очистим "состояние переноса" dragObject
-    dragObject = {};
   }
 
   

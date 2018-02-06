@@ -38,6 +38,7 @@ class mif_qm_xml_implode {
                 if ( isset( $part['title'] ) ) $part_xml->addChild( 'title', $part['title'] );
                 if ( isset( $part['param'] ) ) $this->add_param( $part_xml->addChild( 'param' ), $part['param'] );
                 if ( isset( $part['questions'] ) ) $this->add_questions( $part_xml->addChild( 'questions' ), $part['questions'] );
+                if ( isset( $part['processed'] ) ) $this->add_processed( $part_xml->addChild( 'processed' ), $part['processed'] );
                 
             }
             
@@ -74,6 +75,7 @@ class mif_qm_xml_implode {
             if ( isset( $item['id'] ) ) $question->addAttribute( 'id', $item['id'] );
 
             if ( isset( $item['answers'] ) ) $this->add_answers( $question->addChild( 'answers' ), $item['answers'] );
+            if ( isset( $item['processed'] ) ) $this->add_processed( $question->addChild( 'processed' ), $item['processed'] );
 
         }
 
@@ -154,8 +156,21 @@ class mif_qm_xml_implode {
                 $arr_item = $processed->addChild( $key );
                 foreach ( $value as $key_item => $value_item ) {
 
-                    $item = $arr_item->addChild( 'item', $value_item );
-                    $item->addAttribute( 'key', $key_item );
+                    if ( is_array( $value_item ) ) {
+
+                        foreach ( $value_item as $key_item2 => $value_item2 ) {
+
+                            $item2 = $arr_item->addChild( 'item', $value_item2 );
+                            $item2->addAttribute( 'key', $key_item2 );
+                                
+                        }
+
+                    } else {
+
+                        $item = $arr_item->addChild( 'item', $value_item );
+                        $item->addAttribute( 'key', $key_item );
+
+                    }
 
                 }
 

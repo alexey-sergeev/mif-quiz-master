@@ -290,8 +290,6 @@ class mif_qm_question_core extends mif_qm_core_core {
 
         return $question;
     }
-    
-
 
 
 

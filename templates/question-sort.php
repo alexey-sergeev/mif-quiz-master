@@ -16,12 +16,13 @@
         <tbody class="border-0">
             <tr>
                 <td class="table-active marker p-0 pl-1">
-                    <div class="p-3">
+                    <div class="p-3 pr-4">
                         <?php mif_qm_the_answer_marker(); ?>
                     </div>
                 </td>
                 <td class="p-0">
-                    <div class="qm-draggable p-3 pl-3">
+                    <div class="qm-draggable p-3 pl-4">
+                        <?php mif_qm_the_answer_linker(); ?>    
                         <?php mif_qm_the_answer_mover(); ?>    
                         <div class="answer"><?php mif_qm_the_answer_caption(); ?></div>
                     </div>

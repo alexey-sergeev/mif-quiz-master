@@ -77,7 +77,8 @@ class mif_qm_question_screen extends mif_qm_question_core {
         
         $checked = '';
         if ( $this->action == 'view' && $this->answer['data']['status'] == 'yes' ) $checked = ' checked';
-        
+        if ( $this->action == 'run' && isset( $this->answer['data']['result'] ) && $this->answer['data']['result'] == 'yes' ) $checked = ' checked';
+
         if ( $type == 'single' ) {
             
             $value = $this->get_hash( $this->answer['data']['caption'] );
@@ -91,8 +92,10 @@ class mif_qm_question_screen extends mif_qm_question_core {
         } elseif ( in_array( $type, array( 'sort', 's-sort', 'm-sort' ) ) ) {
             
             $name = $name . '_' . $this->get_hash( $this->answer['data']['status'] );
-            $value = $this->get_hash( $this->answer['data']['caption'] );
-            
+            // $value = $this->get_hash( $this->answer['data']['caption'] );
+            $value = ( isset( $this->answer['data']['result'] ) ) ? $this->get_hash( $this->answer['data']['result'] ) : '';
+            // $marker_status = ( isset( $this->answer['data']['result'] ) ) ? $this->get_hash( $this->answer['data']['result'] ) : $this->answer['data']['status'];
+
             $marker = '';
             $marker .= '<span class="marker">' . $this->answer['data']['status'] . '</span>';
             $marker .= '<input type="hidden" name="answers[' . $name . ']" value="' . $value . '">';
@@ -113,12 +116,40 @@ class mif_qm_question_screen extends mif_qm_question_core {
     
     public function get_answer_caption()
     {
-        $answer = $this->answer['data']['caption'];
+        $type = $this->question['type'];
+
+        if ( in_array( $type, array( 'sort', 's-sort', 'm-sort' ) ) && $this->is_submitted( $this->question ) ) {
+
+            $answer = $this->answer['data']['result'];
+
+        } else {
+
+            $answer = $this->answer['data']['caption'];
+
+        }
+
 
         return apply_filters( 'mif_qm_question_screen_get_answer_caption', $answer, $this->answer );
     }
     
     
+
+    // 
+    // Возвращает значок связи
+    // 
+    
+    public function get_answer_linker()
+    {
+        $linker = '';
+
+        $checked = ( isset( $this->answer['data']['result'] ) ) ? ' checked' : '';
+        $linker .= '<span class="linker' . $checked . '"><i class="fa fa-chain-broken text-warning" aria-hidden="true"></i><i class="fa fa-chain text-success" aria-hidden="true"></i></span>';
+
+        return apply_filters( 'mif_qm_question_screen_get_answer_mover', $linker, $this->answer, $this->action );
+    }
+    
+
+
     // 
     // Возвращает значок перемещения
     // 
@@ -157,8 +188,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
         
         $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
         $size = ( isset( $answer['size'] ) ) ? (int) $answer['size'] : 1;
-        // $id = md5( serialize( $this->answer ) );
-        $name = $this->question['id'] . '_' . $this->get_hash( serialize( $answer ) );
+        $name = $this->question['id'] . '_' . $this->get_hash( serialize( $answer['meta'] ) );
 
         $text = '';
         
@@ -166,13 +196,15 @@ class mif_qm_question_screen extends mif_qm_question_core {
             
             $placeholder = ( isset( $answer['caption'] ) ) ? ' placeholder="' . $answer['caption'] . '"' : '';
             
+            $value = ( isset( $answer['result'] ) ) ? $answer['result'] : '';
+
             if ( $size == 1 ) {
                 
-                $text = '<input type="text" name="answers[' . $name . ']"' . $placeholder . $disabled . ' class="form-control" />';
+                $text = '<input type="text" name="answers[' . $name . ']"' . $placeholder . $disabled . ' value="' . $value . '" class="form-control" />';
                 
             } else {
                 
-                $text = '<textarea name="answers[' . $name . ']"' . $placeholder . ' rows="' . $size . '"' . $disabled . '></textarea>';
+                $text = '<textarea name="answers[' . $name . ']"' . $placeholder . ' rows="' . $size . '"' . $disabled . '>' . $value . '</textarea>';
                 
             }
             
@@ -184,21 +216,16 @@ class mif_qm_question_screen extends mif_qm_question_core {
             
             if ( isset( $answer['meta'] ) ) {
 
-                // $meta = explode( '|', $answer['meta'] );
                 $meta = $answer['meta'];
                 $accept = ' accept=".' . implode( ',.', $meta ) . '"';
                 $caption = __( 'Допустимые форматы', 'mif-qm' ) . ': ' . implode( ', ', $meta );
 
             }
 
-            // if ( isset( $answer['answer'] ) ) $text = '<span class="caption">' . $answer['answer'] . '</span>';
-            // $text .= '<span class="input"><input type="file" name=""' . $multiple . $accept . $disabled . ' /></span>';
-            // if ( isset( $answer['answer'] ) ) $text = '<label for="' . $id . '">' . $answer['answer'] . '</label>';
             if ( isset( $answer['caption'] ) ) $text .= '<div>' . $answer['caption'] . '</div>';
-            $text .= '<input type="file" name="' . $name . '"' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" />';
+            $text .= '<input type="file" name="' . $name . '[]"' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" />';
             if ( $caption ) $text .= '<div><small>' . $caption . '</small></div>';
             if ( $multiple ) $text .= '<div><small>' . __( 'Можно выбрать несколько файлов', 'mif-qm' ) . '</small></div>';
-            // if ( isset( $answer['caption'] ) ) $text .= '<small id="' . $id . '" class="form-text text-muted">' . $answer['caption'] . '</small>';
 
         } else {
 

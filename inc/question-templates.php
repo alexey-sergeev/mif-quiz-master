@@ -99,6 +99,17 @@ function mif_qm_the_answer_marker()
 
 
 //
+// Выводит значок связи для ответа
+//
+
+function mif_qm_the_answer_linker()
+{
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_linker();
+}
+
+
+//
 // Выводит значок перемещения для ответа
 //
 

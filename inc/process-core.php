@@ -88,6 +88,8 @@ class mif_qm_process_core extends mif_qm_core_core {
                 
                 // Все разделы завершены и номер того, что надо показать, не известен
                 // Тест завершен? Подвести итог?
+                
+                
 
             } else {
                 
@@ -115,6 +117,8 @@ class mif_qm_process_core extends mif_qm_core_core {
                 
                 // Все вопросы завершены и номер того, что надо показать, не известен
                 // !!! Тест завершен? Подвести итог?
+                p('!! 123 !!');
+                $quiz_stage['parts'] = array();
 
             } else {
                 
@@ -162,6 +166,8 @@ class mif_qm_process_core extends mif_qm_core_core {
         
         $process_requester = new mif_qm_process_requester( $quiz );
         $quiz = $process_requester->parse_request_answers();
+
+        // p($quiz);
         
         // Если получены новые данные пользователя
         
@@ -170,7 +176,13 @@ class mif_qm_process_core extends mif_qm_core_core {
             // Сохранить их в базе данных
             // !!! Здесь проверять, свои ли данные сохраняет пользователь ???
 
-            p('123');
+            $args = array(
+                        'ID' => $result_data->ID,
+                        'post_content' => $xml_core->to_xml( $quiz )
+                        );
+
+            $res = $this->update_quiz_result_data( $args );
+            p( $res );
 
         }
 
@@ -178,10 +190,27 @@ class mif_qm_process_core extends mif_qm_core_core {
     }
 
 
+
+    // 
+    // Обновить данные результатов теста
+    // Возвращает: true или false в зависимости от учпеха результата
+    //
+
+    public function update_quiz_result_data( $args = array() )
+    {
+        if ( empty( $args['ID'] ) ) return false;
+        if( ! current_user_can( 'edit_post', $args['ID'] ) ) return false;
+        $res = wp_update_post( $args );
+
+        return $res;
+    }
+
+
+
     // 
     // Вернуть идентификатор текущего элемента (номер раздела или вопроса)
     //      Возвращает:
-    //          1) номер, если номер просили и он есть
+    //          1) номер, если навигация включена, номер просили и он есть
     //          2) номер первого незавершенного элемента, если ошиблись с номером или не просили
     //          3) -1, если 1 и 2 не получается (в тесте все элементы завершены)
     //
@@ -192,13 +221,22 @@ class mif_qm_process_core extends mif_qm_core_core {
 
         $num = isset( $_REQUEST['num'] ) ? (int) ( $_REQUEST['num'] ) : -1;
 
-        // Проверить по индексу - если он есть, но номер для него не подходит, то номер поставить в -1
+        
+        if ( $this->is_param( 'navigation', $quiz ) ) {
+            
+            // Проверить по индексу - если он есть, но номер для него не подходит, то номер поставить в -1
 
-        if ( ! empty( $quiz['processed']['index'] ) && ! isset( $quiz['processed']['index'][$num] ) ) $num = -1;
+            if ( ! empty( $quiz['processed']['index'] ) && ! isset( $quiz['processed']['index'][$num] ) ) $num = -1;
+    
+            // Если номера нет, то пытаться искать очередной незавершенный
+    
+            if ( $num == -1 ) $num = $this->get_current_elem( $quiz, $mode );
 
-        // Если номера нет, то пытаться искать очередной незавершенный
+        } else {
+            
+            $num = $this->get_current_elem( $quiz, $mode );
 
-        if ( $num == -1 ) $num = $this->get_current_elem( $quiz, $mode );
+        }
 
         return $num;
     }
@@ -211,9 +249,25 @@ class mif_qm_process_core extends mif_qm_core_core {
 
     public function get_current_elem( $quiz, $mode )
     {
-        // !!! Надо это еще написать.
-     
-        return 0;
+
+        $index = $quiz['processed']['index'];
+
+        foreach ( (array) $index as $key => $item ) {
+
+            if ( $mode == 'part' ) {
+
+                if ( ! $this->is_submitted( $quiz['parts'][$item] ) ) return $key;
+                
+            } else {
+                
+                $arr = explode( '.', $item );
+                if ( ! $this->is_submitted( $quiz['parts'][$arr[0]]['questions'][$arr[1]] ) ) return $key;
+
+            }
+
+        }
+
+        return -1;
     }
 
 

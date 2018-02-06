@@ -1,14 +1,50 @@
 /* Оформление вопросов */
 
+.question.sort .answer {
+}
+
 .question.sort td.marker {
     width: 3rem;
     text-align: center;
+}
+
+.linker {
+    margin-left: -2.5rem;
+    margin-top: -.15rem;
+    float: left;
+    /* background-color: #FCFC85; */
+    /* background-color: #FEEDBA; */
+    background-color: #fff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.linker.checked {
+    /* background-color: #C2E5CB; */
+}
+
+.linker i.fa-chain-broken {
+    display: inline-block;
+}
+
+.linker i.fa-chain {
+    display: none;
+}
+
+.linker.checked i.fa-chain-broken {
+    display: none;
+}
+
+.linker.checked i.fa-chain {
+    display: inline-block;
 }
 
 .question.sort .answer,
 .question.s-sort .answer,
 .question.m-sort .answer {
     margin-right: 2rem;
+    /* float: left; */
 }
 
 .qm-draggable .mover,
