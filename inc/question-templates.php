@@ -33,6 +33,17 @@ function mif_qm_the_question_question()
 
 
 //
+// Выводит классы перемещаемого блока (сортировка)
+//
+
+function mif_qm_the_draggable_classes()
+{
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_draggable_classes();
+}
+
+
+//
 // Выводит классы вопроса
 //
 

@@ -24,7 +24,7 @@ var DragManager = new function() {
 
     if (e.which != 1) return;
 
-    var elem = e.target.closest('.qm-draggable');
+    var elem = e.target.closest('.qm-draggable.active');
     if (!elem) return;
 
     

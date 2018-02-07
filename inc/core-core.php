@@ -15,6 +15,12 @@ include_once dirname( __FILE__ ) . '/xml-core.php';
 
 class mif_qm_core_core  {
 
+    // Идентификатор теста.
+    private $quiz_id = NULL;
+
+    // // Идентификатор записи, где хранится снимок теста.
+    // private $snapshot_id = NULL;
+
     // Маркер для теста
     public $mark_quiz = '===';
     
@@ -72,7 +78,7 @@ class mif_qm_core_core  {
         $arr['time'] = $this->get_time();
         
         if ( $user = $this->get_user_token() ) $arr['user'] = $user;
-        if ( $quiz = $this->get_quiz_token() ) $arr['quiz'] = $quiz;
+        if ( $quiz = $this->get_quiz_id() ) $arr['quiz'] = $quiz;
         
         return apply_filters( 'mif_qm_core_core_get_signature', $arr );
     }
@@ -93,7 +99,7 @@ class mif_qm_core_core  {
     // Получить идентификатор текущего теста
     //
 
-    public function get_quiz_token( $quiz_id = false )
+    public function get_quiz_id( $quiz_id = false )
     {
         global $post;
         
@@ -111,7 +117,7 @@ class mif_qm_core_core  {
 
         }
 
-        return apply_filters( 'mif_qm_core_core_get_quiz_token', $ret, $quiz_id );
+        return apply_filters( 'mif_qm_core_core_get_quiz_id', $ret, $quiz_id );
     }
 
 

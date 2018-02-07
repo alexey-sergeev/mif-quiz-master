@@ -42,10 +42,10 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
 
     //
-    // Получает экземпляр теста для работы пользователя
+    // Получает снимок теста для работы пользователя
     //
    
-    public function get_exemplar( $data = NULL )
+    public function get_snapshot( $data = NULL )
     {
         $quiz = ( is_array( $data ) ) ? $data : $this->parse( $data );
 

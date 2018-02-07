@@ -128,7 +128,6 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
         }
 
-
         return apply_filters( 'mif_qm_question_screen_get_answer_caption', $answer, $this->answer );
     }
     
@@ -355,6 +354,18 @@ class mif_qm_question_screen extends mif_qm_question_core {
         if ( $this->action == 'run' ) $classes[] = 'table-hover';
 
         return apply_filters( 'mif_qm_question_screen_get_answers_classes', implode( ' ', $classes ), $this->answer, $this->action, $classes );
+    }
+
+
+
+    // 
+    // Возвращает классы для перемещаемого блока (сортировка)
+    // 
+    
+    public function get_draggable_classes()
+    {
+        $classes = ( $this->action == 'run' ) ? ' active' : '';
+        return apply_filters( 'mif_qm_question_screen_get_draggable_classes', $classes, $this->answer, $this->action );
     }
 
 

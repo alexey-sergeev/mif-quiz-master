@@ -21,7 +21,7 @@
                     </div>
                 </td>
                 <td class="p-0">
-                    <div class="qm-draggable p-3 pl-4">
+                    <div class="qm-draggable p-3 pl-4<?php mif_qm_the_draggable_classes(); ?>">
                         <?php mif_qm_the_answer_linker(); ?>    
                         <?php mif_qm_the_answer_mover(); ?>    
                         <div class="answer"><?php mif_qm_the_answer_caption(); ?></div>

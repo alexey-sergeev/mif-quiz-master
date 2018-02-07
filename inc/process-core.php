@@ -8,18 +8,45 @@
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/process-requester.php';
+include_once dirname( __FILE__ ) . '/process-handler.php';
+include_once dirname( __FILE__ ) . '/process-inspector.php';
+
 
 
 class mif_qm_process_core extends mif_qm_core_core { 
 
+    // // Идентификатор записи, где хранится снимок теста.
+    
+    // private $snapshot_id = NULL;
 
-    function __construct()
+
+
+    function __construct( $quiz_id = NULL )
     {
         parent::__construct();
 
+        $this->quiz_id = $this->get_quiz_id( $quiz_id );
+
         // add_action( 'save_post', array( $this, 'delete_my_drafts' ) );
     }
+
+
+
+    // 
+    // Получить результаты теста
+    // 
+
+    public function get_result( $args = array() )
+    {
+        $snapshot_data = $this->get_snapshot_data( $args );
+        $quiz = $this->get_quiz( $snapshot_data );
+        
+        $process_inspector = new mif_qm_process_inspector( $quiz );
+        $result = $process_inspector->get_result();
+
+        p($result);
+    }
+   
 
 
     // 
@@ -35,20 +62,15 @@ class mif_qm_process_core extends mif_qm_core_core {
     public function get_quiz_stage( $args = array() )
     {
 
-        $result_data = $this->get_quiz_result_data( $args );
+        $snapshot_data = $this->get_snapshot_data( $args );
         
         // Была ошибка - вернуть ее код
 
-        if ( is_numeric( $result_data ) ) return $result_data;
+        if ( is_numeric( $snapshot_data ) ) return $snapshot_data;
         
-        // // Построить массив теста из полученных данных
-
-        // $xml_core = new mif_qm_xml_core();
-        // $quiz = $xml_core->to_array( $result_data->post_content );
-
         // Получить массив теста с учетом результата и последних данных пользователя
 
-        $quiz = $this->get_quiz( $result_data );
+        $quiz = $this->process_handler( $snapshot_data );
 
         // Проверить корректность индекса
 
@@ -88,8 +110,7 @@ class mif_qm_process_core extends mif_qm_core_core {
                 
                 // Все разделы завершены и номер того, что надо показать, не известен
                 // Тест завершен? Подвести итог?
-                
-                
+                return 0;                
 
             } else {
                 
@@ -117,8 +138,7 @@ class mif_qm_process_core extends mif_qm_core_core {
                 
                 // Все вопросы завершены и номер того, что надо показать, не известен
                 // !!! Тест завершен? Подвести итог?
-                p('!! 123 !!');
-                $quiz_stage['parts'] = array();
+                return 0;
 
             } else {
                 
@@ -150,39 +170,56 @@ class mif_qm_process_core extends mif_qm_core_core {
     }
 
 
+
+    //
+    // Сформировать массив теста из хранимых данных
+    //
+
+    private function get_quiz( $snapshot_data )
+    {
+        $xml_core = new mif_qm_xml_core();
+        $quiz = $xml_core->to_array( $snapshot_data->post_content );
+        return $quiz;
+    }
+
+
+
     //
     // Получить массив теста из объекта текущих результатов с учетом последних данных пользователя
     //
     //
 
-    public function get_quiz( $result_data )
+    public function process_handler( $snapshot_data )
     {
         // Сформировать массив теста из хранимых данных
 
-        $xml_core = new mif_qm_xml_core();
-        $quiz = $xml_core->to_array( $result_data->post_content );
+        // $xml_core = new mif_qm_xml_core();
+        // $quiz = $xml_core->to_array( $snapshot_data->post_content );
+        $quiz = $this->get_quiz( $snapshot_data );
         
         // Проверить данные пользовательского запроса (новые ответы)
         
-        $process_requester = new mif_qm_process_requester( $quiz );
-        $quiz = $process_requester->parse_request_answers();
+        $process_handler = new mif_qm_process_handler( $quiz );
+        $quiz = $process_handler->parse_request_answers();
 
         // p($quiz);
         
         // Если получены новые данные пользователя
         
-        if ( $process_requester->is_modified() ) {
+        if ( $process_handler->is_modified() ) {
             
             // Сохранить их в базе данных
             // !!! Здесь проверять, свои ли данные сохраняет пользователь ???
 
+            $xml_core = new mif_qm_xml_core();
+            
             $args = array(
-                        'ID' => $result_data->ID,
+                        'ID' => $snapshot_data->ID,
                         'post_content' => $xml_core->to_xml( $quiz )
                         );
 
-            $res = $this->update_quiz_result_data( $args );
-            p( $res );
+            $res = $this->update_snapshot_data( $args );
+            // p( $res );
 
         }
 
@@ -196,7 +233,7 @@ class mif_qm_process_core extends mif_qm_core_core {
     // Возвращает: true или false в зависимости от учпеха результата
     //
 
-    public function update_quiz_result_data( $args = array() )
+    public function update_snapshot_data( $args = array() )
     {
         if ( empty( $args['ID'] ) ) return false;
         if( ! current_user_can( 'edit_post', $args['ID'] ) ) return false;
@@ -288,7 +325,7 @@ class mif_qm_process_core extends mif_qm_core_core {
     
     
     // 
-    // Вернуть данные текущей записи результатов теста
+    // Вернуть данные текущей записи снимка теста
     // 
     // Возвращает код ошибки, либо объект записи с экземпляром теста
     //
@@ -296,18 +333,18 @@ class mif_qm_process_core extends mif_qm_core_core {
     //              2 - что-то пошло не так
     //
     
-    private function get_quiz_result_data( $args = array() )
+    private function get_snapshot_data( $args = array() )
     {
         $error = 0;
 
         // Сформировать список аргументов для поиска результатов (идентификатор пользователя и теста)
 
-        $defaults = array( 'user' => get_current_user_id(), 'quiz' => $this->get_quiz_token() );
+        $defaults = array( 'user' => get_current_user_id(), 'quiz' => $this->quiz_id );
         $args = wp_parse_args( $args, $defaults );
 
-        $result_args = array(
+        $snapshot_args = array(
             // 'numberposts' => 0,
-            'post_type'   => 'quiz_result',
+            'post_type'   => 'quiz_snapshot',
             'post_status' => 'draft',
             'orderby'     => 'date',
             'order'       => 'DESC',
@@ -315,14 +352,14 @@ class mif_qm_process_core extends mif_qm_core_core {
             'post_parent' => $args['quiz'],
         );
     
-        $results = get_posts( $result_args );
+        $snapshots = get_posts( $snapshot_args );
         
-        if ( empty( $results ) ) {
+        if ( empty( $snapshots ) ) {
 
             // Текущих результатов нет. Сформировать их (проверить, не закончилось ли количество попыток?)
 
             $quiz_core = new mif_qm_quiz_core();
-            $quiz = $quiz_core->get_exemplar( $args['quiz'] );
+            $quiz = $quiz_core->get_snapshot( $args['quiz'] );
             $xml_core = new mif_qm_xml_core();
             $quiz_xml = $xml_core->to_xml( $quiz );
 
@@ -335,16 +372,16 @@ class mif_qm_process_core extends mif_qm_core_core {
 
                 if ( $attempt > 0 ) {
                     
-                    $result_args = array(
+                    $snapshot_args = array(
                         'post_status'   => 'publish',
-                        'post_type'     => 'quiz_result',
+                        'post_type'     => 'quiz_snapshot',
                         'post_author'   => $args['user'],
                         'post_parent'   => $args['quiz'],
                     );
         
-                    $results_publish = get_posts( $result_args );
+                    $snapshot_publish = get_posts( $snapshot_args );
 
-                    if ( count( $results_publish ) >= $attempt ) $error = 1;
+                    if ( count( $snapshot_publish ) >= $attempt ) $error = 1;
 
                 };
             }
@@ -358,26 +395,26 @@ class mif_qm_process_core extends mif_qm_core_core {
                 $quiz_post = get_post( $args['quiz'] );
                 $post_title = $quiz_post->post_title . ' ('. $quiz_post->ID . ')';
 
-                // Сохраняем в виде нового черновика quiz_result
+                // Сохраняем в виде нового черновика quiz_snapshot
 
-                $result_args = array(
+                $snapshot_args = array(
                     'post_title'    => $post_title,
                     'post_content'  => $quiz_xml,
                     'post_status'   => 'draft',
-                    'post_type'     => 'quiz_result',
+                    'post_type'     => 'quiz_snapshot',
                     'post_author'   => $args['user'],
                     'post_parent'   => $args['quiz'],
                     'comment_status' => 'closed',
                     'ping_status'    => 'closed', 
                 );
                 
-                $result_id = wp_insert_post( $result_args );
+                $snapshot_id = wp_insert_post( $snapshot_args );
 
                 // Взять сохранненный результат
 
-                if ( $result_id ) {
+                if ( $snapshot_id ) {
                     
-                    $result = get_post( $result_id );
+                    $snapshot = get_post( $snapshot_id );
 
                 } else {
 
@@ -391,16 +428,16 @@ class mif_qm_process_core extends mif_qm_core_core {
 
             // Результаты есть. Взять последний
 
-            $result = $results[0];
+            $snapshot = $snapshots[0];
 
-            if ( count( $results ) > 1 ) {
+            if ( count( $snapshots ) > 1 ) {
 
                 // Почему-то таких результатов несколько. Удалить лишние.
 
-                foreach ( (array) $results as $key => $result ) {
+                foreach ( (array) $snapshots as $key => $snapshot ) {
 
                     if ( $key === 0 ) continue;
-                    wp_trash_post( $result->ID );
+                    wp_trash_post( $snapshot->ID );
 
                 }
             }
@@ -408,7 +445,7 @@ class mif_qm_process_core extends mif_qm_core_core {
 
         if ( $error === 0 ) {
 
-            return $result;
+            return $snapshot;
             
         } else {
             

@@ -105,7 +105,7 @@ class mif_qm_core  {
         // Тип записей - "Результат теста"
         // 
 
-        register_post_type( 'quiz_result', array(
+        register_post_type( 'quiz_snapshot', array(
             'label'  => null,
             'labels' => array(
                 'name'               => __( 'Результаты тестов', 'mif-qm' ), // основное название для типа записи
@@ -141,7 +141,7 @@ class mif_qm_core  {
             'supports'            => array( 'title', 'editor', 'author', 'custom-fields', 'revisions' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
             'taxonomies'          => array(),
             'has_archive'         => true,
-            'rewrite'             => array( 'slug' => 'quiz_result' ),
+            'rewrite'             => array( 'slug' => 'quiz_snapshot' ),
             'query_var'           => true,
 
         ) );
@@ -176,10 +176,21 @@ class mif_qm_core  {
                 
                 if ( is_numeric( $quiz_stage ) ) {
                     
-                    $arr = array(   '1' => __( 'Закончилось число попыток прохождения теста', 'mif-qm' ),
+                    $arr = array(   '0' => __( 'Тест завершен', 'mif-qm' ),
+                                    '1' => __( 'Закончилось число попыток прохождения теста', 'mif-qm' ),
                                     '2' => __( 'Что-то пошло не так', 'mif-qm' ) );
                     
                     echo $arr[$quiz_stage]; // !!!
+
+                    // Тест завершен
+
+                    if ( $quiz_stage === 0 ) {
+                        
+                        $process_core->get_result();
+                        // $process_inspector = new mif_qm_process_inspector();
+                        // $process_inspector->get_result()
+
+                    }
                     
                 } else {
 
@@ -218,7 +229,7 @@ class mif_qm_core  {
 
         $result_args = array(
             'numberposts' => -1,
-            'post_type'   => 'quiz_result',
+            'post_type'   => 'quiz_snapshot',
             'post_status' => 'draft',
             'author'      => get_current_user_id(),
             'post_parent' => $quiz_id,
