@@ -64,7 +64,7 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
             $questions_index = array_keys( (array) $part['questions'] );
             // $number = (int) $part['param']['number'];
-            $number = $this->get_clean( 'number', $part['param']['number'], 'part' );
+            $number = $this->get_clean( 'number', $part, 'part' );
 
             $part_settings = (array) $part['param']['settings'];
             

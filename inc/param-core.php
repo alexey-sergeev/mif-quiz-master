@@ -146,7 +146,7 @@ class mif_qm_param_core extends mif_qm_core_core {
                     'pattern' => '/auto|correction|email|interactive|manual|navigation|numeration|ordered|part|question|quiz|random|resume/',
                     'cumulative' => true,
                     'inheritance' => false,
-                    'default' => array( 'quiz' => 'ordered question manual better', 'part' => 'random' ),
+                    'default' => array( 'quiz' => 'ordered question manual better balanced', 'part' => 'random' ),
                     'description' => __( 'Настройки', 'mif-qm' ),
                 ),
                 
@@ -247,7 +247,21 @@ class mif_qm_param_core extends mif_qm_core_core {
                                 'apply' => 'quiz', 
                                 'description' => __( 'Учитывать средний результат нескольких попыток', 'mif-qm' ) 
                             ),
-
+                'strict' => array( 
+                                'group' => 'group10',
+                                'apply' => 'quiz', 
+                                'description' => __( 'Строгая оценка', 'mif-qm' ) 
+                            ),
+                'balanced' => array( 
+                                'group' => 'group10',
+                                'apply' => 'quiz', 
+                                'description' => __( 'Сбалансированная оценка', 'mif-qm' ) 
+                            ),
+                'detailed' => array( 
+                                'group' => 'group10',
+                                'apply' => 'quiz', 
+                                'description' => __( 'Детальная оценка', 'mif-qm' ) 
+                            ),
         ) );
 
         $this->mode = $mode;
@@ -446,7 +460,7 @@ class mif_qm_param_core extends mif_qm_core_core {
 
         foreach ( $params as $key => $value ) {
 
-            if ( is_array( $value ) ) {
+            if ( is_array( $value ) && isset( $arr['auto'][$key] ) && isset( $arr['manual'][$key] ) ) {
 
                 $params[$key] = array_merge( (array) $arr['auto'][$key], (array) $arr['manual'][$key] );
 

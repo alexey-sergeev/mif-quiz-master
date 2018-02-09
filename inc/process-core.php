@@ -368,7 +368,7 @@ class mif_qm_process_core extends mif_qm_core_core {
                 // Есть ограничение по количеству попыток. Проверить, не превышено ли оно
                 // Для текущего пользователя, который может редактировать тест (его автор или редактор сайта) - ограничение не действует
 
-                $attempt = $this->get_clean( 'attempt', $quiz['param']['attempt'], 'quiz' );
+                $attempt = $this->get_clean( 'attempt', $quiz, 'quiz' );
 
                 if ( $attempt > 0 ) {
                     

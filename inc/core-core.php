@@ -150,12 +150,43 @@ class mif_qm_core_core  {
 
     
     //
+    // Получить максимально возможное значение рейтинга
+    // 
+
+    public function get_max_rating( $item = array(), $mode = 'quiz' )
+    {
+        $max_rating = 0;
+
+        if ( $mode =='part' ) {
+
+            $rating = $this->get_clean( 'rating', $item, $mode );
+            $max_rating = $rating * count( (array) $item['questions'] );
+            
+        } elseif ( $mode == 'quiz') {
+            
+            foreach ( (array) $item['parts'] as $part ) {
+                
+                $rating = $this->get_clean( 'rating', $part, 'part' );
+                $max_rating += $rating * count( (array) $part['questions'] );
+
+            }
+
+        }
+
+        return $max_rating;
+    }
+
+    
+
+
+    //
     // Получить чистые данные
     //  $flag - вернуть с пояснениями (в массиве)
 
     public function get_clean( $key = '', $value = '', $mode = 'quiz', $flag = false )
     {
-        $interpretation = new mif_qm_param_interpretation( $key, $value, $mode );
+
+        $interpretation = new mif_qm_param_interpretation( $key, $value['param'][$key], $mode );
         $arr = $interpretation->get_clean_value();
 
         if ( $flag ) {
