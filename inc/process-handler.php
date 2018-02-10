@@ -211,7 +211,6 @@ class mif_qm_process_handler extends mif_qm_core_core {
 
             foreach ( (array) $part['questions'] as $q_key => $question ) {
                 
-                // if ( empty( $this->quiz['parts'][$p_key]['questions'][$q_key]['processed']['submitted'] ) ) $p_flag = false;
                 if ( ! $this->is_submitted( $this->quiz['parts'][$p_key]['questions'][$q_key] ) ) $p_flag = false;
 
             }
@@ -219,6 +218,25 @@ class mif_qm_process_handler extends mif_qm_core_core {
             // Поставить метку времени, если раздел завершен
             
             if ( $p_flag ) $this->quiz['parts'][$p_key]['processed']['submitted'] = $this->get_time();
+
+        }
+
+        // Проверить, все ли разделы в итоге завершены
+
+        $quiz_flag = true;
+
+        foreach ( (array) $this->quiz['parts'] as $p_key => $part ) {
+            
+            if ( ! $this->is_submitted( $this->quiz['parts'][$p_key] ) ) $quiz_flag = false;
+
+        }
+
+        // Если завершен, то проверить тест и поместить в него данные о результатах проверки
+
+        if ( $quiz_flag ) {
+
+            $process_inspector = new mif_qm_process_inspector( $this->quiz );
+            $this->quiz = $process_inspector->get_quiz();
 
         }
 

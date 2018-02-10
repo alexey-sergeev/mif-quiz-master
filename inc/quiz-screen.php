@@ -117,57 +117,56 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
 
     
             
-    // 
-    // Возвращает класс меню
-    // 
+    // // 
+    // // Возвращает класс меню
+    // // 
     
-    public function get_menu_class( $action = 'view', $class = '', $flag = true )
-    {
-        $process_core = new mif_qm_process_core();
+    // public function get_menu_class( $action = 'view', $class = '', $flag = true )
+    // {
+    //     $process_core = new mif_qm_process_core();
     
-        if ( $process_core->get_action() === $action ) {
+    //     if ( $process_core->get_action() === $action ) {
     
-            $res1 = ' ' . $class;
-            $res2 = '';
+    //         $res1 = ' ' . $class;
+    //         $res2 = '';
             
-        } else {
+    //     } else {
             
-            $res1 = '';
-            $res2 = ' ' . $class;
+    //         $res1 = '';
+    //         $res2 = ' ' . $class;
     
-        }
+    //     }
     
-        $out = ( $flag ) ? $res1 : $res2;
+    //     $out = ( $flag ) ? $res1 : $res2;
 
-        return apply_filters( 'mif_qm_question_screen_get_menu_class', $out, $this->quiz );
-    }
+    //     return apply_filters( 'mif_qm_quiz_screen_get_menu_class', $out, $this->quiz );
+    // }
     
 
             
-    // 
-    // Возвращает меню теста
-    // 
+    // // 
+    // // Возвращает меню теста
+    // // 
     
-    public function get_quiz_menu()
-    {
-        global $post;
+    // public function get_quiz_menu()
+    // {
+    //     global $post;
 
-        $menu = '';
+    //     $menu = '';
         
-        if ( mif_qm_user_can( 'edit-quiz' ) ) {
+    //     if ( mif_qm_user_can( 'edit-quiz' ) ) {
 
-            $menu .= '<div class="btn-group mt-3 mb-3" role="group">';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><i class="fa fa-2x fa-circle-o' . $this->get_menu_class( 'view', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><i class="fa fa-2x fa-play' . $this->get_menu_class( 'run', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><i class="fa fa-2x fa-pencil-square' . $this->get_menu_class( 'edit', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
-            $menu .= '</div>';
-        }
+    //         $menu .= '<div class="btn-group mt-3 mb-3" role="group">';
+    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><i class="fa fa-2x fa-circle-o' . $this->get_menu_class( 'view', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
+    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><i class="fa fa-2x fa-play' . $this->get_menu_class( 'run', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
+    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><i class="fa fa-2x fa-pencil-square' . $this->get_menu_class( 'edit', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
+    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
+    //         $menu .= '</div>';
+    //     }
 
-        return apply_filters( 'mif_qm_question_screen_get_quiz_navigation', $menu, $this->quiz );
+    //     return apply_filters( 'mif_qm_quiz_screen_get_quiz_navigation', $menu, $this->quiz );
+    // }
 
-
-    }
     
             
     // 

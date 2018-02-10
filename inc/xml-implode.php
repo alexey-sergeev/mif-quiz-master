@@ -190,7 +190,7 @@ class mif_qm_xml_implode {
     // Возвращает xml-код в отформатированном виде
     //
     
-    private function get_formatted_xml( $xml )
+    public function get_formatted_xml( $xml )
     {
         $dom = new DOMDocument( '1.0' );
         $dom->preserveWhiteSpace = false;

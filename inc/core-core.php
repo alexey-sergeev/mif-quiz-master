@@ -70,17 +70,17 @@ class mif_qm_core_core  {
     // Получить данные для подписи теста
     //
 
-    public function get_signature()
+    public function get_signature( $quiz_id = false, $user_id = false )
     {
         $arr = array();
 
         // $arr['time'] = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
         $arr['time'] = $this->get_time();
         
-        if ( $user = $this->get_user_token() ) $arr['user'] = $user;
-        if ( $quiz = $this->get_quiz_id() ) $arr['quiz'] = $quiz;
+        if ( $user = $this->get_user_token( $user_id ) ) $arr['user'] = $user;
+        if ( $quiz = $this->get_quiz_id( $quiz_id ) ) $arr['quiz'] = $quiz;
         
-        return apply_filters( 'mif_qm_core_core_get_signature', $arr );
+        return apply_filters( 'mif_qm_core_core_get_signature', $arr, $quiz_id, $user_id );
     }
     
     
@@ -150,6 +150,40 @@ class mif_qm_core_core  {
 
     
     //
+    // Получить количество вопросов
+    // 
+
+    public function get_question_count( $item = array(), $mode = 'quiz' )
+    {
+        $count = 0;
+
+        if ( $mode =='part' ) {
+
+            $number = $this->get_clean( 'number', $item, $mode );
+            $count = count( (array) $item['questions'] );
+
+            if ( $number > 0 && $number < $count ) $count = $number;
+            
+        } elseif ( $mode == 'quiz') {
+            
+            foreach ( (array) $item['parts'] as $part ) {
+                
+                $p_number = $this->get_clean( 'number', $part, $mode );
+                $p_count = count( (array) $part['questions'] );
+    
+                if ( $p_number > 0 && $p_number < $p_count ) $p_count = $p_number;
+
+                $count += $p_count;
+
+            }
+        }
+
+        return $count;
+    }
+
+
+    
+    //
     // Получить максимально возможное значение рейтинга
     // 
 
@@ -160,14 +194,18 @@ class mif_qm_core_core  {
         if ( $mode =='part' ) {
 
             $rating = $this->get_clean( 'rating', $item, $mode );
-            $max_rating = $rating * count( (array) $item['questions'] );
+            $count = $this->get_question_count( $item, 'part' );
+            $max_rating = $rating * $count;
+            // $max_rating = $rating * count( (array) $item['questions'] );
             
         } elseif ( $mode == 'quiz') {
             
             foreach ( (array) $item['parts'] as $part ) {
                 
                 $rating = $this->get_clean( 'rating', $part, 'part' );
-                $max_rating += $rating * count( (array) $part['questions'] );
+                $count = $this->get_question_count( $part, 'part' );
+                $max_rating += $rating * $count;
+                // $max_rating += $rating * count( (array) $part['questions'] );
 
             }
 
@@ -183,10 +221,10 @@ class mif_qm_core_core  {
     // Получить чистые данные
     //  $flag - вернуть с пояснениями (в массиве)
 
-    public function get_clean( $key = '', $value = '', $mode = 'quiz', $flag = false )
+    public function get_clean( $key = '', $item = '', $mode = 'quiz', $flag = false )
     {
 
-        $interpretation = new mif_qm_param_interpretation( $key, $value['param'][$key], $mode );
+        $interpretation = new mif_qm_param_interpretation( $key, $item['param'][$key], $mode );
         $arr = $interpretation->get_clean_value();
 
         if ( $flag ) {

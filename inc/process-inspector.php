@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 class mif_qm_process_inspector extends mif_qm_core_core { 
 
     private $quiz = array();
-    private $result = false;
+    // private $result = false;
 
     function __construct( $quiz = array() )
     {
@@ -26,8 +26,15 @@ class mif_qm_process_inspector extends mif_qm_core_core {
     // Получить результаты теста
     //
 
-    public function get_result( $inspection_mode = '' )
+    public function get_result( $snapshot_id = false, $inspection_mode = '' )
     {
+        // Если тест не проверен, то и результатов нет
+
+        if ( empty( $this->quiz['processed']['rating'] ) ) return false;
+        if ( empty( $this->quiz['processed']['success'] ) ) return false;
+
+        // Уточнить режим оценки
+
         if ( ! in_array( $inspection_mode, array( 'strict', 'balanced', 'detailed' ) ) ) {
 
             $inspection_mode = 'balanced'; 
@@ -36,20 +43,38 @@ class mif_qm_process_inspector extends mif_qm_core_core {
 
         }
 
-        $rating = $this->quiz['processed']['rating'][$inspection_mode];
+        // Рассчитать баллы, проценты и статус завершенности
+        
+        $rating = round( $this->quiz['processed']['rating'][$inspection_mode] );
 
         $max_rating = $this->get_max_rating( $this->quiz );
-        $percent = ( $max_rating != 0 ) ? 100 * $rating / $max_rating : 0;
+        $percent = ( $max_rating != 0 ) ? round( 100 * $rating / $max_rating ) : 0;
 
         $success = $this->quiz['processed']['success'][$inspection_mode];
-
         $success_rating = $this->get_success_rating( $this->quiz );
-
         if ( $rating < $success_rating ) $success = 'no';
 
-        $this->result = array( 'rating' => round( $rating ), 'percent' => round( $percent ), 'success' => $success, );
+        // Оформить результат
 
-        return $this->result;
+        // !!! надо рассчитать id теста
+        
+        $result = $this->get_signature();
+        
+        // !!! надо пытаться выяснить id снимка, если это не указано
+        
+        $result['snapshot'] = $snapshot_id;
+        $result['max'] = $max_rating;
+        $result['rating'] = $rating;
+        $result['percent'] = $percent;
+        $result['success'] = $success;
+
+        // !!! надо рассчитать время выполнения теста
+
+        $result['duration'] = '???';
+
+        // !!! Сюда также версию и информацию по результатам разделов
+
+        return $result;
     }
 
 
@@ -58,8 +83,14 @@ class mif_qm_process_inspector extends mif_qm_core_core {
     // Рассчитать результаты теста
     //
 
-    private function quiz_inspection( $quiz )
+    private function quiz_inspection( $quiz, $recount = false )
     {
+        // Если данные результата есть и пересчитать не просят, то ничего и не делать
+
+        if ( isset( $quiz['processed']['rating'] ) && isset( $quiz['processed']['success'] ) && $recount == false ) return $quiz;
+
+        // Считать результат
+
         $q_open_flag = false;
         $q_rating = array( 'strict' => 0, 'balanced' => 0, 'detailed' => 0 );
         $q_success = array( 'strict' => 'yes', 'balanced' => 'yes', 'detailed' => 'yes' );
@@ -159,31 +190,9 @@ class mif_qm_process_inspector extends mif_qm_core_core {
 
                 // Рассчитать статус завершенности (если это применимо)
 
-                // $param_interpretation = new mif_qm_param_interpretation( 'success', $quiz['parts'][$p_key]['param']['success'], 'part' );
-                // $success_param = $param_interpretation->get_clean_value();
-                // $success_param = $this->get_clean( 'success', $quiz['parts'][$p_key], 'part', true );
-
                 $success_rating = $this->get_success_rating( $quiz['parts'][$p_key], 'part' );
 
                 if ( $success_rating ) {
-                // if ( ! empty( $success_param['value'] ) ) {
-                    
-                //     // Если есть порог положительной оценки ...
-
-                //     // ... узнать это порог
-
-                //     $success_value = $success_param['value'];
-
-                //     // Если это значение в процентах ...
-
-                //     if ( isset( $success_param['unit'] ) && $success_param['unit'] == 'percent' ) {
-
-                //         // ... пересчитать его в баллы
-
-                //         $max_value = $rating_param['value'] * count( $quiz['parts'][$p_key]['questions'] );
-                //         $success_value = $max_value * $success_value / 100;
-                        
-                //     }
 
                     // Учточнить значение успеха для раздела
 
@@ -212,7 +221,7 @@ class mif_qm_process_inspector extends mif_qm_core_core {
         }
 
         if ( ! $q_open_flag ) {
-
+            // !!! надо рассчитать id теста
             $quiz['processed']['inspected'] = $this->get_signature();
             $quiz['processed']['rating'] = $q_rating;
             $quiz['processed']['success'] = $q_success;

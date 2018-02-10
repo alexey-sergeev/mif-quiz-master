@@ -10,7 +10,7 @@ Author URI: https://vk.com/alexey_sergeev
 
 defined( 'ABSPATH' ) || exit;
 
-include_once dirname( __FILE__ ) . '/inc/qm-core.php';
+include_once dirname( __FILE__ ) . '/inc/qm-init.php';
 // include_once dirname( __FILE__ ) . '/inc/quiz-core.php';
 // include_once dirname( __FILE__ ) . '/inc/quiz-screen.php';
 // include_once dirname( __FILE__ ) . '/inc/class-xml-explode.php';
@@ -22,7 +22,7 @@ add_action( 'init', 'qm_init' );
 
 function qm_init()
 {
-    $qm = new mif_qm_core();
+    $qm = new mif_qm_init();
 }
 
 

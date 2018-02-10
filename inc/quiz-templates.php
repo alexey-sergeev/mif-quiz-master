@@ -11,15 +11,15 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-//
-// Выводит меню теста
-//
+// //
+// // Выводит меню теста
+// //
 
-function mif_qm_the_quiz_menu()
-{
-    global $mif_qm_quiz_screen;
-    echo $mif_qm_quiz_screen->get_quiz_menu();
-}
+// function mif_qm_the_quiz_menu()
+// {
+//     global $mif_qm_quiz_screen;
+//     echo $mif_qm_quiz_screen->get_quiz_menu();
+// }
 
 
 
@@ -91,15 +91,15 @@ function mif_qm_the_edit_post_link()
 }
 
 
-//
-// Выводит класс активного пункта меню
-//
+// //
+// // Выводит класс активного пункта меню
+// //
 
-function mif_qm_the_menu_class( $action = 'view', $class = '', $flag = true )
-{
-    global $mif_qm_quiz_screen;
-    echo $mif_qm_quiz_screen->get_menu_class( $action, $class, $flag );
-}
+// function mif_qm_the_menu_class( $action = 'view', $class = '', $flag = true )
+// {
+//     global $mif_qm_quiz_screen;
+//     echo $mif_qm_quiz_screen->get_menu_class( $action, $class, $flag );
+// }
 
 
 

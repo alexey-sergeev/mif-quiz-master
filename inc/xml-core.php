@@ -26,6 +26,12 @@ class mif_qm_xml_core  {
         $xml = new mif_qm_xml_explode();
         return $xml->parse( $quiz_xml );
     }
+    
+    function get_formatted_xml( $xml )
+    {
+        $xml_implode = new mif_qm_xml_implode();
+        return $xml_implode->get_formatted_xml( $xml );
+    }
 
 }
 
