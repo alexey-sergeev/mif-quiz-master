@@ -11,6 +11,18 @@ defined( 'ABSPATH' ) || exit;
 
 
 //
+// Список результатов
+//
+
+function mif_qm_the_result_list()
+{
+    global $mif_qm_process_screen;
+    echo $mif_qm_process_screen->get_result_list();
+}
+
+
+
+//
 // Панель с пояснениями на странице начала теста
 //
 

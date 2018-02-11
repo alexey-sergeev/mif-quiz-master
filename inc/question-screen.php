@@ -142,7 +142,8 @@ class mif_qm_question_screen extends mif_qm_question_core {
         $linker = '';
 
         $checked = ( isset( $this->answer['data']['result'] ) ) ? ' checked' : '';
-        $linker .= '<span class="linker' . $checked . '"><i class="fa fa-chain-broken text-warning" aria-hidden="true"></i><i class="fa fa-chain text-success" aria-hidden="true"></i></span>';
+        // $linker .= '<span class="linker' . $checked . '"><i class="fa fa-chain-broken text-warning" aria-hidden="true"></i><i class="fa fa-chain text-success" aria-hidden="true"></i></span>';
+        $linker .= '<span class="linker' . $checked . '"><span class="unlink"><i class="fas fa-unlink text-warning"></i></span><span class="link"><i class="fas fa-link text-success"></i></span></span>';
 
         return apply_filters( 'mif_qm_question_screen_get_answer_mover', $linker, $this->answer, $this->action );
     }
@@ -222,7 +223,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
             }
 
             if ( isset( $answer['caption'] ) ) $text .= '<div>' . $answer['caption'] . '</div>';
-            $text .= '<input type="file" name="' . $name . '[]"' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" />';
+            $text .= '<div class="mt-3 mb-3 p-3 border"><input type="file" name="' . $name . '[]"' . $multiple . $accept . $disabled . ' aria-describedby="' . $id . '" class="form-control-file" /></div>';
             if ( $caption ) $text .= '<div><small>' . $caption . '</small></div>';
             if ( $multiple ) $text .= '<div><small>' . __( 'Можно выбрать несколько файлов', 'mif-qm' ) . '</small></div>';
 
@@ -252,7 +253,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
                 }
                 
                 $text .= '<div class="media meta ' . $answer['type'] . '">
-                <div class="marker ml-2 mr-3 bg-warning text-white"><i class="fa fa-hand-paper-o" aria-hidden="true"></i></div>
+                <div class="marker ml-2 mr-3 bg-warning text-white"><i class="far fa-hand-paper" aria-hidden="true"></i></div>
                 <div  class="media-body"><ul><li>' . implode( '</li><li>', $arr ) . '</li></ul></div>
                 </div>';
                 

@@ -132,7 +132,49 @@ class mif_qm_process_results extends mif_qm_process_core {
 
 
     //
-    // Получить данные о текущих оценках
+    // Получить данные о текущих оценках многих пользователей для теста
+    //
+
+    public function get_list( $quiz_id )
+    {
+        $arr = array();
+
+        $result_args = array(
+            'post_type'   => 'quiz_result',
+            'orderby'     => 'date',
+            'order'       => 'DESC',
+            'post_parent' => $quiz_id,
+        );
+
+        $results = get_posts( $result_args );
+        
+        foreach ( (array) $results as $result ) {
+            
+            $owner = get_post_meta( $result->ID, 'owner', true );
+            $result_data = $this->to_array( $result->post_content );
+            
+            $arr[$owner] = $result_data;
+
+            // foreach ( (array) $result_data as $item ) {
+
+            //     if ( ! ( isset( $item['current'] ) && $item['current'] == 'yes' ) ) continue;
+            //     $arr[$owner]['current'] = $item;
+            //     break;
+
+            // }
+            
+            // $arr[$owner]['all'] = $result_data;
+
+        }
+
+        // p($arr);
+
+        return $arr;
+    }
+
+
+    //
+    // Получить данные о текущих оценках конкретного пользователя
     //
 
     public function get( $quiz_id, $user_id = NULL )
@@ -189,7 +231,7 @@ class mif_qm_process_results extends mif_qm_process_core {
 
             foreach ( (array) $item as $key => $value ) {
 
-                if ( in_array( $key, array( 'time', 'user', 'quiz', 'snapshot', 'max' ) ) ) {
+                if ( in_array( $key, array( 'time', 'user', 'quiz', 'snapshot', 'max', 'current' ) ) ) {
 
                     $result->addAttribute( $key, $value );
 

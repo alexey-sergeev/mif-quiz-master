@@ -1,3 +1,23 @@
+/* Оформление меню */
+
+.quiz-menu a span {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-block;
+    border-radius: .25rem;
+    margin: .15rem;
+}
+
+.quiz-menu a span svg {
+    height: 1.75rem;
+}
+
+.quiz-menu .current  {
+    background-color: #ff5a79!important;
+}
+
+
+
 /* Оформление вопросов */
 
 .question.sort .answer {
@@ -15,26 +35,42 @@
     /* background-color: #FCFC85; */
     /* background-color: #FEEDBA; */
     background-color: #fff;
-    padding: 0.15rem 0.5rem;
+    padding: 0.1rem 0.5rem;
     border-radius: 1rem;
     border: 1px solid #dee2e6;
+}
+
+.linker svg {
+    width: 0.85rem!important;
 }
 
 .linker.checked {
     /* background-color: #C2E5CB; */
 }
 
-.linker i.fa-chain,
-.active .linker i.fa-chain-broken,
-.active .linker.checked i.fa-chain {
+.linker span.link,
+.active .linker span.unlink,
+.active .linker.checked span.link {
     display: inline-block;
 }
 
-.linker i.fa-chain-broken,
-.active .linker i.fa-chain,
-.active .linker.checked i.fa-chain-broken {
+.linker span.unlink,
+.active .linker span.link,
+.active .linker.checked span.unlink {
     display: none;
 }
+
+/* .linker svg.fa-link,
+.active .linker svg.fa-unlink,
+.active .linker.checked svg.fa-link {
+    display: inline-block;
+}
+
+.linker svg.fa-unlink,
+.active .linker svg.fa-link,
+.active .linker.checked svg.fa-unlink {
+    display: none;
+} */
 
 
 .question.sort .answer,

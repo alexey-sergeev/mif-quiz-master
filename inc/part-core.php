@@ -58,9 +58,13 @@ class mif_qm_part_core extends mif_qm_core_core {
 
         $question = new mif_qm_question_core();
 
-        foreach( (array) $part_raw['questions'] as $item ) {
+        if ( isset( $part_raw['questions'] ) ) {
 
-            $part['questions'][] = $question->parse( $item );
+            foreach( (array) $part_raw['questions'] as $item ) {
+    
+                $part['questions'][] = $question->parse( $item );
+    
+            }
 
         }
         

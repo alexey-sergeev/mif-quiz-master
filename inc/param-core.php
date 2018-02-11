@@ -345,7 +345,7 @@ class mif_qm_param_core extends mif_qm_core_core {
     public function explication_settings()
     {
         $params = $this->parse();
-        $settings = $params['settings'];
+        $settings = ( isset( $params['settings'] ) ) ? $params['settings'] : array();
         $map = $this->get_settings_map();
         
         // Получить индексированный массив настроек по умолчанию
@@ -699,7 +699,7 @@ class mif_qm_param_core extends mif_qm_core_core {
         // Выделить первое слово в строке параметров
         
         preg_match( '/' . $this->mark_param . '([\w]+) /', $item, $ret ); 
-        $name_raw = $ret[1];
+        $name_raw = ( isset( $ret[1] ) ) ? $ret[1] : NULL;
 
         // Если первое слово является именем параметра
         
@@ -739,7 +739,7 @@ class mif_qm_param_core extends mif_qm_core_core {
         $arr = $this->get_alias_map();
         
         preg_match( '/' . $this->mark_param . '([\w]+) /', $item, $ret ); 
-        $name_raw = $ret[1];
+        $name_raw = ( isset( $ret[1] ) ) ? $ret[1] : NULL;
         
         if ( array_key_exists( $name_raw, $arr ) ) $item = preg_replace( '/' . $this->mark_param . $name_raw . '/', '', $item );
         $item = trim( preg_replace( '/' . $this->mark_param . '/', '', $item ) );

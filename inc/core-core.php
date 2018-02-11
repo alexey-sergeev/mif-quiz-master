@@ -93,6 +93,16 @@ class mif_qm_core_core  {
         $time = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
         return apply_filters( 'mif_qm_core_core_get_time', $time );
     }
+    
+    
+    //
+    // Получить строку времени для вывода на экран
+    //
+    
+    public function get_time_str( $time )
+    {
+        return apply_filters( 'mif_qm_core_core_get_time_str', $time );
+    }
 
 
     //

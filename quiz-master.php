@@ -64,11 +64,11 @@ function mif_qm_customizer_styles()
 {
     // Font Awesome
     
-    wp_register_style( 'font-awesome', plugins_url( 'lib/fontawesome/css/font-awesome.min.css', __FILE__ ) );
-	wp_enqueue_style( 'font-awesome' );
+    // wp_register_style( 'font-awesome', plugins_url( 'lib/fontawesome/css/font-awesome.min.css', __FILE__ ) );
+	// wp_enqueue_style( 'font-awesome' );
 
     // wp_enqueue_script( 'fa-v4-shim', plugins_url( 'lib/fontawesome/js/fa-v4-shim.js', __FILE__ ) );
-    // wp_enqueue_script( 'font-awesome-js', plugins_url( 'lib/fontawesome/js/fontawesome-all.js', __FILE__ ) );
+    wp_enqueue_script( 'font-awesome-js', plugins_url( 'lib/fontawesome/js/fontawesome-all.js', __FILE__ ) );
 
     // Twitter bootstrap
     

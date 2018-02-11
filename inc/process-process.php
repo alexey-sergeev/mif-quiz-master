@@ -38,6 +38,20 @@ class mif_qm_process_process extends mif_qm_process_core {
 
 
     // 
+    // Получить список результатов теста
+    // 
+
+    public function get_result_list()
+    {
+        $process_results = new mif_qm_process_results();
+        $result_list = $process_results->get_list( $this->quiz_id );
+
+        return $result_list;
+    }
+
+
+
+    // 
     // Получить результаты теста
     // 
 

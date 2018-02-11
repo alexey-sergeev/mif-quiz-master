@@ -128,19 +128,35 @@ class mif_qm_init extends mif_qm_core_core {
         global $mif_qm_process_screen;
         $mif_qm_process_screen = new mif_qm_process_screen();
         
+        if ( ! is_user_logged_in() ) {
+
+            $mif_qm_process_screen->alert( __( 'У вас нет прав доступа. Возможно, вам надо просто войти.', 'mif-qm' ), 'danger' );
+            return false;
+
+        }
+        
         if ( $post->post_type == 'quiz' ) {
             
-            $process = new mif_qm_process_process();
+            $process = new mif_qm_process_process( $post->ID );
+            $action = $process->get_action();
             
-            if ( $process->get_action() == 'view' ) {
+            if ( $action == 'view' ) {
                 
-                $quiz_core = new mif_qm_quiz_core();
-                $quiz = $quiz_core->parse();
+                if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
+
+                    $quiz_core = new mif_qm_quiz_core();
+                    $quiz = $quiz_core->parse( $post->ID );
+                    
+                    $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz );
+                    $mif_qm_quiz_screen->show( array( 'action' => 'view' ) );
+
+                } else {
+
+                    $mif_qm_process_screen->alert( __( 'У вас нет прав доступа', 'mif-qm' ), 'danger' );
+
+                }
                 
-                $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz );
-                $mif_qm_quiz_screen->show( array( 'action' => 'view' ) );
-                
-            } elseif ( $process->get_action() == 'run' ) {
+            } elseif ( $action == 'run' ) {
                 
                 $process = new mif_qm_process_process();
                 $quiz_stage = $process->get_quiz_stage();
@@ -170,17 +186,17 @@ class mif_qm_init extends mif_qm_core_core {
                             
                         } else {
                             
-                            echo $arr[2];
+                            $mif_qm_process_screen->alert( __( 'Что-то пошло не так', 'mif-qm' ), 'danger' );
                             
                         }
                         
                     } elseif ( $quiz_stage === 1 ) {
                         
-                        echo $arr[$quiz_stage]; // !!! Сделать нормально
+                        $mif_qm_process_screen->alert( $arr[$quiz_stage], 'warning' );
                         
                     } else {
                         
-                        echo __( 'Что-то пошло не так', 'mif-qm' ); // !!! Сделать нормально
+                        $mif_qm_process_screen->alert( __( 'Что-то пошло не так', 'mif-qm' ), 'danger' );
                         
                     }
                     
@@ -191,6 +207,19 @@ class mif_qm_init extends mif_qm_core_core {
 
                 }
 
+            } elseif ( $action == 'results' ) {
+                
+                if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
+                    
+                    $result_list = $process->get_result_list();
+                    $mif_qm_process_screen->the_result_list( $result_list );
+
+                } else {
+
+                    $mif_qm_process_screen->alert( __( 'У вас нет прав доступа', 'mif-qm' ), 'danger' );
+
+                }
+                
             }
 
             return false;

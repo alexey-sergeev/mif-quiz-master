@@ -17,6 +17,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
     // Результат прохождения последнего теста
 
     private $result = array();
+    private $result_list = array();
     private $quiz_id = NULL;
     private $quiz = array();
 
@@ -56,6 +57,31 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
     
     // 
+    // Выводит список результатов
+    // 
+
+    public function the_result_list( $result_list = array() )
+    {
+
+        $this->result_list = $result_list;
+
+        // Подключить шаблон из темы оформления или локальный
+
+        if ( $template = locate_template( 'result-list.php' ) ) {
+           
+            load_template( $template, false );
+
+        } else {
+
+            load_template( dirname( __FILE__ ) . '/../templates/result-list.php', false );
+
+        }    
+
+    }    
+
+
+    
+    // 
     // Выводит результат
     // 
 
@@ -77,6 +103,91 @@ class mif_qm_process_screen extends mif_qm_process_core {
         }    
 
     }    
+
+
+    
+    // 
+    // Возвращает список результатов
+    // 
+    
+    public function get_result_list()
+    {
+        $out = '';
+
+        $out .= '<div class="container">';
+        
+        foreach ( (array) $this->result_list as $owner => $item ) {
+            
+            $fio = ( $owner ) ? $owner : 'anonymous';
+            $out .= '<div class="row bg-light p-2 font-weight-bold">';
+            $out .= '<div>' . $fio . '</div>';
+            $out .= '</div>';
+
+            $out .= $this->get_owner_results( $owner );
+            
+        }
+
+        $out .= '</div>';
+
+        // p($this->result_list);
+
+        return apply_filters( 'mif_qm_process_screen_get_result_list', $out, $this->result_list );
+    }
+
+
+    // 
+    // Возвращает список результатов конкретного пользователя
+    // 
+    
+    public function get_owner_results( $owner )
+    {
+        if ( ! isset( $this->result_list[$owner] ) ) return;
+
+        $out = '';
+
+        foreach ( (array) $this->result_list[$owner] as $result ) {
+
+            $marker = '';
+            $class = '';
+            $class_bg = '';
+            $current = '';
+            
+            if ( $result['success'] == 'yes' ) {
+                
+                $marker = '<i class="fas fa-check text-success"></i>';
+                $class = ' text-success';
+                $class_bg = ' alert-success';
+                
+            } elseif ( $result['success'] == 'no' ) {
+                
+                $marker = '<i class="fas fa-times text-danger"></i>';
+                $class = ' text-danger';
+                $class_bg = ' alert-danger';
+                
+            }
+            
+            if ( ! ( isset( $result['current'] ) && $result['current'] == 'yes' ) ) {
+                
+                $current = ' current';
+                $class = ' text-muted';
+                $class_bg = ' bg-light';
+            }
+
+            $link = '?action=results&id=' . $result['snapshot'];
+
+            $out .= '<div class="row p-2' . $current . '">';
+            $out .= '<div class="col-1 text-center">' . $marker . '</div>';
+            $out .= '<div class="col-4 p-1"><div class="progress"><div class="progress-bar" role="progressbar" style="width: ' . $result['percent'] . '%" aria-valuemin="0" aria-valuemax="100"></div></div></div>';
+            $out .= '<div class="col-3' . $class . '">' . $result['rating'] . ' ' . __( 'из', 'mif-qm' ) . ' ' . $result['max'] . ' (' . $result['percent'] . '%)</div>';
+            $out .= '<div class="col-3' . $class_bg . '">' . $this->get_time_str( $result['time'] ) . '</div>';
+            // $out .= '<div class="col-1 text-center">' . $result['duration'] . '</div>';
+            $out .= '<div class="col-1 text-center"><a href="' . $link . '"><i class="fas fa-external-link-alt"></i></a></div>';
+            $out .= '</div>';
+            
+        }
+
+        return apply_filters( 'mif_qm_process_screen_get_owner_results', $out, $owner, $this->result_list );
+    }
 
 
     
@@ -137,11 +248,11 @@ class mif_qm_process_screen extends mif_qm_process_core {
         $rating = $this->get_max_rating( $this->quiz );
 
 
-        $arr[] = '<span title="' . __( 'Количество попыток', 'mif-qm') . '"><i class="fa fa-2x fa-flag-checkered mr-2" aria-hidden="true"></i>' . $attempt . '</span>';
-        $arr[] = '<span title="' . __( 'Количество вопросов', 'mif-qm') . '"><i class="fa fa-2x fa-files-o mr-2" aria-hidden="true"></i>' . $number . '</span>';
-        $arr[] = '<span title="' . __( 'Максимальный балл', 'mif-qm') . '"><i class="fa fa-2x fa-graduation-cap mr-2" aria-hidden="true"></i></i>' . $rating . '</span>';
-        $arr[] = '<span title="' . __( 'Порог положительной оценки', 'mif-qm') . '"><i class="fa fa-2x fa-tachometer mr-2" aria-hidden="true"></i>' . $success['description'] . '</span>';
-        $arr[] = '<span title="' . __( 'Ограничение времени', 'mif-qm') . '"><i class="fa fa-2x fa-clock-o mr-2" aria-hidden="true"></i>' . $time . '</span>';
+        $arr[] = '<span title="' . __( 'Количество попыток', 'mif-qm') . '"><i class="fas fa-2x fa-flag-checkered mr-2" aria-hidden="true"></i>' . $attempt . '</span>';
+        $arr[] = '<span title="' . __( 'Количество вопросов', 'mif-qm') . '"><i class="fas fa-2x mr-2 fa-list-ul"></i>' . $number . '</span>';
+        $arr[] = '<span title="' . __( 'Максимальный балл', 'mif-qm') . '"><i class="fas fa-2x fa-graduation-cap mr-2" aria-hidden="true"></i></i>' . $rating . '</span>';
+        $arr[] = '<span title="' . __( 'Порог положительной оценки', 'mif-qm') . '"><i class="fas fa-2x fa-tachometer-alt mr-2" aria-hidden="true"></i>' . $success['description'] . '</span>';
+        $arr[] = '<span title="' . __( 'Ограничение времени', 'mif-qm') . '"><i class="far fa-2x fa-clock mr-2" aria-hidden="true"></i>' . $time . '</span>';
 
         $class = ' class="p-2 m-2 bg-secondary text-light rounded"';
         $out = '<div' . $class . '>' . implode( '</div><div' . $class . '>', $arr ) . '</div>';
@@ -178,7 +289,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
     public function get_start_button()
     {
         $out = '';
-        $out .= '<form method="get"><input type="hidden" name="start" value="yes"><button class="btn-primary btn-lg">' . __( 'Начать тест', 'mif-qm') . '</button></form>';
+        $out .= '<form method="post"><input type="hidden" name="start" value="yes"><button class="btn-primary btn-lg">' . __( 'Начать тест', 'mif-qm') . '</button></form>';
 
         return apply_filters( 'mif_qm_process_screen_get_start_button', $out, $this->result );
     }
@@ -200,7 +311,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
         if ( $count > 0 ) {
             
-            $out .= '<form method="get"><input type="hidden" name="action" value="run"><button class="btn-primary btn-lg">' . __( 'Пройти еще раз', 'mif-qm') . '</button></form>';
+            $out .= '<form method="post"><input type="hidden" name="action" value="run"><button class="btn-primary btn-lg">' . __( 'Пройти еще раз', 'mif-qm') . '</button></form>';
             
         } 
 
@@ -296,14 +407,20 @@ class mif_qm_process_screen extends mif_qm_process_core {
         global $post;
 
         $menu = '';
+        $class = 'bg-secondary text-light align-middle';
         
         if ( mif_qm_user_can( 'edit-quiz' ) ) {
 
-            $menu .= '<div class="btn-group mt-3 mb-3" role="group">';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><i class="fa fa-2x fa-circle-o' . $this->get_menu_class( 'view', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><i class="fa fa-2x fa-play' . $this->get_menu_class( 'run', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><i class="fa fa-2x fa-pencil-square' . $this->get_menu_class( 'edit', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
+            $menu .= '<div class="btn-group mt-3 mb-3 quiz-menu" role="group">';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><span class="' . $class . $this->get_menu_class( 'view', 'current' ) . '"><i class="fas fa-check"></i></span><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><span class="' . $class . $this->get_menu_class( 'run', 'current' ) . '"><i class="fas fa-play"></i></span><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><span class="' . $class . $this->get_menu_class( 'edit', 'current' ) . '"><i class="fas fa-pencil-alt"></i></span><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'results', 'bg-light' ) . '" href="?action=results"><span class="' . $class . $this->get_menu_class( 'results', 'current' ) . '"><i class="fas fa-chart-bar"></i></span><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
+            // <i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i>
+            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><i class="fa fa-2x fa-circle-o' . $this->get_menu_class( 'view', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
+            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><i class="fa fa-2x fa-play' . $this->get_menu_class( 'run', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
+            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><i class="fa fa-2x fa-pencil-square' . $this->get_menu_class( 'edit', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
+            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
             $menu .= '</div>';
         }
 
@@ -311,7 +428,21 @@ class mif_qm_process_screen extends mif_qm_process_core {
     }
 
 
+    //
+    // Окно сообщения
+    //
 
+    public function alert( $caption, $class = 'info' )
+    {
+        $out = '';
+
+        $out .= '<div class="alert alert-' . $class . '" role="alert">';
+        $out .= $caption;
+        $out .= '</div>';
+
+        echo apply_filters( 'mif_qm_process_screen_alert', $out, $caption, $class );
+
+    }
 
 
 }
