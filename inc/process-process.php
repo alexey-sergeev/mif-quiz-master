@@ -226,10 +226,12 @@ class mif_qm_process_process extends mif_qm_process_core {
     // Сформировать массив теста из хранимых данных
     //
 
-    private function get_quiz( $snapshot_data )
+    public function get_quiz( $data )
     {
+        if ( is_numeric( $data ) ) $data = get_post( $data );
+        
         $xml_core = new mif_qm_xml_core();
-        $quiz = $xml_core->to_array( $snapshot_data->post_content );
+        $quiz = $xml_core->to_array( $data->post_content );
         return $quiz;
     }
 

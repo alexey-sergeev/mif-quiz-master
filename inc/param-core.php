@@ -143,7 +143,7 @@ class mif_qm_param_core extends mif_qm_core_core {
                 array(
                     'name' => 'settings',
                     'alias' => 'set setting',
-                    'pattern' => '/auto|correction|email|interactive|manual|navigation|numeration|ordered|part|question|quiz|random|resume/',
+                    'pattern' => '/auto|average|balanced|better|detailed|email|interactive|latest|manual|navigation|numeration|ordered|part|question|quiz|random|resume|strict/',
                     'cumulative' => true,
                     'inheritance' => false,
                     'default' => array( 'quiz' => 'ordered question manual better balanced', 'part' => 'random' ),

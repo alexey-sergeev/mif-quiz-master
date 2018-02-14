@@ -91,7 +91,11 @@ class mif_qm_process_results extends mif_qm_process_core {
 
             $data = (array) $results['data'];
             $data[] = $new_result;
-            
+
+            // Посчитать данные о итоговой оценке
+
+            $data = $this->calculate_current( $data, $quiz_id );
+
             $args = array(
                         'ID' => $results['ID'],
                         'post_content' => $this->to_xml( $data )
@@ -100,11 +104,15 @@ class mif_qm_process_results extends mif_qm_process_core {
             $res = $this->companion_update( $args );
                             
         } else {
-            
+
             // Результатов нет, создать новую запись
 
             $data = array();
             $data[] = $new_result;
+
+            // Посчитать данные о итоговой оценке
+
+            $data = $this->calculate_current( $data, $quiz_id );
 
             $args = array(
                         'post_type' => 'quiz_result',
@@ -155,16 +163,6 @@ class mif_qm_process_results extends mif_qm_process_core {
             
             $arr[$owner] = $result_data;
 
-            // foreach ( (array) $result_data as $item ) {
-
-            //     if ( ! ( isset( $item['current'] ) && $item['current'] == 'yes' ) ) continue;
-            //     $arr[$owner]['current'] = $item;
-            //     break;
-
-            // }
-            
-            // $arr[$owner]['all'] = $result_data;
-
         }
 
         // p($arr);
@@ -208,11 +206,122 @@ class mif_qm_process_results extends mif_qm_process_core {
             }
 
             $result = $results[0];
-
+            
             return array( 'ID' => $result->ID, 'data' => $this->to_array( $result->post_content ) );
 
         }
 
+    }
+
+
+
+    //
+    // Посчитать данные об итоговой оценке
+    //
+
+    private function calculate_current( $data = array(), $quiz_id = NULL )
+    {
+        
+        if ( empty( $data ) ) return array();
+
+        // Если один результат, то он и текущий
+
+        if ( count( $data ) === 1 ) {
+
+            $data[0]['current'] = 'yes';
+            return $data;
+
+        }
+
+        // Предварительная подготовка
+
+        $success_flag = false;
+
+        foreach ( (array) $data as $key => $result ) {
+            
+            // Очистить текущие данные итоговой оценки
+
+            if ( isset( $data[$key]['success'] ) && $data[$key]['success'] == 'yes' ) $success_flag = true;
+            if ( isset( $data[$key]['current'] ) ) unset( $data[$key]['current'] );
+            if ( isset( $data[$key]['average'] ) ) unset( $data[$key] );
+
+        }
+
+        // Узнать режим и вычислить результат
+
+        $quiz_core = new mif_qm_quiz_core();
+        $quiz = $quiz_core->parse( $quiz_id );
+
+        if ( $this->is_param( 'better', $quiz ) || $this->is_param( 'latest', $quiz ) ) {
+
+            // Режим - "лучшая" или "последняя"
+            // Найти лучший элемент по времени или по баллу (в зависимости от настройки теста)
+
+            $index = array();
+
+            foreach ( (array) $data as $key => $result ) {
+                
+                // Пропускать неуспешные результаты, если есть успешные
+                
+                if ( $success_flag && ( isset( $result['success'] ) && $result['success'] == 'no' ) ) continue;
+
+                // Построить индекс (в зависимости от режима)
+
+                if ( $this->is_param( 'better', $quiz ) ) {
+
+                    $index[$result['percent']] = $key;
+                    
+                } elseif ( $this->is_param( 'latest', $quiz ) ) {
+
+                    $index[ $this->get_timestamp( $result['time'] ) ] = $key;
+
+                }
+
+            }
+            
+            // Найти максимальное значение. Этот элемент и считать текущим
+
+            $current_id = $index[ max( array_keys( $index ) ) ];
+            $data[$current_id]['current'] = 'yes';
+
+        } elseif ( $this->is_param( 'average', $quiz ) ) {
+            
+            // Режим - "средняя"
+
+            $index = array();
+            $arr = array( 'rating' => 0, 'percent' => 0, 'duration' => 0, 'success' => 'no' );
+          
+            foreach ( (array) $data as $key => $result ) {
+
+                $index[ $this->get_timestamp( $result['time'] ) ] = $key;
+                $arr['rating'] += $result['rating'];
+                $arr['percent'] += $result['percent'];
+                $arr['duration'] += $result['duration'];
+
+                if ( $result['success'] == 'yes' ) $arr['success'] = 'yes';
+
+            }
+
+            $current = $data[ $index[ max( array_keys( $index ) ) ] ];
+
+            $current['rating'] = round( $arr['rating'] / count( $data ) );
+            $current['percent'] = round( $arr['percent'] / count( $data ) );
+            $current['duration'] = round( $arr['duration'] / count( $data ) );
+            $current['success'] = $arr['success'];
+
+            $current['current'] = 'yes';
+            $current['average'] = 'yes';
+
+// p($data);
+//             $data = array_merge( $current, $data );
+            
+            // Добавить элемент в начало
+
+            array_unshift( $data, $current );
+// p($data);
+        }
+
+        return $data;
     }
 
 

@@ -90,11 +90,42 @@ class mif_qm_core_core  {
     
     public function get_time()
     {
-        $time = ( function_exists( 'current_time' ) ) ? current_time('mysql') : date( 'r' );
+        // $time = ( function_exists( 'current_time' ) ) ? current_time( 'mysql' ) : date( 'r' );
+        $time = current_time( 'mysql' );
         return apply_filters( 'mif_qm_core_core_get_time', $time );
     }
+
+
+    //
+    // Получить метку времени по переданным данным
+    //
     
+    public function get_timestamp( $time )
+    {
+        if ( empty( $time ) ) return;
+        $timestamp = mysql2date( 'U', $time );
+        return apply_filters( 'mif_qm_core_core_get_timestamp', $timestamp );
+    }
     
+
+    //
+    // Получить строку продолжительности времени
+    //
+    
+    public function get_duration_str( $second )
+    {
+        $duration = '';
+
+        $t1 = floor( $second / 60 );
+        $t2 = $second % 60;
+
+        if ( $t1 > 0 ) $duration .= $t1 . ' ' . __( 'мин.', 'mif-bp' ) . ' ';
+        $duration .= $t2 . ' ' . __( 'сек.', 'mif-bp' );
+
+        return apply_filters( 'mif_qm_core_core_get_duration_str', $duration, $second );
+    }
+    
+
     //
     // Получить строку времени для вывода на экран
     //

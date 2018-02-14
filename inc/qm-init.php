@@ -211,8 +211,20 @@ class mif_qm_init extends mif_qm_core_core {
                 
                 if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
                     
-                    $result_list = $process->get_result_list();
-                    $mif_qm_process_screen->the_result_list( $result_list );
+                    if ( isset( $_REQUEST['id'] ) ) {
+
+                        $result_id = (int) $_REQUEST['id'];
+                        $result = $process->get_quiz( $result_id );
+
+                        $mif_qm_quiz_screen = new mif_qm_quiz_screen( $result );
+                        $mif_qm_quiz_screen->show( array( 'action' => 'view' ) );
+
+                    } else {
+
+                        $result_list = $process->get_result_list();
+                        $mif_qm_process_screen->the_result_list( $result_list );
+
+                    }    
 
                 } else {
 

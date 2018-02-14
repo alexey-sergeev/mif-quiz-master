@@ -114,11 +114,19 @@ class mif_qm_process_screen extends mif_qm_process_core {
     {
         $out = '';
 
-        $out .= '<div class="container">';
+        $out .= '<div class="result_list container">';
         
+        $out .= '<div class="p-2 pr-0 text-right">';
+        $out .= '<a href="#" class="show-current">' . __( 'актуальные', 'mif-qm') . '</a>';
+        $out .= '<span class="show-all">' . __( 'актуальные', 'mif-qm') . '</span>';
+        $out .= ' | ';
+        $out .= '<a href="#" class="show-all">' . __( 'все', 'mif-qm') . '</a>';
+        $out .= '<span class="show-current">' . __( 'все', 'mif-qm') . '</span>';
+        $out .= '</div>';
+
         foreach ( (array) $this->result_list as $owner => $item ) {
             
-            $fio = ( $owner ) ? $owner : 'anonymous';
+            $fio = ( $owner ) ? $this->display_name( $owner ) : 'anonymous';
             $out .= '<div class="row bg-light p-2 font-weight-bold">';
             $out .= '<div>' . $fio . '</div>';
             $out .= '</div>';
@@ -135,6 +143,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
     }
 
 
+
     // 
     // Возвращает список результатов конкретного пользователя
     // 
@@ -145,43 +154,74 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
         $out = '';
 
-        foreach ( (array) $this->result_list[$owner] as $result ) {
+        // Сортировка по времени
+
+        $index = array();
+
+        foreach ( (array) $this->result_list[$owner] as $key => $result ) {
+
+            // $index[ $this->get_timestamp( $result['time'] ) ] = $key;
+            $index[$key] = $this->get_timestamp( $result['time'] );
+
+        }
+
+        arsort( $index, SORT_NUMERIC );
+
+        // Сформировать вывод
+
+        // foreach ( (array) $this->result_list[$owner] as $result ) {
+        foreach ( $index as $key => $value ) {
+
+            $result = $this->result_list[$owner][$key];
 
             $marker = '';
             $class = '';
             $class_bg = '';
-            $current = '';
+            $class_pb = '';
+            $current = ' current';
             
             if ( $result['success'] == 'yes' ) {
                 
                 $marker = '<i class="fas fa-check text-success"></i>';
                 $class = ' text-success';
                 $class_bg = ' alert-success';
+                // $class_pb = ' bg-success';
                 
             } elseif ( $result['success'] == 'no' ) {
                 
                 $marker = '<i class="fas fa-times text-danger"></i>';
                 $class = ' text-danger';
                 $class_bg = ' alert-danger';
+                // $class_pb = ' bg-danger';
                 
             }
             
             if ( ! ( isset( $result['current'] ) && $result['current'] == 'yes' ) ) {
                 
-                $current = ' current';
-                $class = ' text-muted';
-                $class_bg = ' bg-light';
+                $current = ' all';
+                // $class = ' text-muted';
+                // $class_bg = ' bg-light';
+                $marker = '';
+
             }
 
-            $link = '?action=results&id=' . $result['snapshot'];
+            // $link = '?action=results&id=' . $result['snapshot'];
+            $link = '<a href="?action=results&id=' . $result['snapshot'] . '"><i class="fas fa-external-link-alt"></i></a>';
 
-            $out .= '<div class="row p-2' . $current . '">';
-            $out .= '<div class="col-1 text-center">' . $marker . '</div>';
-            $out .= '<div class="col-4 p-1"><div class="progress"><div class="progress-bar" role="progressbar" style="width: ' . $result['percent'] . '%" aria-valuemin="0" aria-valuemax="100"></div></div></div>';
-            $out .= '<div class="col-3' . $class . '">' . $result['rating'] . ' ' . __( 'из', 'mif-qm' ) . ' ' . $result['max'] . ' (' . $result['percent'] . '%)</div>';
-            $out .= '<div class="col-3' . $class_bg . '">' . $this->get_time_str( $result['time'] ) . '</div>';
-            // $out .= '<div class="col-1 text-center">' . $result['duration'] . '</div>';
-            $out .= '<div class="col-1 text-center"><a href="' . $link . '"><i class="fas fa-external-link-alt"></i></a></div>';
+            if ( isset( $result['average'] ) && $result['average'] == 'yes' ) {
+
+                $link = '<span title="' . __( 'Средний результат по всем попыткам', 'mif-qm' ) . '"><i class="fas fa-calculator"></i></span>';
+
+            }
+            
+            $out .= '<div class="row' . $current . '">';
+            $out .= '<div class="col-1 mt-2 mb-2 text-center">' . $marker . '</div>';
+            $out .= '<div class="col-3 pt-1 pl-0 pr-0 mt-2"><div class="progress"><div class="progress-bar' . $class_pb . '" role="progressbar" style="width: ' . $result['percent'] . '%" aria-valuemin="0" aria-valuemax="100"></div></div></div>';
+            $out .= '<div class="col-2 pl-0 pr-0 mt-2 mb-2 text-center' . $class . '">' . $result['rating'] . ' ' . __( 'из', 'mif-qm' ) . ' ' . $result['max'] . ' (' . $result['percent'] . '%)</div>';
+            // $out .= '<div class="col-2 mt-2 mb-2' . $class . '">' . $result['rating'] . '/' . $result['max'] . ' (' . $result['percent'] . '%)</div>';
+            $out .= '<div class="col-3 mt-2 mb-2 pl-0 pr-0 text-center' . $class_bg . '">' . $this->get_time_str( $result['time'] ) . '</div>';
+            $out .= '<div class="col-2 mt-2 mb-2 pl-0 pr-0 text-center">' . $this->get_duration_str( $result['duration'] ) . '</div>';
+            $out .= '<div class="col-1 mt-2 mb-2 text-center">' . $link . '</div>';
             $out .= '</div>';
             
         }
@@ -246,7 +286,6 @@ class mif_qm_process_screen extends mif_qm_process_core {
         
         $number = $this->get_question_count( $this->quiz );
         $rating = $this->get_max_rating( $this->quiz );
-
 
         $arr[] = '<span title="' . __( 'Количество попыток', 'mif-qm') . '"><i class="fas fa-2x fa-flag-checkered mr-2" aria-hidden="true"></i>' . $attempt . '</span>';
         $arr[] = '<span title="' . __( 'Количество вопросов', 'mif-qm') . '"><i class="fas fa-2x mr-2 fa-list-ul"></i>' . $number . '</span>';

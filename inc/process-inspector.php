@@ -70,7 +70,9 @@ class mif_qm_process_inspector extends mif_qm_core_core {
 
         // !!! надо рассчитать время выполнения теста
 
-        $result['duration'] = '???';
+        $duration = $this->get_timestamp( $this->quiz['processed']['inspected']['time'] ) - $this->get_timestamp( $this->quiz['processed']['created']['time'] );
+
+        $result['duration'] = $duration;
 
         // !!! Сюда также версию и информацию по результатам разделов
 

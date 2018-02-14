@@ -1,3 +1,20 @@
+/* Список результатов */
+
+.result_list .row.all,
+.result_list .show-current {
+    display: none;
+}
+
+.result_list a.show-current,
+.result_list a.show-current:hover,
+.result_list a.show-all,
+.result_list a.show-all:hover {
+    border-bottom: 1px dotted;
+    text-decoration: none;
+}
+
+
+
 /* Оформление меню */
 
 .quiz-menu a span {
