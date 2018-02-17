@@ -5,6 +5,19 @@
     display: none;
 }
 
+.result_list.all .row.all {
+    display: flex;
+}
+
+.result_list.all .show-current {
+    display: inline-block;
+}
+
+.result_list.all .show-all {
+    display: none;
+}
+
+
 .result_list a.show-current,
 .result_list a.show-current:hover,
 .result_list a.show-all,
@@ -12,7 +25,6 @@
     border-bottom: 1px dotted;
     text-decoration: none;
 }
-
 
 
 /* Оформление меню */
@@ -37,7 +49,21 @@
 
 /* Оформление вопросов */
 
-.question.sort .answer {
+.answers td,
+.answers .form-group {
+    position: relative;
+}
+
+.result-caption {
+    position: absolute;
+    line-height: normal;
+    right: 0;
+    top: 0;
+}
+
+.answers .form-group .result-caption {
+    margin-top: 5px!important;
+    margin-bottom: 5px!important;
 }
 
 .question.sort td.marker {
@@ -99,8 +125,8 @@
 
 .qm-draggable .mover,
 .meta .marker {
-    width: 24px;
-    line-height: 24px;
+    width: 26px;
+    line-height: 26px;
     text-align: center;
     background-color: #dee2e6;
     float: right;

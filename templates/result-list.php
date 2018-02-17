@@ -13,6 +13,10 @@
         <?php mif_qm_the_result_list(); ?>
     </div>
 
+    <div>
+        <?php mif_qm_the_result_back(); ?>
+    </div>
+
     <?php do_action( 'mif_qm_after_result_list' );  ?>
 
 </div>

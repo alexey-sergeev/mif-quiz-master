@@ -41,10 +41,20 @@ class mif_qm_process_process extends mif_qm_process_core {
     // Получить список результатов теста
     // 
 
-    public function get_result_list()
+    public function get_result_list( $user_token = NULL )
     {
+        $access_level = $this->access_level( $this->quiz_id );
+        
+        // Если пользователь - никто, то результаты смотреть нельзя
+
+        if ( $access_level == 0 ) return array();
+        
+        // Если пользователь - ученик, то может смотеть только свои результаты
+
+        if ( $access_level == 1 ) $user_token = $this->get_user_token();
+        
         $process_results = new mif_qm_process_results();
-        $result_list = $process_results->get_list( $this->quiz_id );
+        $result_list = $process_results->get_list( $this->quiz_id, $user_token );
 
         return $result_list;
     }
@@ -289,7 +299,7 @@ class mif_qm_process_process extends mif_qm_process_core {
     public function update_snapshot_data( $args = array() )
     {
         if ( empty( $args['ID'] ) ) return false;
-        // if( ! current_user_can( 'edit_post', $args['ID'] ) ) return false;
+        // if( ! current_user_can( 'edit_post', $args['ID'] ) ) return false; 
         // $res = wp_update_post( $args );
         $process_snapshots = new mif_process_snapshots();
         $res = $process_snapshots->update( $args );
@@ -548,6 +558,35 @@ class mif_qm_process_process extends mif_qm_process_core {
     }
 
 
+
+    // 
+    // Удаляет черновики результатов пользователя если он меняет сам тест
+    // 
+
+    public function delete_my_drafts( $quiz_id )
+    {
+
+        $result_args = array(
+            'numberposts' => -1,
+            'post_type'   => 'quiz_snapshot',
+            'post_status' => 'draft',
+            // 'author'      => get_current_user_id(),
+            'meta_key'    => 'owner',
+            'meta_value'  => $this->get_user_token( get_current_user_id() ),
+            'post_parent' => $quiz_id,
+        );
+    
+        $results = get_posts( $result_args );
+
+        foreach ( (array) $results as $result ) {
+
+            $process_snapshots = new mif_process_snapshots();
+            $process_snapshots->trash( $result->ID );
+            // wp_trash_post( $result->ID );
+
+        }
+
+    }
 }
 
 

@@ -18,6 +18,10 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
     private $question = array();
     
+    // Данные теста
+
+    private $quiz = array();
+    
     // Данные текущего ответа
     
     private $answer = array();
@@ -28,12 +32,12 @@ class mif_qm_question_screen extends mif_qm_question_core {
     
 
 
-    function __construct( $question )
+    function __construct( $question, $quiz = array() )
     {
-
         parent::__construct();
-        $this->question = apply_filters( 'mif_qm_question_screen_question', $question );
 
+        $this->quiz = $quiz;
+        $this->question = apply_filters( 'mif_qm_question_screen_question', $question );
     }
 
 
@@ -72,12 +76,13 @@ class mif_qm_question_screen extends mif_qm_question_core {
     public function get_answer_marker()
     {
         $type = $this->question['type'];
-        $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
+        $disabled = ( in_array( $this->action, array( 'view', 'result' ) ) ) ? ' disabled' : '';
         $name = $this->question['id'];
         
         $checked = '';
         if ( $this->action == 'view' && $this->answer['data']['status'] == 'yes' ) $checked = ' checked';
         if ( $this->action == 'run' && isset( $this->answer['data']['result'] ) && $this->answer['data']['result'] == 'yes' ) $checked = ' checked';
+        if ( $this->action == 'result' && isset( $this->answer['data']['result'] ) && $this->answer['data']['result'] == 'yes' ) $checked = ' checked';
 
         if ( $type == 'single' ) {
             
@@ -162,6 +167,10 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
             $mover .= '<div class="mover bg-success text-white"><i class="fa fa-check" aria-hidden="true"></i></div>';
             
+        } elseif ( $this->action == 'result' ) {
+            
+            $mover .= '';
+
         } else {
             
             $caption = $this->get_hash( $this->answer['data']['caption'] );
@@ -186,7 +195,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
         
         $answer = $this->answer['data'];
         
-        $disabled = ( $this->action == 'view' ) ? ' disabled' : '';
+        $disabled = ( in_array( $this->action, array( 'view', 'result' ) ) ) ? ' disabled' : '';
         $size = ( isset( $answer['size'] ) ) ? (int) $answer['size'] : 1;
         $name = $this->question['id'] . '_' . $this->get_hash( serialize( $answer['meta'] ) );
 
@@ -236,7 +245,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
         // В режиме просмотра - показать мета-информацию (правильные ответы или типы допустимых файлов)
 
-        if ( $this->action == 'view' ) {
+        if ( in_array( $this->action, array( 'view', 'result' ) ) ) {
 
             if ( $this->question['type'] == 'open' ) {
 
@@ -306,7 +315,41 @@ class mif_qm_question_screen extends mif_qm_question_core {
     
     public function get_question_header()
     {
-        if ( isset( $this->question['num'] ) ) $header = '<h3>' . __( 'Вопрос', 'mif-qm' ) . ' ' . $this->question['num'] . '</h3>';
+        $header = '';
+
+        if ( $this->action == 'result' ) {
+            
+            $header .= '<div class="row no-gutters">';
+            $header .= '<div class="col-9">';
+            
+            $header .= '<h3>' . __( 'Вопрос', 'mif-qm' ) . ' ' . $this->question['num'] . '</h3>';
+
+            $header .= '</div><div class="col-3 pt-1 text-right">';
+
+            $inspection_mode = $this->get_inspection_mode( $this->quiz );
+
+            $rating = ( isset( $this->question['processed']['rating'][$inspection_mode] ) ) ? $this->question['processed']['rating'][$inspection_mode] : '';
+            // $success = ( isset( $this->part['processed']['success'][$inspection_mode] ) ) ? $this->part['processed']['success'][$inspection_mode] : '';
+            
+            // $class = ( $success == 'no' ) ? ' text-danger' : ' text-success';
+            $class = ' bg-warning text-white';
+            if ( $rating == 1 ) $class = ' bg-success text-light';
+            if ( $rating == 0 ) $class = ' bg-danger text-light';
+
+            $header .= '<span class="p-2 pl-3 pr-3 rounded font-weight-bold' . $class . '">';
+            $header .= round( $rating * 100 ) . '%';
+            $header .= '</span>';
+
+            $header .= '</div>';
+            $header .= '</div>';
+            
+
+        } else {
+        
+            if ( isset( $this->question['num'] ) ) $header = '<h3>' . __( 'Вопрос', 'mif-qm' ) . ' ' . $this->question['num'] . '</h3>';
+        
+        }
+
         return apply_filters( 'mif_qm_question_screen_get_question_header', $header, $this->question );
     }
         
@@ -390,18 +433,52 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
         // Признак правильности
 
-        if ( $this->action == 'view' && isset( $this->answer['data']['status'] ) ) {
+        // if ( in_array( $this->action, array( 'view', 'result' ) ) && isset( $this->answer['data']['status'] ) ) {
+        if ( in_array( $this->action, array( 'view' ) ) && isset( $this->answer['data']['status'] ) ) {
 
             if ( $this->answer['data']['status'] == 'yes' ) $classes[] = 'correct table-success';
             if ( $this->answer['data']['status'] == 'no' ) $classes[] = 'incorrect';
-
+            
         }
+
+        // if ( $this->action == 'view' && isset( $this->answer['data']['status'] ) ) {
+
+        //     if ( $this->answer['data']['status'] == 'yes' ) $classes[] = 'correct table-success';
+        //     if ( $this->answer['data']['status'] == 'no' ) $classes[] = 'incorrect';
+            
+        // } elseif ( $this->action == 'result' && isset( $this->answer['data']['resume'] ) ) {
+
+        //     if ( $this->answer['data']['resume'] == 'correct' ) $classes[] = 'correct table-success';
+        //     if ( $this->answer['data']['resume'] == 'incorrect' ) $classes[] = 'incorrect table-danger';
+            
+        // }
 
         return apply_filters( 'mif_qm_question_screen_get_answer_classes', implode( ' ', $classes ), $this->answer, $this->action, $classes );
     }
+    
+    
+    
+    
+    // 
+    // Возвращает маркер правильности ответа
+    // 
+    
+    public function get_answer_result_marker()
+    {
+        $out = '';
 
-    
-    
+        if ( $this->action == 'result' && isset( $this->answer['data']['resume'] ) ) {
+
+            // if ( $this->answer['data']['resume'] == 'correct' ) $out .= '<i class="fas fa-plus text-success"></i>';
+            // if ( $this->answer['data']['resume'] == 'incorrect' ) $out .= '<i class="fas fa-minus text-danger"></i>';
+            if ( $this->answer['data']['resume'] == 'correct' ) $out .= '<span class="result-caption bg-success p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'правильно', 'mif-qm' ) . '</span>';
+            if ( $this->answer['data']['resume'] == 'incorrect' ) $out .= '<span class="result-caption bg-danger p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'ошибка', 'mif-qm' ) . '</span>';
+
+        }
+      
+        return apply_filters( 'mif_qm_question_screen_get_answer_result_marker', $out, $this->answer, $this->action );
+    }
+
     // // 
     // // Возвращает классы для значка перемещения
     // // 

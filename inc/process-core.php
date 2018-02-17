@@ -25,15 +25,24 @@ class mif_qm_process_core extends mif_qm_core_core {
     
     public function get_action( $quiz_id = false )
     {
-        global $post;
+        $quiz_id_raw = $quiz_id;
+    
+        if ( ! $action = wp_cache_get( 'mif_qm_action', $quiz_id_raw ) ) {
 
-        if ( $quiz_id === false ) $quiz_id = $post->ID;
+            global $post;
 
-        $action = ( mif_qm_user_can( 'edit-quiz', $quiz_id ) ) ? 'view' : 'run';
+            if ( $quiz_id === false ) $quiz_id = $post->ID;
 
-        if ( isset( $_REQUEST['action'] ) ) $action = sanitize_key( $_REQUEST['action'] );
+            $this->access_level( $quiz_id );
 
-        // $action = isset( $_REQUEST['action'] ) ? sanitize_key( $_REQUEST['action'] ) : '';
+            // $action = ( mif_qm_user_can( 'edit-quiz', $quiz_id ) ) ? 'view' : 'run';
+            $action = ( $this->access_level( $quiz_id ) > 1 ) ? 'view' : 'run';
+
+            if ( isset( $_REQUEST['action'] ) ) $action = sanitize_key( $_REQUEST['action'] );
+
+            wp_cache_set( 'mif_qm_action', $action, $quiz_id_raw );
+
+        }
 
         return $action;
     }
@@ -46,6 +55,7 @@ class mif_qm_process_core extends mif_qm_core_core {
 
     public function companion_update( $args = array() )
     {
+        // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
         if ( empty( $args['ID'] ) ) return false;
 
         remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
@@ -62,6 +72,8 @@ class mif_qm_process_core extends mif_qm_core_core {
 
     public function companion_insert( $args = array() )
     {
+        // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
+
         if ( empty( $args['post_type'] ) ) return false;
         if ( empty( $args['post_content'] ) ) return false;
 
@@ -95,6 +107,31 @@ class mif_qm_process_core extends mif_qm_core_core {
         $companion_id = wp_insert_post( $companion_args );
         
         return $companion_id;
+    }
+
+
+
+    // 
+    // Есть ли результаты для данного пользователя?
+    //
+
+    public function is_result( $quiz_id = false, $user_id = false )
+    {
+        global $post;
+        if ( ! $quiz_id ) $quiz_id = $post->ID;
+        if ( ! $user_id ) $user_id = get_current_user_id();
+
+        $args = array(
+            'post_status'   => 'publish',
+            'post_type'     => 'quiz_result',
+            'meta_key'      => 'owner',
+            'meta_value'    => $this->get_user_token( $user_id ),
+            'post_parent'   => $quiz_id,
+        );
+        
+        $result = get_posts( $args );
+
+        return ( $result ) ? true : false;
     }
 
 

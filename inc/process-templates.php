@@ -11,6 +11,18 @@ defined( 'ABSPATH' ) || exit;
 
 
 //
+// Ссылка на тест с результатов пользователя
+//
+
+function mif_qm_the_result_back()
+{
+    global $mif_qm_process_screen;
+    echo $mif_qm_process_screen->get_result_back();
+}
+
+
+
+//
 // Список результатов
 //
 
@@ -30,6 +42,18 @@ function mif_qm_the_start_panel()
 {
     global $mif_qm_process_screen;
     echo $mif_qm_process_screen->get_start_panel();
+}
+
+
+
+//
+// Панель с результатами
+//
+
+function mif_qm_the_result_panel()
+{
+    global $mif_qm_process_screen;
+    echo $mif_qm_process_screen->get_result_panel();
 }
 
 

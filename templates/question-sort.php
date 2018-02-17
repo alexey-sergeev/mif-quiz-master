@@ -25,6 +25,7 @@
                         <?php mif_qm_the_answer_linker(); ?>    
                         <?php mif_qm_the_answer_mover(); ?>    
                         <div class="answer"><?php mif_qm_the_answer_caption(); ?></div>
+                        <?php mif_qm_the_answer_result_marker(); ?>
                     </div>
                 </td>
             </tr>

@@ -33,6 +33,14 @@ class mif_qm_init extends mif_qm_core_core {
 
         add_filter( 'the_content', array( $this, 'add_quiz_content' ) );
         add_action( 'save_post_quiz', array( $this, 'delete_my_drafts' ) );
+        // add_action( 'save_post_quiz_snapshot', array( $this, 'update_results' ), 10 );
+        add_action( 'trashed_post', array( $this, 'update_results' ), 10 );
+
+        // add_action( 'wp_ajax_mif-qm-quiz-submit', array( $this, 'ajax_quiz_submit' ) );
+        add_action( 'wp_ajax_run', array( $this, 'ajax_quiz_submit' ) );
+        add_action( 'wp_ajax_result', array( $this, 'ajax_quiz_submit' ) );
+        add_action( 'wp_ajax_view', array( $this, 'ajax_quiz_submit' ) );
+
 
     }
 
@@ -121,7 +129,7 @@ class mif_qm_init extends mif_qm_core_core {
     // Вывод теста на страницах
     //
 
-    public function add_quiz_content( $content )
+    public function add_quiz_content( $content = '' )
     {
         global $post;
         global $mif_qm_quiz_screen;
@@ -129,14 +137,25 @@ class mif_qm_init extends mif_qm_core_core {
         $mif_qm_process_screen = new mif_qm_process_screen();
         
         if ( ! is_user_logged_in() ) {
-
+            
             $mif_qm_process_screen->alert( __( 'У вас нет прав доступа. Возможно, вам надо просто войти.', 'mif-qm' ), 'danger' );
             return false;
-
+            
         }
+
+        
+        if ( empty( $post ) ) {
+            
+            $post_id = (int) $_REQUEST['quiz_id'];
+            $post = get_post( $post_id );
+            
+        }
+        
         
         if ( $post->post_type == 'quiz' ) {
             
+            echo '<div id="mif-qm-ajax-container">';
+
             $process = new mif_qm_process_process( $post->ID );
             $action = $process->get_action();
             
@@ -158,7 +177,7 @@ class mif_qm_init extends mif_qm_core_core {
                 
             } elseif ( $action == 'run' ) {
                 
-                $process = new mif_qm_process_process();
+                $process = new mif_qm_process_process( $post->ID );
                 $quiz_stage = $process->get_quiz_stage();
                 
                 if ( is_numeric( $quiz_stage ) ) {
@@ -186,60 +205,107 @@ class mif_qm_init extends mif_qm_core_core {
                             
                         } else {
                             
-                            $mif_qm_process_screen->alert( __( 'Что-то пошло не так', 'mif-qm' ), 'danger' );
+                            $mif_qm_process_screen->alert( __( 'Что-то пошло не так', 'mif-qm' ) . ' (code: 1)', 'danger' );
                             
                         }
                         
                     } elseif ( $quiz_stage === 1 ) {
+
+                        // Закончилось число попыток прохождения теста
                         
                         $mif_qm_process_screen->alert( $arr[$quiz_stage], 'warning' );
                         
                     } else {
+
+                        // Что-то пошло не так
                         
-                        $mif_qm_process_screen->alert( __( 'Что-то пошло не так', 'mif-qm' ), 'danger' );
+                        $mif_qm_process_screen->alert( __( 'Что-то пошло не так', 'mif-qm' ) . ' (code: 2)', 'danger' );
                         
                     }
                     
                 } else {
+
+                    // Показать очередную порцию ворпосов испытуемому
 
                     $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz_stage );
                     $mif_qm_quiz_screen->show( array( 'action' => 'run' ) );
 
                 }
 
-            } elseif ( $action == 'results' ) {
+            } elseif ( $action == 'result' ) {
                 
-                if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
+                // Смотрим результаты
                     
-                    if ( isset( $_REQUEST['id'] ) ) {
+                if ( isset( $_REQUEST['id'] ) ) {
 
-                        $result_id = (int) $_REQUEST['id'];
+                    // Анализ конкретного теста
+
+                    $result_id = (int) $_REQUEST['id'];
+                    
+                    if ( $this->user_can( 'view-result', $result_id ) ) {
+                        
                         $result = $process->get_quiz( $result_id );
-
+                        
                         $mif_qm_quiz_screen = new mif_qm_quiz_screen( $result );
-                        $mif_qm_quiz_screen->show( array( 'action' => 'view' ) );
-
+                        $mif_qm_quiz_screen->show( array( 'action' => 'result' ) );
+                        
                     } else {
 
-                        $result_list = $process->get_result_list();
-                        $mif_qm_process_screen->the_result_list( $result_list );
+                        $mif_qm_process_screen->alert( __( 'Доступ ограничен', 'mif-qm' ), 'danger' );
 
-                    }    
+                    }
 
                 } else {
 
-                    $mif_qm_process_screen->alert( __( 'У вас нет прав доступа', 'mif-qm' ), 'danger' );
+                    // Список всех результатов теста
+                    
+                    $user_token = ( isset( $_REQUEST['user'] ) ) ? sanitize_key( $_REQUEST['user'] ) : NULL;
 
-                }
-                
+                    $result_list = $process->get_result_list( $user_token );
+                    $mif_qm_process_screen->the_result_list( $result_list );
+
+                }    
+               
             }
+
+            echo '</div>';
 
             return false;
         }
 
-
         return $content;
     }
+
+
+
+    // 
+    // Удаляет черновики результатов пользователя если он меняет сам тест
+    // 
+
+
+    public function ajax_quiz_submit()
+    {
+        // p($_REQUEST);
+        check_ajax_referer( 'mif-qm' );
+
+
+        $this->add_quiz_content();
+
+        // global $mif_qm_quiz_screen;
+
+        // $process = new mif_qm_process_process();
+        // $quiz_stage = $process->get_quiz_stage();
+
+        // $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz_stage );
+        // $mif_qm_quiz_screen->show( array( 'action' => 'run' ) );
+
+
+        // $out = '12345';
+        // echo $out;
+
+        wp_die();
+    }
+
 
 
     // 
@@ -268,6 +334,40 @@ class mif_qm_init extends mif_qm_core_core {
             // wp_trash_post( $result->ID );
 
         }
+
+    }
+
+
+    // 
+    // Обновляет общие результаты пользователя, если в них что-то менялось
+    // 
+
+    public function update_results( $snapshot_id )
+    {
+        // Если не из админки, то ничего не делать
+        
+        // if ( ! is_admin() ) return;
+
+        $snapshot = get_post( $snapshot_id );
+        
+        // Если это не снимок, то ничего не делать
+
+        if ( ! ( $snapshot->post_type == 'quiz_snapshot' ) ) return;
+
+        // Если менялся черновик, то ничего не делать
+
+        if ( $snapshot->post_status == 'draft' ) return;
+
+        $quiz_id = $snapshot->post_parent;
+
+        $owner = get_post_meta( $snapshot_id, 'owner', true );
+        $user_id = $this->get_user_id( $owner );
+
+        // Обновить данные для пользователя и теста
+        // Без новых данных, но с указанием всё пересчитать
+
+        $process_results = new mif_qm_process_results();
+        $process_results->update( array(), $quiz_id, $user_id, true );
 
     }
 

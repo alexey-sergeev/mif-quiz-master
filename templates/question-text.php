@@ -12,6 +12,7 @@
         <?php while ( mif_qm_the_answer() ) : ?>
         <div class="form-group <?php mif_qm_the_answer_classes(); ?>">
             <p><?php mif_qm_the_answer_handmake(); ?></p>
+            <?php mif_qm_the_answer_result_marker(); ?>
         </div>
         <?php endwhile; ?>
     </div>

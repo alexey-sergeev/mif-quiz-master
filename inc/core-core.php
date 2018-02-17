@@ -172,12 +172,14 @@ class mif_qm_core_core  {
         
         if ( $user_id && $user = get_user_by( 'ID', $user_id ) ) {
             
-            $ret = $user->user_login;
+            // $ret = $user->user_login;
+            $ret = $user->user_nicename;
             
         } elseif ( is_user_logged_in() ) {
             
             $user = wp_get_current_user();
-            $ret = $user->user_login;
+            // $ret = $user->user_login;
+            $ret = $user->user_nicename;
             
         } else {
             
@@ -186,6 +188,41 @@ class mif_qm_core_core  {
         }
         
         return apply_filters( 'mif_qm_core_core_get_user_token', $ret, $user_id );
+    }
+
+
+    
+    //
+    // Получить ID пользователя по его токену
+    //
+
+    public function get_user_id( $user_token = '' )
+    {
+        if ( $user = get_user_by( 'slug', $user_token ) ) {
+
+            return apply_filters( 'mif_qm_core_core_get_user_id', $user->id, $user_token);
+
+        } else {
+
+            return false;
+
+        }
+
+    }
+
+    
+    //
+    // Получить имя пользователя для вывода на экран
+    //
+
+    public function get_display_name( $user_token = '' )
+    {
+        $display_name = '';
+        if ( $user = get_user_by( 'slug', $user_token ) ) $display_name = $user->display_name;
+
+        $out = ( $display_name ) ? $display_name : $user_token;
+
+        return apply_filters( 'mif_qm_core_core_get_display_name', $out, $user_token );
     }
 
 
@@ -264,6 +301,7 @@ class mif_qm_core_core  {
 
     public function get_clean( $key = '', $item = '', $mode = 'quiz', $flag = false )
     {
+        if ( ! isset( $item['param'][$key] ) ) return;
 
         $interpretation = new mif_qm_param_interpretation( $key, $item['param'][$key], $mode );
         $arr = $interpretation->get_clean_value();
@@ -287,9 +325,8 @@ class mif_qm_core_core  {
 
     public function get_hash( $value )
     {
-        // !!! Здесь еще солить!
-
-        $out = md5( $value );
+        $nonce = wp_create_nonce( 'mif-qm-salt' );
+        $out = md5( $value . $nonce );
         return $out;
     }
 
@@ -312,35 +349,136 @@ class mif_qm_core_core  {
     //
     // Узнать, имеется ли результат по попросу, разделу или тесту?
     //
-
+    
     public function is_submitted( $item = array() )
     {
         $ret = false;
         if ( isset( $item['processed']['submitted'] ) && $item['processed']['submitted'] ) $ret = true;
-
+        
         return $ret;
     }    
+    
+
+    
+    //
+    // Учточнить режим оценивания теста
+    //
+    
+    public function get_inspection_mode( $quiz = array(), $inspection_mode = 'balanced' )
+    {
+        
+        if ( ! in_array( $inspection_mode, array( 'strict', 'balanced', 'detailed' ) ) ) {
+            
+            $inspection_mode = 'balanced';
+            if ( $this->is_param( 'strict', $quiz ) ) $inspection_mode = 'strict'; 
+            if ( $this->is_param( 'detailed', $quiz ) ) $inspection_mode = 'detailed'; 
+            
+        }
+        
+        return $inspection_mode; 
+    }
+    
+    
+
+    
+    //
+    // Возвращает уровень доступа пользователя
+    //      0 - нет доступа
+    //      1 - прохождение теста (ученик)
+    //      2 - просмотр результатов (эксперт)
+    //      3 - проверка ответов (ассистент)
+    //      4 - редактирование ответов (тьютор)
+    //      5 - редактирование теста (мастер)
+    //
+
+    public function access_level( $quiz_id = NULL, $user_id = NULL )
+    {
+        if ( $quiz_id == NULL ) {
+            
+            global $post;
+            $quiz_id = $post->ID;
+            
+        }
+
+        if ( $user_id == NULL ) $user_id = get_current_user_id();
+
+        $quiz = get_post( $quiz_id );
+
+        // Автор теста всегда является мастером
+        
+        if ( $user_id == $quiz->post_author ) return 5;
+
+        return 1;
+    }
 
 
+    //
+    // Права доступа
+    //
 
-    // //
-    // // Права доступа
-    // //
-
-    // public function user_can( $token )
-    // {
-    //     global $post;
-
-    //     switch ( $token ) {
-
-    //         case 'edit-quiz':
-
-    //             return current_user_can( 'edit_post', $post->ID );
+    public function user_can( $token, $post_id = NULL )
+    {
+        // Если не передан id записи, то проверяем для текущей
+    
+        if ( $post_id === NULL ) {
+            
+            global $post;
+            $post_id = $post->ID;
+    
+        }
+        
+        // Проверяем
+    
+        switch ( $token ) {
+    
+            case 'edit-quiz':
+    
+                return current_user_can( 'edit_post', $post_id );
                                 
-    //         break;
-    //     }
+            break;
+    
+            case 'view-quiz':
+    
+                return current_user_can( 'edit_post', $post_id );
+                                
+            break;
+    
+            case 'view-result':
 
-    // }
+                // Для этого параметра надо указывать ID результата (не теста)
+
+                // Узнать id теста
+
+                $result = get_post( $post_id );
+                $quiz_id = $result->post_parent;
+
+                // Если пользователь эксперт или более
+
+                if ( $this->access_level( $quiz_id ) > 1 ) return true;
+                
+                // Узнать владельца результата
+                
+                $owner = get_post_meta( $post_id, 'owner', true );
+
+                // Узнать текущего пользователя
+
+                $current_user_token = $this->get_user_token();
+                
+                // Текущий тест
+
+                $quiz_core = new mif_qm_quiz_core();
+                $quiz = $quiz_core->parse( $quiz_id );
+                
+                // Если тест предполагает просмотр своих результатов и пользователь запрашивает как раз его, то - да
+
+                if ( $this->is_param( 'resume', $quiz ) && $owner == $current_user_token ) return true;
+                                
+            break;
+        }
+
+        return false;    
+    }
+
 }
 
 ?>

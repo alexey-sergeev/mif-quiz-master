@@ -15,10 +15,10 @@ class mif_qm_process_inspector extends mif_qm_core_core {
     private $quiz = array();
     // private $result = false;
 
-    function __construct( $quiz = array() )
+    function __construct( $quiz = array(), $recount = false )
     {
         parent::__construct();
-        $this->quiz = $this->quiz_inspection( $quiz );
+        $this->quiz = $this->quiz_inspection( $quiz, $recount );
     }
 
     
@@ -29,19 +29,21 @@ class mif_qm_process_inspector extends mif_qm_core_core {
     public function get_result( $snapshot_id = false, $inspection_mode = '' )
     {
         // Если тест не проверен, то и результатов нет
-
+        
         if ( empty( $this->quiz['processed']['rating'] ) ) return false;
         if ( empty( $this->quiz['processed']['success'] ) ) return false;
 
         // Уточнить режим оценки
 
-        if ( ! in_array( $inspection_mode, array( 'strict', 'balanced', 'detailed' ) ) ) {
+        $inspection_mode = $this->get_inspection_mode( $this->quiz, $inspection_mode );
 
-            $inspection_mode = 'balanced'; 
-            if ( $this->is_param( 'strict', $this->quiz ) ) $inspection_mode = 'strict'; 
-            if ( $this->is_param( 'detailed', $this->quiz ) ) $inspection_mode = 'detailed'; 
+        // if ( ! in_array( $inspection_mode, array( 'strict', 'balanced', 'detailed' ) ) ) {
 
-        }
+        //     $inspection_mode = 'balanced'; 
+        //     if ( $this->is_param( 'strict', $this->quiz ) ) $inspection_mode = 'strict'; 
+        //     if ( $this->is_param( 'detailed', $this->quiz ) ) $inspection_mode = 'detailed'; 
+
+        // }
 
         // Рассчитать баллы, проценты и статус завершенности
         
@@ -58,7 +60,8 @@ class mif_qm_process_inspector extends mif_qm_core_core {
 
         // !!! надо рассчитать id теста
         
-        $result = $this->get_signature();
+        // $result = $this->get_signature();
+        $result['time'] = $this->quiz['processed']['inspected']['time'];
         
         // !!! надо пытаться выяснить id снимка, если это не указано
         
@@ -68,7 +71,7 @@ class mif_qm_process_inspector extends mif_qm_core_core {
         $result['percent'] = $percent;
         $result['success'] = $success;
 
-        // !!! надо рассчитать время выполнения теста
+        //  Рассчитать время выполнения теста
 
         $duration = $this->get_timestamp( $this->quiz['processed']['inspected']['time'] ) - $this->get_timestamp( $this->quiz['processed']['created']['time'] );
 
@@ -87,6 +90,16 @@ class mif_qm_process_inspector extends mif_qm_core_core {
 
     private function quiz_inspection( $quiz, $recount = false )
     {
+        // Если передано число, то преобразовать это в тест
+
+        if ( is_numeric( $quiz ) ) {
+
+            $data = get_post( $quiz );
+            $xml_core = new mif_qm_xml_core();
+            $quiz = $xml_core->to_array( $data->post_content );
+
+        }
+        
         // Если данные результата есть и пересчитать не просят, то ничего и не делать
 
         if ( isset( $quiz['processed']['rating'] ) && isset( $quiz['processed']['success'] ) && $recount == false ) return $quiz;

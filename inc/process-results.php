@@ -79,18 +79,49 @@ class mif_qm_process_results extends mif_qm_process_core {
     // Обновить данные об оценках
     //
 
-    public function update( $new_result, $quiz_id, $user_id = NULL )
+    public function update( $new_result, $quiz_id, $user_id = NULL, $rescan = false )
     {
         if ( $user_id == NULL ) $user_id = get_current_user_id();
 
         $results = $this->get( $quiz_id, $user_id );
+        
+        // Данные - из текущих результатов, либо пустые
+        
+        $data = ( isset( $results['data'] ) ) ? (array) $results['data'] : array();
+        
+        // Если требуется обновление результатов, то пересчитать данные из снимков
+
+        if ( $rescan ) {
+
+            $data = array();
+
+            $args = array(
+                'post_type'   => 'quiz_snapshot',
+                'post_status' => 'publish',
+                'orderby'     => 'date',
+                'order'       => 'DESC',
+                'post_parent' => $quiz_id,
+                'meta_key'    => 'owner',
+                'meta_value'  => $this->get_user_token( $user_id )
+            );
+
+            $snapshots = get_posts( $args );
+
+            foreach ( (array) $snapshots as $snapshot ) {
+                
+                $process_inspector = new mif_qm_process_inspector( $snapshot->ID );
+                $data[] = $process_inspector->get_result( $snapshot->ID );
+
+            }
+
+        }
 
         if ( isset( $results['ID'] ) ) {
 
             // Данные есть. ДОбавить новые и обновить
 
-            $data = (array) $results['data'];
-            $data[] = $new_result;
+            // $data = (array) $results['data'];
+            if ( ! empty( $new_result ) ) $data[] = $new_result;
 
             // Посчитать данные о итоговой оценке
 
@@ -107,8 +138,8 @@ class mif_qm_process_results extends mif_qm_process_core {
 
             // Результатов нет, создать новую запись
 
-            $data = array();
-            $data[] = $new_result;
+            // $data = array();
+            if ( ! empty( $new_result ) ) $data[] = $new_result;
 
             // Посчитать данные о итоговой оценке
 
@@ -123,7 +154,7 @@ class mif_qm_process_results extends mif_qm_process_core {
                         );
 
             $res = $this->companion_insert( $args );
-          
+
         }
         
         if ( $res && isset( $new_result['snapshot'] ) ) {
@@ -143,19 +174,29 @@ class mif_qm_process_results extends mif_qm_process_core {
     // Получить данные о текущих оценках многих пользователей для теста
     //
 
-    public function get_list( $quiz_id )
+    public function get_list( $quiz_id, $user_token = NULL )
     {
         $arr = array();
 
         $result_args = array(
             'post_type'   => 'quiz_result',
+            'post_status'   => 'publish',
             'orderby'     => 'date',
             'order'       => 'DESC',
             'post_parent' => $quiz_id,
         );
 
+        // Если указан пользователь, то показать только его результаты
+
+        if ( $user_token ) {
+
+            $result_args['meta_key'] = 'owner';
+            $result_args['meta_value'] = $user_token;
+
+        }
+
         $results = get_posts( $result_args );
-        
+
         foreach ( (array) $results as $result ) {
             
             $owner = get_post_meta( $result->ID, 'owner', true );
@@ -312,13 +353,10 @@ class mif_qm_process_results extends mif_qm_process_core {
             $current['current'] = 'yes';
             $current['average'] = 'yes';
 
-// p($data);
-//             $data = array_merge( $current, $data );
-            
             // Добавить элемент в начало
 
             array_unshift( $data, $current );
-// p($data);
+
         }
 
         return $data;
@@ -372,7 +410,15 @@ class mif_qm_process_results extends mif_qm_process_core {
     {
         $arr = array();
 
-        $xml = new SimpleXMLElement( $xml );
+        try {
+
+            $xml = new SimpleXMLElement( $xml );
+
+        } catch ( Exception $e ) {
+
+            return $arr;
+
+        }
 
         foreach ( $xml as $result ) {
 

@@ -18,31 +18,40 @@ defined( 'ABSPATH' ) || exit;
 
 function mif_qm_user_can( $token, $post_id = NULL )
 {
-    // Если не передан id записи, то проверяем для текущей
+    global $mif_qm_process_screen;
+    return $mif_qm_process_screen->user_can( $token, $post_id );
 
-    if ( $post_id === NULL ) {
+    // // Если не передан id записи, то проверяем для текущей
+
+    // if ( $post_id === NULL ) {
         
-        global $post;
-        $post_id = $post->ID;
+    //     global $post;
+    //     $post_id = $post->ID;
 
-    }
+    // }
     
-    // Проверяем
+    // // Проверяем
 
-    switch ( $token ) {
+    // switch ( $token ) {
 
-        case 'edit-quiz':
+    //     case 'edit-quiz':
 
-            return current_user_can( 'edit_post', $post_id );
+    //         return current_user_can( 'edit_post', $post_id );
                             
-        break;
+    //     break;
 
-        case 'view-quiz':
+    //     case 'view-quiz':
 
-            return current_user_can( 'edit_post', $post_id );
+    //         return current_user_can( 'edit_post', $post_id );
                             
-        break;
-    }
+    //     break;
+
+    //     case 'view-result':
+
+    //         return current_user_can( 'edit_post', $post_id ); // !!!
+                            
+    //     break;
+    // }
 
 }
 

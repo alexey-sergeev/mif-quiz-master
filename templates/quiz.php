@@ -3,7 +3,7 @@
 <hr />
 
 <div class="quiz">
-    <form method="post" action="" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data">
 
     <?php do_action( 'mif_qm_before_quiz_menu' ); ?>
     <?php mif_qm_the_quiz_menu(); ?>
@@ -30,7 +30,7 @@
     </div>
 
     <?php do_action( 'mif_qm_after_questions' );  ?>
-    <form>
+    </form>
 </div>
 
 <?php do_action( 'mif_qm_after_quiz' );  ?>

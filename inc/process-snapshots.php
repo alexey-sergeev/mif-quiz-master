@@ -79,9 +79,9 @@ class mif_process_snapshots extends mif_qm_process_core {
 
     public function insert( $args )
     {
-        remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-        $snapshot_id = wp_insert_post( $args );
-        
+        // remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
+        // $snapshot_id = wp_insert_post( $args );
+        $snapshot_id = $this->companion_insert( $args );        
         return $snapshot_id;
     }
     
@@ -92,8 +92,9 @@ class mif_process_snapshots extends mif_qm_process_core {
     
     public function update( $args )
     {
-        remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-        $res = wp_update_post( $args );
+        $res = $this->companion_update( $args );
+        // remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
+        // $res = wp_update_post( $args );
         return $res;
     }
 

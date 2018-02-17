@@ -99,6 +99,17 @@ function mif_qm_the_answer_classes()
 
 
 //
+// Выводит маркер правильности ответа
+//
+
+function mif_qm_the_answer_result_marker()
+{
+    global $mif_qm_question_screen;
+    echo $mif_qm_question_screen->get_answer_result_marker();
+}
+
+
+//
 // Выводит маркер ответа
 //
 

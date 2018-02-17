@@ -47,7 +47,7 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
     public function show( $args = array() )
     {
         $defaults = array( 'action' => 'view' );
-
+        
         $r = wp_parse_args( $args, $defaults );
 		extract( $r, EXTR_SKIP );
 
@@ -105,67 +105,16 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
                 }
 
         }
-
+        
         foreach ( (array) $this->quiz['parts'] as $part ) {
 
-            $mif_qm_part_screen = new mif_qm_part_screen( $part );
+            $mif_qm_part_screen = new mif_qm_part_screen( $part, $this->quiz );
             $mif_qm_part_screen->show( array( 'action' => $this->action ) );
 
         }
 
     }
 
-    
-            
-    // // 
-    // // Возвращает класс меню
-    // // 
-    
-    // public function get_menu_class( $action = 'view', $class = '', $flag = true )
-    // {
-    //     $process_core = new mif_qm_process_core();
-    
-    //     if ( $process_core->get_action() === $action ) {
-    
-    //         $res1 = ' ' . $class;
-    //         $res2 = '';
-            
-    //     } else {
-            
-    //         $res1 = '';
-    //         $res2 = ' ' . $class;
-    
-    //     }
-    
-    //     $out = ( $flag ) ? $res1 : $res2;
-
-    //     return apply_filters( 'mif_qm_quiz_screen_get_menu_class', $out, $this->quiz );
-    // }
-    
-
-            
-    // // 
-    // // Возвращает меню теста
-    // // 
-    
-    // public function get_quiz_menu()
-    // {
-    //     global $post;
-
-    //     $menu = '';
-        
-    //     if ( mif_qm_user_can( 'edit-quiz' ) ) {
-
-    //         $menu .= '<div class="btn-group mt-3 mb-3" role="group">';
-    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><i class="fa fa-2x fa-circle-o' . $this->get_menu_class( 'view', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
-    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><i class="fa fa-2x fa-play' . $this->get_menu_class( 'run', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
-    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><i class="fa fa-2x fa-pencil-square' . $this->get_menu_class( 'edit', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
-    //         $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
-    //         $menu .= '</div>';
-    //     }
-
-    //     return apply_filters( 'mif_qm_quiz_screen_get_quiz_navigation', $menu, $this->quiz );
-    // }
 
     
             
@@ -204,32 +153,47 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
     
             
     // 
-    // Возвращает заголовок теста
+    // Возвращает кнопку продолжения
     // 
     
     public function get_quiz_next_button()
     {
+        global $post;
+        $quiz_id = $post->ID; // !!! думать, как сделать для шорткодов
+        
         $btn = '';
 
-        $btn .= '<div class="m-5 text-center">';
-        $btn .= '<button type="submit" class="btn btn-primary btn-lg">' . __( 'Далее', 'mif-qm' ) . '</button>';
-        $btn .= '</div>';
-        $btn .= '<input type="hidden" name="action" value="run">';
-        
-        
-        if ( isset( $this->quiz['processed']['numbers'] ) ) {
+        if ( $this->action == 'run' ) {
             
-            $current = (int) $this->quiz['processed']['numbers']['current'];
-            $next = $current + 1;
+            $btn .= '<div class="m-5 text-center">';
+            $btn .= '<button type="submit" class="btn btn-primary btn-lg">' . __( 'Далее', 'mif-qm' ) . '</button>';
+            $btn .= '</div>';
+            $btn .= '<input type="hidden" name="action" value="run">';
+            $btn .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';;
+            $btn .= '<input type="hidden" name="quiz_id" value="' . $quiz_id . '" />';;
+            
+            
+            if ( isset( $this->quiz['processed']['numbers'] ) ) {
+                
+                $current = (int) $this->quiz['processed']['numbers']['current'];
+                $next = $current + 1;
+                
+                $btn .= '<input type="hidden" name="num" value="' . $next . '">';
+                
+            }
+            
+        } elseif ( $this->action == 'result' ) {
 
-            $btn .= '<input type="hidden" name="num" value="' . $next . '">';
+            $btn .= '<div class="p-4 mt-5 mb-3 text-center bg-light">';
+            $btn .= '<a href="' . get_permalink() .  '" class="font-weight-bold">' . __( 'Вернуться к тесту', 'mif-qm') . '</a><br />';
+            $btn .= '<a href="' . get_permalink() .  '?action=result" class="font-weight-bold">' . __( 'Вернуться к результатам', 'mif-qm') . '</a>';
+            $btn .= '</div>';           
 
         }
-
         // $link = $this->get_link( $next );
         // $btn = '<div class="m-5 text-center"><a class="next-btn btn btn-primary btn-lg text-white" href="' . $link . '">' . __( 'Далее', 'mif-qm' ) . '</a></div>';
 
-        return apply_filters( 'mif_qm_question_screen_get_quiz_next_button', $btn, $this->quiz );
+        return apply_filters( 'mif_qm_question_screen_get_quiz_next_button', $btn, $this->quiz, $this->action );
     }
 
    
@@ -265,10 +229,31 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
     
     public function get_quiz_param()
     {
+        $out = '';
+        
         if ( $this->action == 'view' ) {
     
             $screen = new mif_qm_param_screen( $this->quiz['param'], 'quiz' );
             $out = $screen->get_show();
+
+        } elseif ( $this->action == 'result' ) {
+
+
+            $out .= '<div class="bg-light p-4 text-center">'; 
+
+            $out .= '<h3 class="font-weight-normal">' . __( 'Результат теста', 'mif-qm' ) . '</h3>';
+
+            // $snapshot_id = ( isset( $_REQUEST['id'] ) ) ? (int) $_REQUEST['id'] : false;
+
+            $process_inspector = new mif_qm_process_inspector( $this->quiz );
+            // $result = $process_inspector->get_result( $snapshot_id );
+            $result = $process_inspector->get_result();
+
+            $process_screen = new mif_qm_process_screen();
+            $out .= $process_screen->get_result_panel( $result );
+            
+            $out .= '</div>'; 
+
 
         } else {
 
