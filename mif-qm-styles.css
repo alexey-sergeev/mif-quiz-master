@@ -1,3 +1,25 @@
+/* Панель настройки доступа */
+
+.access-mode span.loading {
+    position: absolute;
+    right: 1rem;
+    top: .25rem;
+    display: none;
+}
+
+
+/* Список пользователей */
+
+a.cancel,
+a.cancel:hover {
+    border-bottom: 1px dotted;
+    text-decoration: none;
+}
+
+.add-textarea {
+    display: none;
+}
+
 /* Список результатов */
 
 .result_list .row.all,

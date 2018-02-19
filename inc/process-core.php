@@ -25,88 +25,15 @@ class mif_qm_process_core extends mif_qm_core_core {
     
     public function get_action( $quiz_id = false )
     {
-        $quiz_id_raw = $quiz_id;
-    
-        if ( ! $action = wp_cache_get( 'mif_qm_action', $quiz_id_raw ) ) {
 
-            global $post;
+        if ( ! $action = wp_cache_get( 'mif_qm_action', $quiz_id ) ) {
 
-            if ( $quiz_id === false ) $quiz_id = $post->ID;
-
-            $this->access_level( $quiz_id );
-
-            // $action = ( mif_qm_user_can( 'edit-quiz', $quiz_id ) ) ? 'view' : 'run';
-            $action = ( $this->access_level( $quiz_id ) > 1 ) ? 'view' : 'run';
-
-            if ( isset( $_REQUEST['action'] ) ) $action = sanitize_key( $_REQUEST['action'] );
-
-            wp_cache_set( 'mif_qm_action', $action, $quiz_id_raw );
+            $action = ( isset( $_REQUEST['action'] ) ) ? sanitize_key( $_REQUEST['action'] ) : 'run';
+            wp_cache_set( 'mif_qm_action', $action, $quiz_id );
 
         }
 
         return $action;
-    }
-    
-
-
-    // 
-    // Обновляет связанные записи (снимки теста, результаты или др.)
-    // 
-
-    public function companion_update( $args = array() )
-    {
-        // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
-        if ( empty( $args['ID'] ) ) return false;
-
-        remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-        $res = wp_update_post( $args );
-
-        return $res;
-    }
-
-    
-
-    // 
-    // Добавляет связанные записи (снимки теста, результаты или др.)
-    // 
-
-    public function companion_insert( $args = array() )
-    {
-        // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
-
-        if ( empty( $args['post_type'] ) ) return false;
-        if ( empty( $args['post_content'] ) ) return false;
-
-        global $post;
-        
-        if ( empty( $args['quiz'] ) ) $args['quiz'] = $post->ID;
-        if ( empty( $args['user'] ) ) $args['user'] = get_current_user_id();
-        if ( empty( $args['post_status'] ) ) $args['user'] = 'publish';
-
-        // Узнать имя и автора записи для будущей связанной записи
-        
-        $quiz_post = get_post( $args['quiz'] );
-        $title = $this->get_user_token( $args['user'] ) . ' — ' . $quiz_post->post_title . ' ('. $quiz_post->ID . ')';
-        $author = $quiz_post->post_author;
-        
-        // Сохраняем в виде новой связанной записи
-        
-        $companion_args = array(
-            'post_title'    => $title,
-            'post_content'  => $args['post_content'],
-            'post_type'     => $args['post_type'],
-            'post_status'   => $args['post_status'],
-            'post_author'   => $author,
-            'post_parent'   => $args['quiz'],
-            'comment_status' => 'closed',
-            'ping_status'   => 'closed', 
-            'meta_input'    => array( 'owner' => $this->get_user_token( $args['user'] ) ),
-        );
-
-        remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-        $companion_id = wp_insert_post( $companion_args );
-        
-        return $companion_id;
     }
 
 
@@ -147,9 +74,15 @@ class mif_qm_process_core extends mif_qm_core_core {
         if ( ! $quiz_id ) $quiz_id = $post->ID;
         if ( ! $user_id ) $user_id = get_current_user_id();
         
-        // Если пользователь может редактировать тест (автор или редактор сайта), то не ограничено
-        
-        if ( mif_qm_user_can( 'edit-quiz', $quiz_id ) ) return -1;
+        // Если пользователь эксперт и выше, то не ограничено
+
+        $members_core = new mif_qm_members_core();
+        $status = $members_core->member_status( $quiz_id, $user_id );
+        $level = $members_core->member_level( $status );
+
+        if ( $level > 1 ) return -1;
+
+        // if ( mif_qm_user_can( 'edit-quiz', $quiz_id ) ) return -1;
 
         $quiz_core = new mif_qm_quiz_core( $quiz_id );
         $quiz = $quiz_core->parse();

@@ -81,11 +81,20 @@ class mif_qm_param_interpretation {
 
         switch ( $this->key ) {
 
-            case 'attempt': case 'number': case 'rating':
+            case 'attempt': case 'number':
 
                 // Взять просто число
                 
                 $arr['value'] = (int) $this->value;
+                                
+            break;
+                
+            case 'rating':
+
+                // Взять число, уточнить, если 0
+                
+                $arr['value'] = (int) $this->value;
+                if ( $arr['value'] === 0 ) $arr['value'] = __( 'сумма по вопросам', 'mif-qm' );
                                 
             break;
                 

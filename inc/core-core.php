@@ -200,7 +200,7 @@ class mif_qm_core_core  {
     {
         if ( $user = get_user_by( 'slug', $user_token ) ) {
 
-            return apply_filters( 'mif_qm_core_core_get_user_id', $user->id, $user_token);
+            return apply_filters( 'mif_qm_core_core_get_user_id', $user->ID, $user_token);
 
         } else {
 
@@ -242,7 +242,7 @@ class mif_qm_core_core  {
 
             if ( $number > 0 && $number < $count ) $count = $number;
             
-        } elseif ( $mode == 'quiz') {
+        } elseif ( $mode == 'quiz' && isset( $item['parts'] ) ) {
             
             foreach ( (array) $item['parts'] as $part ) {
                 
@@ -276,7 +276,7 @@ class mif_qm_core_core  {
             $max_rating = $rating * $count;
             // $max_rating = $rating * count( (array) $item['questions'] );
             
-        } elseif ( $mode == 'quiz') {
+        } elseif ( $mode == 'quiz' && isset( $item['parts'] ) ) {
             
             foreach ( (array) $item['parts'] as $part ) {
                 
@@ -478,6 +478,77 @@ class mif_qm_core_core  {
 
         return false;    
     }
+
+
+    
+
+
+    // 
+    // Обновляет связанные записи (снимки теста, результаты или др.)
+    // 
+
+    public function companion_update( $args = array() )
+    {
+        // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
+        if ( empty( $args['ID'] ) ) return false;
+
+        remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
+        $res = wp_update_post( $args );
+
+        return $res;
+    }
+
+    
+
+    // 
+    // Добавляет связанные записи (снимки теста, результаты или др.)
+    // 
+
+    public function companion_insert( $args = array() )
+    {
+        // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
+
+        if ( empty( $args['post_type'] ) ) return false;
+        if ( empty( $args['post_content'] ) ) return false;
+
+        global $post;
+        
+        if ( empty( $args['quiz'] ) ) $args['quiz'] = $post->ID;
+        if ( empty( $args['post_status'] ) ) $args['post_status'] = 'publish';
+
+        // В параметрах можно указать 'user' => false, тогда пользователь упоминаться не будет
+
+        if ( ! isset( $args['user'] ) ) $args['user'] = get_current_user_id();
+        
+        // Узнать имя и автора записи для будущей связанной записи
+        
+        $quiz_post = get_post( $args['quiz'] );
+        $prefix = ( ! empty( $args['user'] ) ) ? $this->get_user_token( $args['user'] ) . ' — ' : '';
+        $title = $prefix . $quiz_post->post_title . ' ('. $quiz_post->ID . ')';
+        $author = $quiz_post->post_author;
+        
+        // Сохраняем в виде новой связанной записи
+        
+        $companion_args = array(
+            'post_title'    => $title,
+            'post_content'  => $args['post_content'],
+            'post_type'     => $args['post_type'],
+            'post_status'   => $args['post_status'],
+            'post_author'   => $author,
+            'post_parent'   => $args['quiz'],
+            'comment_status' => 'closed',
+            'ping_status'   => 'closed', 
+            // 'meta_input'    => array( 'owner' => $this->get_user_token( $args['user'] ) ),
+        );
+
+        if ( ! empty ( $args['user'] ) ) $companion_args['meta_input'] = array( 'owner' => $this->get_user_token( $args['user'] ) );
+
+        remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
+        $companion_id = wp_insert_post( $companion_args );
+        
+        return $companion_id;
+    }
+
 
 }
 

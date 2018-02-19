@@ -212,6 +212,29 @@ class mif_qm_process_results extends mif_qm_process_core {
     }
 
 
+    
+    //
+    // Получить текущий результат пользователя
+    //
+
+    public function get_current_result( $quiz_id, $user_id = false )
+    {
+        $user_token = $this->get_user_token( $user_id );
+        $arr = $this->get_list( $quiz_id, $user_token );
+
+        $ret = false;
+
+        foreach ( (array) $arr[$user_token] as $item ) {
+
+            if ( isset( $item['current'] ) && $item['current'] == 'yes' ) $ret = $item;
+
+        }
+        
+        return $ret;
+    }
+
+
+
     //
     // Получить данные о текущих оценках конкретного пользователя
     //

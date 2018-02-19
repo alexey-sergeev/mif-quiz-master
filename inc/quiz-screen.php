@@ -124,6 +124,9 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
     
     public function get_quiz_navigation()
     {
+        global $post;
+        $quiz_id = $post->ID; // !!!
+
         $nav = '';
         $arr = array();
         
@@ -140,11 +143,11 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
                 $link = ( $disabled_class == '' ) ? $this->get_link( $i ) : '#';
                 $num = $i + 1;
                 
-                $arr[] = '<li class="page-item' . $class . '"><a class="page-link" href="' . $link . '">' . $num . '</a></li>';
+                $arr[] = '<li class="page-item' . $class . '"><a class="page-link" href="' . $link . '" data-num="' . $i . '" data-nonce="' . wp_create_nonce( 'mif-qm' ) . '" data-quiz_id="' . $quiz_id . '">' . $num . '</a></li>';
 
             }
             
-            $nav = '<nav><ul class="pagination justify-content-center">' . implode( '', $arr ) . '</ul></nav>';
+            $nav = '<nav><ul class="quiz-navigation pagination justify-content-center">' . implode( '', $arr ) . '</ul></nav>';
         }
 
         return apply_filters( 'mif_qm_question_screen_get_quiz_navigation', $nav, $this->quiz );
@@ -169,8 +172,8 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
             $btn .= '<button type="submit" class="btn btn-primary btn-lg">' . __( 'Далее', 'mif-qm' ) . '</button>';
             $btn .= '</div>';
             $btn .= '<input type="hidden" name="action" value="run">';
-            $btn .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';;
-            $btn .= '<input type="hidden" name="quiz_id" value="' . $quiz_id . '" />';;
+            $btn .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
+            $btn .= '<input type="hidden" name="quiz_id" value="' . $quiz_id . '" />';
             
             
             if ( isset( $this->quiz['processed']['numbers'] ) ) {
@@ -234,7 +237,7 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
         if ( $this->action == 'view' ) {
     
             $screen = new mif_qm_param_screen( $this->quiz['param'], 'quiz' );
-            $out = $screen->get_show();
+            $out = $screen->get_show( $this->quiz );
 
         } elseif ( $this->action == 'result' ) {
 

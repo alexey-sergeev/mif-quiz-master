@@ -78,7 +78,7 @@ class mif_qm_process_process extends mif_qm_process_core {
             // Если есть результат, то внести его в базу результатов и вернуть для показа пользователю
 
             $process_results = new mif_qm_process_results();
-            $process_results->update( $result );
+            $process_results->update( $result, $this->quiz_id );
 
             return $result;
 
@@ -101,25 +101,25 @@ class mif_qm_process_process extends mif_qm_process_core {
     //      1 - закончилось количество попыток прохождения теста
     //      2 - что-то пошло не так
     //
-    //
 
     public function get_quiz_stage( $args = array() )
     {
         // Есть ли текущий снимок?
-
-        $snapshot = $this->get_current_snapshot( $args );
-        
         // Есть ли режим автоматического начала?
-        
-        $auto = $this->is_param( 'auto', $this->quiz );
-        
         // Нажата ли кнопка "начать тест"?
-
-        $start_btn = ( isset( $_REQUEST['start'] ) && $_REQUEST['start'] == 'yes' ) ? true : false;
-
         // Вернуть -1, если ничего указанного нет
 
+        $snapshot = $this->get_current_snapshot( $args );
+        $auto = $this->is_param( 'auto', $this->quiz );
+        $start_btn = ( isset( $_REQUEST['start'] ) && $_REQUEST['start'] == 'yes' ) ? true : false;
+
         if ( ! ( $snapshot || $auto || $start_btn ) ) return -1;
+        
+        // Пользователь имеет доступ к прохождению теста?
+        // Если нет, то вернуть -1
+
+        $is_access = $this->is_access( $this->quiz_id );
+        if ( ! $is_access ) return -1;
 
         // Получить данные снимка (взять текущий, или сформировать новый)
 
@@ -217,17 +217,31 @@ class mif_qm_process_process extends mif_qm_process_core {
             $quiz_stage['processed']['numbers']['current'] = $num;
             $quiz_stage['processed']['numbers']['max'] = count( $index );
 
-            // p($quiz_stage);
-
         }
         
-        
-        
-        // $quiz_stage = $quiz;
-        
-        // p($quiz_stage);
-        
         return $quiz_stage;
+    }
+
+
+
+    //
+    // Узнать, имеет ли пользователь доступ к тесту
+    //
+
+    public function is_access( $quiz_id ) 
+    {
+        $user_id = get_current_user_id();
+
+        $members_core = new mif_qm_members_core();
+        $status = $members_core->accessed( $quiz_id, $user_id );
+        $level = $members_core->member_level( $status );
+
+        // $roles =  $members_core->get_roles();
+
+        // $ret = ( isset( $roles[$role] ) && $roles[$role]['level'] > 0 ) ? true : false;
+        $ret = ( $level > 0 ) ? true : false;
+
+        return $ret;
     }
 
 
@@ -250,14 +264,11 @@ class mif_qm_process_process extends mif_qm_process_core {
     //
     // Получить массив теста из объекта текущих результатов с учетом последних данных пользователя
     //
-    //
 
     public function process_handler( $snapshot_data )
     {
         // Сформировать массив теста из хранимых данных
 
-        // $xml_core = new mif_qm_xml_core();
-        // $quiz = $xml_core->to_array( $snapshot_data->post_content );
         $quiz = $this->get_quiz( $snapshot_data );
         
         // Проверить данные пользовательского запроса (новые ответы)
@@ -299,8 +310,6 @@ class mif_qm_process_process extends mif_qm_process_core {
     public function update_snapshot_data( $args = array() )
     {
         if ( empty( $args['ID'] ) ) return false;
-        // if( ! current_user_can( 'edit_post', $args['ID'] ) ) return false; 
-        // $res = wp_update_post( $args );
         $process_snapshots = new mif_process_snapshots();
         $res = $process_snapshots->update( $args );
 
@@ -321,21 +330,23 @@ class mif_qm_process_process extends mif_qm_process_core {
     {
         // Взять номер из переменной запроса
 
-        $num = isset( $_REQUEST['num'] ) ? (int) ( $_REQUEST['num'] ) : -1;
-
+        $num = isset( $_REQUEST['num'] ) ? (int) $_REQUEST['num'] : -1;
         
         if ( $this->is_param( 'navigation', $quiz ) ) {
             
+            // Если допускается навигация
             // Проверить по индексу - если он есть, но номер для него не подходит, то номер поставить в -1
-
+            
             if ( ! empty( $quiz['processed']['index'] ) && ! isset( $quiz['processed']['index'][$num] ) ) $num = -1;
-    
+            
             // Если номера нет, то пытаться искать очередной незавершенный
-    
+            
             if ( $num == -1 ) $num = $this->get_current_elem( $quiz, $mode );
-
+            
         } else {
             
+            // Только последовательно
+
             $num = $this->get_current_elem( $quiz, $mode );
 
         }
@@ -407,18 +418,6 @@ class mif_qm_process_process extends mif_qm_process_core {
         $defaults = array( 'user' => get_current_user_id(), 'quiz' => $this->quiz_id );
         $args = wp_parse_args( $args, $defaults );
 
-        // $snapshot_args = array(
-        //     // 'numberposts' => 0,
-        //     'post_type'   => 'quiz_snapshot',
-        //     'post_status' => 'draft',
-        //     'orderby'     => 'date',
-        //     'order'       => 'DESC',
-        //     // 'author'      => $args['user'],
-        //     'meta_key'      => 'owner',
-        //     'meta_value'    => $this->get_user_token( $args['user'] ),
-        //     'post_parent' => $args['quiz'],
-        // );
-    
         // $snapshots = get_posts( $snapshot_args );
 
         $process_snapshots = new mif_process_snapshots();
@@ -482,9 +481,6 @@ class mif_qm_process_process extends mif_qm_process_core {
                     'ping_status'   => 'closed', 
                     'meta_input'    => array( 'owner' => $this->get_user_token( $args['user'] ) ),
                 );
-
-                // remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-                // $snapshot_id = wp_insert_post( $snapshot_args );
 
                 $process_snapshots = new mif_process_snapshots();
                 $snapshot_id = $process_snapshots->insert( $snapshot_args );

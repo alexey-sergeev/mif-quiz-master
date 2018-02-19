@@ -9,8 +9,12 @@
 defined( 'ABSPATH' ) || exit;
 
 include_once dirname( __FILE__ ) . '/core-core.php';
+
 include_once dirname( __FILE__ ) . '/quiz-core.php';
 include_once dirname( __FILE__ ) . '/quiz-screen.php';
+
+include_once dirname( __FILE__ ) . '/members-core.php';
+include_once dirname( __FILE__ ) . '/members-screen.php';
 
 include_once dirname( __FILE__ ) . '/xml-core.php';
 include_once dirname( __FILE__ ) . '/process-process.php';
@@ -40,6 +44,8 @@ class mif_qm_init extends mif_qm_core_core {
         add_action( 'wp_ajax_run', array( $this, 'ajax_quiz_submit' ) );
         add_action( 'wp_ajax_result', array( $this, 'ajax_quiz_submit' ) );
         add_action( 'wp_ajax_view', array( $this, 'ajax_quiz_submit' ) );
+        add_action( 'wp_ajax_members', array( $this, 'ajax_quiz_submit' ) );
+        // add_action( 'wp_ajax_members-manage', array( $this, 'ajax_members_manage' ) );
 
 
     }
@@ -122,6 +128,9 @@ class mif_qm_init extends mif_qm_core_core {
         $process_results = new mif_qm_process_results();
         $process_results->post_types_init();
 
+        $members_core = new mif_qm_members_core();
+        $members_core->post_types_init();
+
     }
 
 
@@ -134,6 +143,8 @@ class mif_qm_init extends mif_qm_core_core {
         global $post;
         global $mif_qm_quiz_screen;
         global $mif_qm_process_screen;
+        global $mif_qm_members_screen;
+
         $mif_qm_process_screen = new mif_qm_process_screen();
         
         if ( ! is_user_logged_in() ) {
@@ -160,6 +171,8 @@ class mif_qm_init extends mif_qm_core_core {
             $action = $process->get_action();
             
             if ( $action == 'view' ) {
+
+                // Просмотр теста
                 
                 if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
 
@@ -177,6 +190,8 @@ class mif_qm_init extends mif_qm_core_core {
                 
             } elseif ( $action == 'run' ) {
                 
+                // Процесс прохождения теста
+
                 $process = new mif_qm_process_process( $post->ID );
                 $quiz_stage = $process->get_quiz_stage();
                 
@@ -191,7 +206,7 @@ class mif_qm_init extends mif_qm_core_core {
 
                         // Показать страницу с кнопкой начала теста
 
-                        $mif_qm_process_screen->the_startpage();
+                        $mif_qm_process_screen->the_startpage( $post->ID );
 
                     } elseif ( $quiz_stage === 0 ) {
                         
@@ -266,6 +281,14 @@ class mif_qm_init extends mif_qm_core_core {
 
                 }    
                
+            } elseif ( $action == 'members' ) {
+
+                // Страница управления пользователями
+
+                $mif_qm_members_screen = new mif_qm_members_screen( $post->ID );
+                $mif_qm_members_screen->the_members();
+
+
             }
 
             echo '</div>';
@@ -278,6 +301,21 @@ class mif_qm_init extends mif_qm_core_core {
 
 
 
+    // // 
+    // // Управление пользователями
+    // // 
+
+
+    // public function ajax_members_manage()
+    // {
+    //     p($_REQUEST);
+    //     check_ajax_referer( 'mif-qm' );
+    //     // $this->add_quiz_content();
+    //     wp_die();
+    // }
+
+
+
     // 
     // Удаляет черновики результатов пользователя если он меняет сам тест
     // 
@@ -287,22 +325,7 @@ class mif_qm_init extends mif_qm_core_core {
     {
         // p($_REQUEST);
         check_ajax_referer( 'mif-qm' );
-
-
         $this->add_quiz_content();
-
-        // global $mif_qm_quiz_screen;
-
-        // $process = new mif_qm_process_process();
-        // $quiz_stage = $process->get_quiz_stage();
-
-        // $mif_qm_quiz_screen = new mif_qm_quiz_screen( $quiz_stage );
-        // $mif_qm_quiz_screen->show( array( 'action' => 'run' ) );
-
-
-        // $out = '12345';
-        // echo $out;
-
         wp_die();
     }
 

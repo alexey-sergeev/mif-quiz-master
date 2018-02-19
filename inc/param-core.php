@@ -28,7 +28,8 @@ class mif_qm_param_core extends mif_qm_core_core {
     
     function __construct( $params_raw = array(), $mode = 'quiz', $params_quiz = array() )
     {
-
+        parent::__construct();
+        
         //
         // Описание списка всех возможных параметров
         //

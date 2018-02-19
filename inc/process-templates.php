@@ -38,10 +38,10 @@ function mif_qm_the_result_list()
 // Панель с пояснениями на странице начала теста
 //
 
-function mif_qm_the_start_panel()
+function mif_qm_the_stat_panel()
 {
     global $mif_qm_process_screen;
-    echo $mif_qm_process_screen->get_start_panel();
+    echo $mif_qm_process_screen->get_stat_panel();
 }
 
 

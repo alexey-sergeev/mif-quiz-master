@@ -39,6 +39,11 @@ class mif_qm_process_screen extends mif_qm_process_core {
     {
         $this->quiz_id = $quiz_id;
 
+        $user_id = false; //!!!
+
+        $process_results = new mif_qm_process_results();
+        $this->result = $process_results->get_current_result( $quiz_id );
+
         $quiz_core = new mif_qm_quiz_core();
         $this->quiz = $quiz_core->parse( $quiz_id );
 
@@ -295,29 +300,12 @@ class mif_qm_process_screen extends mif_qm_process_core {
     // Возвращает панель с пояснениями на странице начала теста
     // 
     
-    public function get_start_panel()
+    public function get_stat_panel()
     {
-        $arr = array();
-        
-        $attempt = $this->get_clean( 'attempt', $this->quiz );
-        $success = $this->get_clean( 'success', $this->quiz, 'quiz', true );
-        
-        $time = $this->get_clean( 'time', $this->quiz, 'quiz', true );
-        $time = ( $time['value'] == 0 ) ? $time = __( 'нет', 'mif-qm') : $time['description']; 
-        
-        $number = $this->get_question_count( $this->quiz );
-        $rating = $this->get_max_rating( $this->quiz );
-        
-        $arr[] = '<span title="' . __( 'Количество попыток', 'mif-qm') . '"><i class="fas fa-2x fa-flag-checkered mr-2" aria-hidden="true"></i>' . $attempt . '</span>';
-        $arr[] = '<span title="' . __( 'Количество вопросов', 'mif-qm') . '"><i class="fas fa-2x mr-2 fa-list-ul"></i>' . $number . '</span>';
-        $arr[] = '<span title="' . __( 'Максимальный балл', 'mif-qm') . '"><i class="fas fa-2x fa-graduation-cap mr-2" aria-hidden="true"></i></i>' . $rating . '</span>';
-        $arr[] = '<span title="' . __( 'Порог положительной оценки', 'mif-qm') . '"><i class="fas fa-2x fa-tachometer-alt mr-2" aria-hidden="true"></i>' . $success['description'] . '</span>';
-        $arr[] = '<span title="' . __( 'Ограничение времени', 'mif-qm') . '"><i class="far fa-2x fa-clock mr-2" aria-hidden="true"></i>' . $time . '</span>';
-        
-        $class = ' class="p-2 m-2 bg-secondary text-light rounded"';
-        $out = '<div' . $class . '>' . implode( '</div><div' . $class . '>', $arr ) . '</div>';
-        
-        return apply_filters( 'mif_qm_process_screen_get_start_panel', $out, $arr, $this->quiz );
+        $param_screen = new mif_qm_param_screen();
+        $out = $param_screen->get_stat_panel( $this->quiz );
+
+        return apply_filters( 'mif_qm_process_screen_get_stat_panel', $out, $this->quiz );
     }
 
     
@@ -329,6 +317,8 @@ class mif_qm_process_screen extends mif_qm_process_core {
     public function get_result_panel( $result = NULL )
     {
         if ( $result ) $this->result = $result;
+
+        if ( empty( $this->result ) ) return;
 
         $out = '';
     
@@ -345,7 +335,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
         $out .= '<div class="progress-bar' . $class . '" role="progressbar" style="width: ' . $this->get_result( 'percent' ) . '%" aria-valuemin="0" aria-valuemax="100"></div></div>';
         $out .= '</div>';
         
-        $out .= '<div class="m-4 h4">' . $this->get_successed_caption() . '</div>';
+        $out .= '<div class="m-4 pb-4 h4">' . $this->get_successed_caption() . '</div>';
         
         // $out .= '</div>';
 
@@ -388,37 +378,22 @@ class mif_qm_process_screen extends mif_qm_process_core {
     {
         global $post;
         $quiz_id = $post->ID; // !!! Думать
+        $user_id = false; // !!! Здесь думать, где брать для анонимных
+        $user_token = $this->get_user_token( $user_id );
 
         $process = new mif_qm_process_process( $quiz_id );
         $result_list = $process->get_result_list( $this->get_user_token() );
 
         // Если нет результатов, то ссылку не выводить
 
-        if ( ! count( $result_list ) > 0 ) return;
+        if ( ! count( $result_list[$user_token] ) > 0 ) return;
 
         $out = '';
         
-        $user_id = false; // !!! Здесь думать, где брать для анонимных
-        // $count = $this->get_attempt_count( $this->quiz_id, $user_id );
-        // $caption = $this->get_count_caption( $count );
-
-        // $out .= '<div class="mt-3 font-italic">' . $caption . '</div>';
-
         if ( $this->is_result( $quiz_id, $user_id ) ) {
-            
-            $user_token = $this->get_user_token( $user_id );
 
             $out .= '<div class="pt-3 pb-4"><hr /></div>';
             $out .= '<a href="?action=result&user=' . $user_token . '" class="font-weight-bold">' . __( 'Ваши результаты', 'mif-qm') . '</a>';
-
-            // $out .= '<form method="post">';
-            // $out .= '<input type="hidden" name="quiz_id" value="' . $quiz_id . '">';
-            // $out .= '<input type="hidden" name="action" value="run">';
-            // $out .= '<input type="hidden" name="start" value="yes">';
-            // $out .= '<button class="btn-primary btn-lg">' . __( 'Начать тест', 'mif-qm') . '</button>';
-            // $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
-            // $out .= '</form>';            
-            
 
         }
 
@@ -437,24 +412,172 @@ class mif_qm_process_screen extends mif_qm_process_core {
         global $post;
         $quiz_id = $post->ID; // !!! думать, как сделать для шорткодов
         $user_id = false; // !!! Здесь думать, где брать для анонимных
+
+        $members_core = new mif_qm_members_core();
+        $status = $members_core->member_status( $quiz_id, $user_id );
+        $level = $members_core->member_level( $status );
+        $access_mode = $members_core->get_access_mode( $quiz_id );
+
+        // Фраза о количестве попыток
+
         $count = $this->get_attempt_count( $quiz_id, $user_id );
-        $caption = $this->get_count_caption( $count );
+        $caption_count = $this->get_count_caption( $count );
+
+        // p($status);
+        // p($access_mode);
 
         $out = '';
+        $button = '';
+        $caption = '';
 
-        if ( $count > 0 ) {
+        // Тест закрытый
 
-            $out .= '<form method="post">';
-            $out .= '<input type="hidden" name="quiz_id" value="' . $quiz_id . '">';
-            $out .= '<input type="hidden" name="action" value="run">';
-            $out .= '<input type="hidden" name="start" value="yes">';
-            $out .= '<button class="btn-primary btn-lg">' . __( 'Начать тест', 'mif-qm') . '</button>';
-            $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
-            $out .= '</form>';
+        if ( $access_mode =='closed' ) {
+            
+            if ( $level > 1 ) {
+                
+                // Пользователь - эксперт или выше
+
+                $button = __( 'Начать тестирование', 'mif-qm');
+
+            } else {
+                
+                // Пользователь - студент или ниже
+                
+                $caption .= '<p>' . __( 'В настоящее время доступ к тесту закрыт.', 'mif-qm') . '</p>';
+                $caption .= '<p>' . __( 'Cвяжитесь со своим преподавателем, если не считаете это правильным.', 'mif-qm') . '</p>';
+                
+            }
+            
+        } 
+
+        // Доступ по спискам
+
+        if ( $access_mode =='memberlist' ) {
+            
+            if ( $level > 0 ) {
+              
+                // Пользователь - студент или выше
+
+                $button = __( 'Начать тестирование', 'mif-qm');
+                if ( $caption_count ) $caption .= '<p>' . $caption_count . '</p>';
+
+            } else {
+                
+                // Пользователь - никто
+
+                // !!! Здесь проверять возможность инвайтов
+
+                $invite = false;
+
+                if ( $invite ) {
+
+                    // !!! Думать, как тут поступить
+
+                } else {
+
+                    $caption .= '<p>' . __( 'Вы не имеете доступа к данному тесту.', 'mif-qm') . '</p>';
+                    $caption .= '<p>' . __( 'Cвяжитесь со своим преподавателем, если не считаете это правильным.', 'mif-qm') . '</p>';
+                    
+
+                }
+
+            }
+            
+        } 
+
+        // Доступ по заявкам
+
+        if ( $access_mode =='request' ) {
+            
+            if ( $level > 0 ) {
+              
+                // Пользователь - студент или выше
+
+                $button = __( 'Начать тестирование', 'mif-qm');
+                if ( $caption_count ) $caption .= '<p>' . $caption_count . '</p>';
+
+            } else {
+                
+                // Пользователь - никто
+
+                // !!! Здесь проверять возможность инвайтов
+                // !!! Думать, как это учитывать в заявках
+
+                $invite = false;
+
+                if ( $status == 'request' ) {
+                    
+                    // Пользователь ранее отправлял заявку
+                    
+                    $caption .= '<p>' . __( 'Ваша заявка отправлена', 'mif-qm') . '</p>';
+                    
+                } else {
+                    
+                    $caption .= '<p>' . __( 'Вы сможете пройти тест после подтверждения заявки.', 'mif-qm') . '</p>';
+
+                }
+                
+                $button = __( 'Отправить заявку', 'mif-qm');
+                
+            }
+            
+        } 
+
+        // Открытый доступ
+
+        if ( $access_mode =='open' ) {
+            
+            $button = __( 'Начать тестирование', 'mif-qm');
+            if ( $caption_count ) $caption .= '<p>' . $caption_count . '</p>';
+            
+        } 
+
+        // $process_results = new mif_qm_process_results();
+        // $result = $process_results->get_current_result( $quiz_id, $user_id );
+
+        // if ( $result ) {
+
+        //     $out .= $this->get_result_panel( $result );
+        //     $out .= '<div class="pt-5 pb-5"><hr /></div>';
+
+        // }
+
+
+        // Показать кнопку или сообщение
+        
+        if ( $button ) {
+
+            // Показать кнопку
+
+            if ( empty( $caption ) ) $caption = '<br />';
+            
+            $out .= '<div class="mt-3">';
+
+            if ( $count != 0 ) {
+                
+                $out .= '<form method="post">';
+                $out .= '<input type="hidden" name="quiz_id" value="' . $quiz_id . '">';
+                $out .= '<input type="hidden" name="action" value="run">';
+                $out .= '<input type="hidden" name="start" value="yes">';
+                $out .= '<button class="btn-primary btn-lg">' . $button . '</button>';
+                $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
+                $out .= '</form>';
+                
+            }   
+            
+            $out .= '<div class="mt-4 font-italic">' . $caption . '</div>';
+            $out .= '</div>';
+
+        } else {
+
+            // Показать сообщение
+
+            $out .= '<div class="mt-3 pb-3">';
+            $out .= $caption;
+            $out .= '</div>';
 
         }
-
-        $out .= '<div class="mt-3 font-italic">' . $caption . '</div>';
 
         return apply_filters( 'mif_qm_process_screen_get_start_button', $out );
     }
@@ -585,15 +708,12 @@ class mif_qm_process_screen extends mif_qm_process_core {
         if ( mif_qm_user_can( 'edit-quiz' ) ) {
 
             $menu .= '<div class="btn-group mt-3 mb-3 quiz-menu" role="group">';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><span class="' . $class . $this->get_menu_class( 'view', 'current' ) . '"><i class="fas fa-check"></i></span><br /><small>' . __( 'Параметры', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><span class="' . $class . $this->get_menu_class( 'edit', 'current' ) . '"><i class="fas fa-pencil-alt"></i></span><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
             $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><span class="' . $class . $this->get_menu_class( 'run', 'current' ) . '"><i class="fas fa-play"></i></span><br /><small>' . __( 'Тестирование', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><span class="' . $class . $this->get_menu_class( 'results', 'current' ) . '"><i class="fas fa-chart-bar"></i></span><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
-            // <i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i>
-            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><i class="fa fa-2x fa-circle-o' . $this->get_menu_class( 'view', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Проверка', 'mif-qm' ) . '</small></a>';
-            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'run', 'bg-light' ) . '" href="?action=run"><i class="fa fa-2x fa-play' . $this->get_menu_class( 'run', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Просмотр', 'mif-qm' ) . '</small></a>';
-            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><i class="fa fa-2x fa-pencil-square' . $this->get_menu_class( 'edit', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
-            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><i class="fa fa-2x fa-check-square' . $this->get_menu_class( 'result', 'text-secondary', false ) . '" aria-hidden="true"></i><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><span class="' . $class . $this->get_menu_class( 'edit', 'current' ) . '"><i class="fas fa-pencil-alt"></i></span><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><span class="' . $class . $this->get_menu_class( 'view', 'current' ) . '"><i class="fas fa-check"></i></span><br /><small>' . __( 'Параметры', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><span class="' . $class . $this->get_menu_class( 'result', 'current' ) . '"><i class="fas fa-chart-bar"></i></span><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'settings', 'bg-light' ) . '" href="?action=members"><span class="' . $class . $this->get_menu_class( 'members', 'current' ) . '"><i class="far fa-user"></i></span><br /><small>' . __( 'Пользователи', 'mif-qm' ) . '</small></a>';
+            // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'settings', 'bg-light' ) . '" href="?action=settings"><span class="' . $class . $this->get_menu_class( 'settings', 'current' ) . '"><i class="fas fa-cogs"></i></span><br /><small>' . __( 'Настройки', 'mif-qm' ) . '</small></a>';
             $menu .= '</div>';
         }
 
