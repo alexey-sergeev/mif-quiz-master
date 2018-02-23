@@ -218,6 +218,163 @@ jQuery( document ).ready( function( jq ) {
 
     } );
 
+
     
+    
+    // Кнопки каталога
+    
+    jq( 'body' ).on( 'submit', '.catalog form', function() {
+        
+        var data = new FormData( this );
+        // var div = jq( this ).closest( 'div.next-page' );
+        var div = jq( 'div.next-page', this );
+
+        var button = jq( 'button', div );
+        var loading = jq( '.loading', div );
+
+        button.hide();
+        loading.fadeIn();
+
+        // Запрос на обновление каталога
+
+        jq.ajax( {
+            url: ajaxurl,
+            type: 'POST',
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function( response ) {
+
+                if ( response ) {
+
+                    div.replaceWith( response )
+                    // console.log( response );
+                    
+                } else {
+                    
+                    console.log( 'error 1' );
+                    
+                }
+                
+            },
+            error: function( response ) {
+                
+                console.log( 'error 2' );
+
+            },
+
+        } );
+
+        
+        // Запрос на обновление статистики
+
+        data.append( 'mode', 'stat' );
+
+        jq.ajax( {
+            url: ajaxurl,
+            type: 'POST',
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function( response ) {
+
+                if ( response ) {
+
+                    jq( '.catalog .stat p' ).html( response );
+                    // div.replaceWith( response )
+                    // console.log( response );
+                    
+                } else {
+                    
+                    console.log( 'error 1' );
+                    
+                }
+                
+            },
+            error: function( response ) {
+                
+                console.log( 'error 2' );
+
+            },
+
+        } );
+
+
+        return false;
+
+    } );    
+
+
+
+    // Выбор категории в каталоге
+
+    jq( 'body' ).on( 'click', '.catalog a.category', function() {
+        
+        var div = jq( this ).closest( 'div' );
+        var list_item = jq( '.list-item', div );
+        var name = jq( this ).attr( 'data-name' );
+        // var id = jq( this ).attr( 'data-id' );
+        var input = jq( 'input[type=hidden]', div );
+        
+        // Поменять внешний вид категории
+
+        list_item.toggleClass( 'bg-primary' );
+        list_item.toggleClass( 'text-light' );
+        jq( this ).toggleClass( 'text-primary' );
+
+        // Уточнить внутренние параметры
+
+        var value = ( list_item.hasClass( 'bg-primary' ) ) ? name : '';
+        input.val( value );
+
+        clear_box();
+
+        // Отправить форме, что она submit
+
+        jq( '.catalog form' ).trigger( 'submit' );
+
+        return false;
+
+    } );
+    
+    
+    
+    // Ввод в строку поиска
+    
+    var search_timeout;
+
+    jq( 'body' ).on( 'input', '.catalog input[name=quiz_search]', function() {
+
+        clearTimeout( search_timeout );
+
+        search_timeout = setTimeout( function() {
+
+            clear_box();
+            jq( '.catalog form' ).trigger( 'submit' );
+
+        }, 800 );
+        
+    } );
+
+
+
+    //
+    // Очистить страницу каталога для новой выдачи
+    //
+
+    function clear_box()
+    {
+
+        // Просить первую страницу
+        
+        jq( 'input[name=page]' ).val( 1 );
+
+        // Удалить старые записи и др.
+
+        jq( '.catalog .card' ).remove();
+        // jq( '.catalog .stat' ).remove();
+
+    }
+
 
 });

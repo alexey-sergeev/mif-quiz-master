@@ -116,7 +116,24 @@ class mif_qm_process_core extends mif_qm_core_core {
 
         return $attempt - $count;
     }
-        
+
+
+    //
+    // Получить строку продолжительности времени
+    //
+    
+    public function get_duration_str( $second )
+    {
+        $duration = '';
+
+        $t1 = floor( $second / 60 );
+        $t2 = $second % 60;
+
+        if ( $t1 > 0 ) $duration .= $t1 . ' ' . __( 'мин.', 'mif-bp' ) . ' ';
+        $duration .= $t2 . ' ' . __( 'сек.', 'mif-bp' );
+
+        return apply_filters( 'mif_qm_core_core_get_duration_str', $duration, $second );
+    }        
 }
 
 

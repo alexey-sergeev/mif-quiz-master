@@ -108,22 +108,22 @@ class mif_qm_core_core  {
     }
     
 
-    //
-    // Получить строку продолжительности времени
-    //
+    // //
+    // // Получить строку продолжительности времени
+    // //
     
-    public function get_duration_str( $second )
-    {
-        $duration = '';
+    // public function get_duration_str( $second )
+    // {
+    //     $duration = '';
 
-        $t1 = floor( $second / 60 );
-        $t2 = $second % 60;
+    //     $t1 = floor( $second / 60 );
+    //     $t2 = $second % 60;
 
-        if ( $t1 > 0 ) $duration .= $t1 . ' ' . __( 'мин.', 'mif-bp' ) . ' ';
-        $duration .= $t2 . ' ' . __( 'сек.', 'mif-bp' );
+    //     if ( $t1 > 0 ) $duration .= $t1 . ' ' . __( 'мин.', 'mif-bp' ) . ' ';
+    //     $duration .= $t2 . ' ' . __( 'сек.', 'mif-bp' );
 
-        return apply_filters( 'mif_qm_core_core_get_duration_str', $duration, $second );
-    }
+    //     return apply_filters( 'mif_qm_core_core_get_duration_str', $duration, $second );
+    // }
     
 
     //
@@ -227,37 +227,37 @@ class mif_qm_core_core  {
 
 
     
-    //
-    // Получить количество вопросов
-    // 
+    // //
+    // // Получить количество вопросов
+    // // 
 
-    public function get_question_count( $item = array(), $mode = 'quiz' )
-    {
-        $count = 0;
+    // public function get_question_count( $item = array(), $mode = 'quiz' )
+    // {
+    //     $count = 0;
 
-        if ( $mode =='part' ) {
+    //     if ( $mode =='part' ) {
 
-            $number = $this->get_clean( 'number', $item, $mode );
-            $count = count( (array) $item['questions'] );
+    //         $number = $this->get_clean( 'number', $item, $mode );
+    //         $count = count( (array) $item['questions'] );
 
-            if ( $number > 0 && $number < $count ) $count = $number;
+    //         if ( $number > 0 && $number < $count ) $count = $number;
             
-        } elseif ( $mode == 'quiz' && isset( $item['parts'] ) ) {
+    //     } elseif ( $mode == 'quiz' && isset( $item['parts'] ) ) {
             
-            foreach ( (array) $item['parts'] as $part ) {
+    //         foreach ( (array) $item['parts'] as $part ) {
                 
-                $p_number = $this->get_clean( 'number', $part, $mode );
-                $p_count = count( (array) $part['questions'] );
+    //             $p_number = $this->get_clean( 'number', $part, $mode );
+    //             $p_count = count( (array) $part['questions'] );
     
-                if ( $p_number > 0 && $p_number < $p_count ) $p_count = $p_number;
+    //             if ( $p_number > 0 && $p_number < $p_count ) $p_count = $p_number;
 
-                $count += $p_count;
+    //             $count += $p_count;
 
-            }
-        }
+    //         }
+    //     }
 
-        return $count;
-    }
+    //     return $count;
+    // }
 
 
     

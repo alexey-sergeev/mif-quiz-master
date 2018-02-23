@@ -749,6 +749,39 @@ class mif_qm_param_core extends mif_qm_core_core {
     }
 
 
+    
+    //
+    // Получить количество вопросов
+    // 
+
+    public function get_question_count( $item = array(), $mode = 'quiz' )
+    {
+        $count = 0;
+
+        if ( $mode =='part' ) {
+
+            $number = $this->get_clean( 'number', $item, $mode );
+            $count = count( (array) $item['questions'] );
+
+            if ( $number > 0 && $number < $count ) $count = $number;
+            
+        } elseif ( $mode == 'quiz' && isset( $item['parts'] ) ) {
+            
+            foreach ( (array) $item['parts'] as $part ) {
+                
+                $p_number = $this->get_clean( 'number', $part, $mode );
+                $p_count = count( (array) $part['questions'] );
+    
+                if ( $p_number > 0 && $p_number < $p_count ) $p_count = $p_number;
+
+                $count += $p_count;
+
+            }
+        }
+
+        return $count;
+    }
+
 }
 
 ?>

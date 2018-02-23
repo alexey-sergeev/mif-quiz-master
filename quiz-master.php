@@ -69,11 +69,12 @@ function mif_qm_customizer_styles()
 
     // wp_enqueue_script( 'fa-v4-shim', plugins_url( 'lib/fontawesome/js/fa-v4-shim.js', __FILE__ ) );
     wp_enqueue_script( 'font-awesome-js', plugins_url( 'lib/fontawesome/js/fontawesome-all.js', __FILE__ ) );
-
+    
     // Twitter bootstrap
     
     wp_register_style( 'bootstrap', plugins_url( 'lib/bootstrap/css/bootstrap.min.css', __FILE__ ) );
 	wp_enqueue_style( 'bootstrap' );
+    wp_enqueue_script( 'bootstrap', plugins_url( 'lib/bootstrap/js/bootstrap.min.js', __FILE__ ) );
 
     // Выноски bootstrap
     
