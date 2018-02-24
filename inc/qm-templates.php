@@ -23,7 +23,6 @@ function mif_qm_the_category()
 
 
 
-
 //
 // Выводит навигацию теста
 //
@@ -32,6 +31,30 @@ function mif_qm_the_catalog()
 {
     global $mif_qm_screen;
     echo $mif_qm_screen->get_catalog();
+}
+
+
+
+//
+// Выводит блок "Ваши тесты"
+//
+
+function mif_qm_the_you_quizess()
+{
+    global $mif_qm_screen;
+    echo $mif_qm_screen->get_you_quizess();
+}
+
+
+
+//
+// Выводит ссылку на страницу сайта
+//
+
+function mif_qm_the_url( $page = '' )
+{
+    global $mif_qm_screen;
+    echo $mif_qm_screen->get_url( $page );
 }
 
 

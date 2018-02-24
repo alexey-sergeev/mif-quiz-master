@@ -331,16 +331,16 @@ class mif_qm_process_process extends mif_qm_process_core {
         // Взять номер из переменной запроса
 
         $num = isset( $_REQUEST['num'] ) ? (int) $_REQUEST['num'] : -1;
-        
+
         if ( $this->is_param( 'navigation', $quiz ) ) {
             
             // Если допускается навигация
             // Проверить по индексу - если он есть, но номер для него не подходит, то номер поставить в -1
             
             if ( ! empty( $quiz['processed']['index'] ) && ! isset( $quiz['processed']['index'][$num] ) ) $num = -1;
-            
+
             // Если номера нет, то пытаться искать очередной незавершенный
-            
+                        
             if ( $num == -1 ) $num = $this->get_current_elem( $quiz, $mode );
             
         } else {
@@ -348,7 +348,7 @@ class mif_qm_process_process extends mif_qm_process_core {
             // Только последовательно
 
             $num = $this->get_current_elem( $quiz, $mode );
-
+            
         }
 
         return $num;

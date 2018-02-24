@@ -68,11 +68,12 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
             $part_settings = (array) $part['param']['settings'];
             
-            if ( in_array( 'random', $part_settings ) ) {
+            if ( $this->is_param( 'random', $part ) ) shuffle( $questions_index );
+            // if ( in_array( 'random', $part_settings ) ) {
                 
-                shuffle( $questions_index );    
+            //     shuffle( $questions_index );
                 
-            }
+            // }
             
             $questions_index = array_slice( $questions_index, 0, $number );
 
@@ -88,33 +89,57 @@ class mif_qm_quiz_core extends mif_qm_core_core {
         $quiz['processed']['created'] = $this->get_signature();
         
         // Замешать вопросы в зависимости от режима и добавить индекс
-
-        if ( in_array( 'random', $quiz_settings ) && in_array( 'part', $quiz_settings ) ) {
+// p($quiz_settings);
+        // if ( in_array( 'random', $quiz_settings ) && in_array( 'part', $quiz_settings ) ) {
             
-            // Если выбраны режим part и random - замешать разделы
+        //     // Если выбраны режим part и random - замешать разделы
+            
+        //     $index = array_keys( $quiz['parts'] );
+        //     shuffle( $index );
+        //     $quiz['processed']['index'] = $index;
+            
+        // } elseif ( in_array( 'random', $quiz_settings ) ) {
+            
+        //     // Замешать вопросы - выбраны random и не part (quiz или question)
+            
+        //     $index = array();
+            
+        //     foreach ( (array) $quiz['parts'] as $p_key => $part )
+        //     foreach ( (array) $part['questions'] as $q_key => $question ) $index[] = $p_key . '.' . $q_key;
+            
+        //     shuffle( $index );
+        //     $quiz['processed']['index'] = $index;
+                
+        // } 
+        // // else {
+
+        //     // Делать ничего не надо, т.к. уже всё хорошо. Разделы - последовательны, вопросы замешаны так, как это в их настройках
+            
+        // // }
+
+        if ( $this->is_param( 'part', $quiz ) ) {
+
+            // Составить индекс для режима разделов
             
             $index = array_keys( $quiz['parts'] );
-            shuffle( $index );
+            
+            if ( $this->is_param( 'random', $quiz ) ) shuffle( $index );
             $quiz['processed']['index'] = $index;
             
-        } elseif ( in_array( 'random', $quiz_settings ) ) {
+        } else {
             
-            // Замешать вопросы - выбраны random и не part (quiz или question
-            
+            // Составить индекс для режима вопросов или теста
+
             $index = array();
             
             foreach ( (array) $quiz['parts'] as $p_key => $part )
-            foreach ( (array) $part['questions'] as $q_key => $question ) $index[] = $p_key . '.' . $q_key;
-            
-            shuffle( $index );
-            $quiz['processed']['index'] = $index;
-                
-        } 
-        // else {
+                foreach ( (array) $part['questions'] as $q_key => $question ) $index[] = $p_key . '.' . $q_key;
 
-            // Делать ничего не надо, т.к. уже всё хорошо. Разделы - последовательны, вопросы замешаны так, как это в их настройках
-            
-        // }
+            if ( $this->is_param( 'random', $quiz ) ) shuffle( $index );
+            $quiz['processed']['index'] = $index;
+
+        }
+
 
         // Замешать ответы в вопросах теста
 

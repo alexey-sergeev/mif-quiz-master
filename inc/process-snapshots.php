@@ -122,11 +122,15 @@ class mif_process_snapshots extends mif_qm_process_core {
             'post_status' => 'draft',
             'orderby'     => 'date',
             'order'       => 'DESC',
-            'meta_key'      => 'owner',
-            'meta_value'    => $this->get_user_token( $args['user'] ),
-            'post_parent' => $args['quiz'],
+            'meta_key'    => 'owner',
+            'meta_value'  => $this->get_user_token( $args['user'] ),
+            // 'post_parent' => $args['quiz'],
         );
     
+        if ( isset( $args['quiz'] ) ) $snapshot_args['post_parent'] = $args['quiz'];
+        if ( isset( $args['numberposts'] ) ) $snapshot_args['numberposts'] = $args['numberposts'];
+        if ( isset( $args['post_status'] ) ) $snapshot_args['post_status'] = $args['post_status'];
+
         $snapshots = get_posts( $snapshot_args );
 
         return $snapshots;

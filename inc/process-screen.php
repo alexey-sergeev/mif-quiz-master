@@ -117,9 +117,11 @@ class mif_qm_process_screen extends mif_qm_process_core {
     // Возвращает список результатов
     // 
     
-    public function get_result_list()
+    public function get_result_list( $result_list = NULL )
     {
         $out = '';
+
+        if ( $result_list ) $this->result_list = $result_list;
 
         // Если нет результатов, то выйти
 
@@ -360,7 +362,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
         // Делать ссылку, если показывается результат только одного пользователя - текущего
 
-        $out .= '<div class="p-4 mt-5 mb-3 text-center bg-light">';
+        $out .= '<div class="p-2 mt-5 mb-3 text-center bg-light">';
         $out .= '<a href="' . get_permalink( $this->quiz_id ). '" class="font-weight-bold">' . __( 'Вернуться к тесту', 'mif-qm') . '</a>';
         $out .= '</div>';
 

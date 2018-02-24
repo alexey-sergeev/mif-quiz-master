@@ -30,7 +30,7 @@
 <div class="row no-gutters pb-4">
 
     <div class="col-lg-3 col-sm-6 text-center p-4 border-right border-left">
-        <a href="#" class="h3">
+        <a href="<?php mif_qm_the_url( 'profile' ); ?>" class="h3">
             <span class="text-secondary">
                 <i class="fas fa-3x fa-user"></i>
             </span>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="col-lg-3 col-sm-6 text-center p-4 border-right">
-        <a href="#" class="h3">
+        <a href="<?php mif_qm_the_url( 'workroom' ); ?>" class="h3">
             <span class="text-secondary">
                 <i class="fas fa-3x fa-pencil-alt"></i>
             </span>    
@@ -50,7 +50,7 @@
     </div>    
 
     <div class="col-lg-3 col-sm-6 text-center p-4 border-right">
-        <a href="#" class="h3">
+        <a href="<?php mif_qm_the_url( 'results' ); ?>" class="h3">
             <span class="text-secondary">
                 <i class="fas fa-3x fa-rocket"></i>
             </span>
@@ -60,7 +60,7 @@
     </div>
 
     <div class="col-lg-3 col-sm-6 text-center p-4 border-right">
-        <a href="#" class="h3">
+        <a href="<?php mif_qm_the_url( 'help' ); ?>" class="h3">
             <span class="text-secondary">
                 <i class="fas fa-3x fa-life-ring"></i>
             </span>
@@ -81,33 +81,7 @@
             <h3 class="h3 underline t-light mb-5"><?php echo __( 'Ваши тесты', 'mif-qm' ) ?></h3>
             <div class="mt-4">
 
-                <div class="media mt-2">
-                    <i class="fas fa-chevron-right mt-1"></i>
-                    <div class="media-body ml-3">
-                        <a href="#" class="font-weight-bold">Построение Windows-сетей</a>
-                    </div>
-                </div>
-
-                <div class="media mt-2">
-                    <i class="fas fa-chevron-right mt-1"></i>
-                    <div class="media-body ml-3">
-                        <a href="#" class="font-weight-bold">Теоретические основы</a>
-                    </div>
-                </div>
-
-                <div class="media mt-2">
-                    <i class="fas fa-chevron-right mt-1"></i>
-                    <div class="media-body ml-3">
-                        <a href="#" class="font-weight-bold">Современные проблемы науки и образования (часть 2)</a>
-                    </div>
-                </div>
-
-                <div class="media mt-2">
-                    <i class="fas fa-chevron-right mt-1"></i>
-                    <div class="media-body ml-3">
-                        <a href="#" class="font-weight-bold">Методика обучения всем предметам на свете</a>
-                    </div>
-                </div>
+                <?php mif_qm_the_you_quizess(); ?>
 
             </div>
         </div>

@@ -1,7 +1,7 @@
 <?php
 
 //
-// Ядро плагина Quiz Master
+// Инит-файл плагина Quiz Master
 // 
 //
 
@@ -11,6 +11,9 @@ defined( 'ABSPATH' ) || exit;
 include_once dirname( __FILE__ ) . '/core-core.php';
 include_once dirname( __FILE__ ) . '/qm-core.php';
 include_once dirname( __FILE__ ) . '/qm-screen.php';
+include_once dirname( __FILE__ ) . '/qm-workroom.php';
+include_once dirname( __FILE__ ) . '/qm-results.php';
+include_once dirname( __FILE__ ) . '/qm-profile.php';
 
 include_once dirname( __FILE__ ) . '/quiz-core.php';
 include_once dirname( __FILE__ ) . '/quiz-screen.php';
@@ -29,11 +32,6 @@ include_once dirname( __FILE__ ) . '/process-results.php';
 
 class mif_qm_init extends mif_qm_screen { 
 
-    // Названия домашней старницы и профиля
-
-    private $post_name_home = 'home';
-    private $post_name_profile = 'profile';
-        
     
     function __construct()
     {
@@ -69,15 +67,6 @@ class mif_qm_init extends mif_qm_screen {
 
         $mif_qm_process_screen = new mif_qm_process_screen();
         
-        // Без пароля - нельзя
-
-        if ( ! is_user_logged_in() ) {
-            
-            $mif_qm_process_screen->alert( __( 'У вас нет прав доступа. Возможно, вам надо просто войти.', 'mif-qm' ), 'danger' );
-            return false;
-            
-        }
-
         // Установить текущую запись. Используется при обработке AJAX-запросов.
         
         if ( empty( $post ) ) {
@@ -91,6 +80,15 @@ class mif_qm_init extends mif_qm_screen {
         if ( $post->post_type == 'quiz' ) {
 
             // Если отображается тест
+
+            // Без пароля - нельзя
+
+            if ( ! is_user_logged_in() ) {
+                
+                $mif_qm_process_screen->alert( __( 'У вас нет прав доступа. Возможно, вам надо просто войти.', 'mif-qm' ), 'danger' );
+                return false;
+                
+            }
 
             $content = $this->the_quiz();
 
@@ -109,7 +107,28 @@ class mif_qm_init extends mif_qm_screen {
                 
                 // Показывается страница профиля
 
-                p($post);
+                $profile = new mif_qm_profile();
+                $profile->the_profile();
+
+            } elseif ( $post->post_name == $this->post_name_workroom ) {
+                
+                // Показывается страница мастерской
+
+                $workroom = new mif_qm_workroom();
+                $workroom->the_workroom();
+
+            } elseif ( $post->post_name == $this->post_name_results ) {
+                
+                // Показывается страница всех результатов
+
+                $results = new mif_qm_results();
+                $results->the_results();
+
+            } elseif ( $post->post_name == $this->post_name_help ) {
+                
+                // Показывается страница помощи
+
+                // p($post);
 
             }
 
@@ -121,6 +140,9 @@ class mif_qm_init extends mif_qm_screen {
 
 
 
+    // 
+    // Показывает домашнюю страницу
+    // 
 
     public function the_home()
     {

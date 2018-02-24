@@ -236,7 +236,7 @@ class mif_qm_process_results extends mif_qm_process_core {
 
 
     //
-    // Получить данные о текущих оценках конкретного пользователя
+    // Получить данные об оценках по конкретному тесту конкретного пользователя
     //
 
     public function get( $quiz_id, $user_id = NULL )
@@ -277,6 +277,39 @@ class mif_qm_process_results extends mif_qm_process_core {
 
     }
 
+
+
+    //
+    // Получить список тестов, по которым есть результат у пользователя
+    //
+
+    public function get_results_list( $args = array() )
+    {
+        // $user_id = ( ! empty( $args['user'] ) ) ? $args['user'] : get_current_user_id();
+
+        $result_args = array(
+            'numberposts' => -1,
+            'post_type'   => 'quiz_result',
+            'orderby'     => 'date',
+            'order'       => 'DESC',
+            // 'meta_key'    => 'owner',
+            // 'meta_value'  => $this->get_user_token( $user_id ),
+        );
+
+        if ( isset( $args['numberposts'] ) ) $result_args['numberposts'] = $args['numberposts'];
+        if ( isset( $args['author'] ) ) $result_args['author'] = $args['author'];
+        
+        if ( isset( $args['user'] ) ) {
+
+            $result_args['meta_key'] = 'owner';
+            $result_args['meta_value'] = $this->get_user_token( $args['user'] );
+
+        }
+
+        $results = get_posts( $result_args );
+
+        return $results;
+    }
 
 
     //
@@ -429,7 +462,7 @@ class mif_qm_process_results extends mif_qm_process_core {
     // Преобразовать xml-запись результатов в массив
     //
 
-    private function to_array( $xml )
+    public function to_array( $xml )
     {
         $arr = array();
 

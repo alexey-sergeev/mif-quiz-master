@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-class mif_qm_process_inspector extends mif_qm_core_core { 
+class mif_qm_process_inspector extends mif_qm_process_core { 
 
     private $quiz = array();
     // private $result = false;

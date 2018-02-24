@@ -118,7 +118,7 @@ class mif_qm_param_screen extends mif_qm_param_core {
         $out .= '<div' . $class . '>' . implode( '</div><div' . $class . '>', $arr ) . '</div>';
         $out .= '</div>';
         
-        return apply_filters( 'mif_qm_param_screen_get_stat_panel', $out, $arr, $this->quiz );
+        return apply_filters( 'mif_qm_param_screen_get_stat_panel', $out, $arr, $quiz );
     }
 
 }

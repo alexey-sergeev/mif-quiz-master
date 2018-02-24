@@ -15,9 +15,15 @@ include_once dirname( __FILE__ ) . '/qm-templates.php';
 class mif_qm_screen extends mif_qm_core {
 
     // Количество элементов на одной странице каталога
-
+    
     private $quizess_per_page = 20;
     
+    // Количество элементов в блоке "Мои тесты"
+
+    private $my_quizess_count = 4;
+
+    
+
     function __construct()
     {
         parent::__construct();
@@ -142,7 +148,7 @@ class mif_qm_screen extends mif_qm_core {
             
         }
 
-        return apply_filters( 'mif_qm_screen_get_catalog_args', $args, $page, $tax_query );
+        return apply_filters( 'mif_qm_screen_get_catalog_args', $args, $page );
     }
     
     
@@ -410,6 +416,124 @@ class mif_qm_screen extends mif_qm_core {
         return apply_filters( 'mif_qm_screen_get_category_arr', $arr );
     }
 
+    
+
+    //
+    // Возвращает блок "Ваши тесты"
+    //
+
+    public function get_you_quizess() 
+    {
+        $out = '';
+
+        $prefix = '<div class="p-4 mr-4 mark">';
+        $suffix = '</div>';
+        
+        if ( is_user_logged_in() ) {
+            
+            // Получить список текущих тестов
+            
+            $process_snapshots = new mif_process_snapshots();
+            $current_snapshots = $process_snapshots->get( array( 'user' => get_current_user_id(), 'numberposts' => $this->my_quizess_count ) );
+            
+            // Получить список завершенных тестов
+
+            $process_results = new mif_qm_process_results();
+            $results = $process_results->get_results_list( array( 'user' => get_current_user_id(), 'numberposts' => $this->my_quizess_count ) );
+
+            $companions = array_slice( array_merge( $current_snapshots, $results ), 0, $this->my_quizess_count ) ;
+
+            if ( empty( $companions ) ) {
+
+                $out .= $prefix;
+                $out .= __( 'У вас пока нет пройденных тестов', 'mif-qm' );
+                $out .= $suffix;
+
+            } else {
+
+                foreach ( $companions as $companion ) {
+
+                    $quiz_data = get_post( $companion->post_parent );
+                   
+                    if ( ! $quiz_data ) continue;
+
+                    $link = get_permalink( $quiz_data->ID );
+
+                    $out .= '<div class="media mt-2"><i class="fas fa-chevron-right mt-1"></i><div class="media-body ml-3">';
+
+                    if ( $companion->post_type == 'quiz_snapshot' ) $out .= '<span class="bg-primary text-white p-1 rounded" title="' . __( 'Тест не завершен', 'mif-qm' ) . '"><i class="fas fa-flag-checkered"></i></span> ';
+
+                    $out .= '<a href="' . $link . '" class="font-weight-bold">' . $quiz_data->post_title . '</a>';
+                    $out .= '</div></div>';
+
+                }
+
+            }
+
+        } else {
+
+            $out .= $prefix;
+            $out .= '<p>' . __( 'Войдите на сайт, чтобы посмотреть свои тесты', 'mif-qm' ) . '</p>';
+            $out .= '<p><form action="' . wp_login_url() . '">';
+            $out .= '<input type="hidden" name="redirect_to" value="' . get_permalink() . '">';
+            $out .= '<button class="btn">' . __( 'Войти', 'mif-qm' ) . '</button></form></p>';
+            // $out .= '<a href="#" class="btn btn-large">' . __( 'Войти', 'mif-qm' ) . '</a>';
+            $out .= $suffix;
+
+        }
+
+        return apply_filters( 'mif_qm_screen_get_you_quizess', $out );
+    }
+    
+    
+    
+    //
+    // Возвращает ссылку на страницу сайта
+    //
+    
+    public function get_url( $page = '' ) 
+    {
+        $slug = '';
+
+        switch ( $page ) {
+
+            case 'home':
+
+                $slug = $this->post_name_home;
+    
+                break;
+    
+            case 'profile':
+
+                $slug = $this->post_name_profile;
+    
+                break;
+    
+            case 'workroom':
+    
+                $slug = $this->post_name_workroom;
+    
+                break;
+    
+            case 'results':
+    
+                $slug = $this->post_name_results;
+    
+                break;
+    
+            case 'help':
+    
+                $slug = $this->post_name_help;
+    
+                break;
+
+        }
+        
+        $out = get_permalink( get_page_by_path( $slug ) );
+
+        return apply_filters( 'mif_qm_screen_get_workroom_url', $out );
+    }
+
 
 
     //
@@ -418,6 +542,8 @@ class mif_qm_screen extends mif_qm_core {
 
     public function search_security_fix( $search, $obj ) 
     {
+        if ( empty( $search ) ) return;
+        
         global $wpdb;
 
         $q = $obj->query_vars;

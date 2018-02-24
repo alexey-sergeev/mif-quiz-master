@@ -187,7 +187,7 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
             
         } elseif ( $this->action == 'result' ) {
 
-            $btn .= '<div class="p-4 mt-5 mb-3 text-center bg-light">';
+            $btn .= '<div class="p-2 mt-5 mb-3 text-center bg-light">';
             $btn .= '<a href="' . get_permalink() .  '" class="font-weight-bold">' . __( 'Вернуться к тесту', 'mif-qm') . '</a><br />';
             $btn .= '<a href="' . get_permalink() .  '?action=result" class="font-weight-bold">' . __( 'Вернуться к результатам', 'mif-qm') . '</a>';
             $btn .= '</div>';           

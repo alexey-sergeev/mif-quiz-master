@@ -14,7 +14,14 @@ defined( 'ABSPATH' ) || exit;
 
 class mif_qm_core extends mif_qm_core_core { 
 
-        
+    // Названия домашней старницы, профиля и др.
+
+    protected $post_name_home = 'home';
+    protected $post_name_profile = 'profile';
+    protected $post_name_workroom = 'workroom';
+    protected $post_name_results = 'results';
+    protected $post_name_help = 'help';
+
     
     function __construct()
     {
@@ -23,7 +30,6 @@ class mif_qm_core extends mif_qm_core_core {
         $this->post_types_init();
 
     }
-
 
 
 
