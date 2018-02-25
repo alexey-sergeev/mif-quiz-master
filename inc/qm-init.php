@@ -21,6 +21,9 @@ include_once dirname( __FILE__ ) . '/quiz-screen.php';
 include_once dirname( __FILE__ ) . '/members-core.php';
 include_once dirname( __FILE__ ) . '/members-screen.php';
 
+include_once dirname( __FILE__ ) . '/invites-core.php';
+include_once dirname( __FILE__ ) . '/invites-screen.php';
+
 include_once dirname( __FILE__ ) . '/xml-core.php';
 include_once dirname( __FILE__ ) . '/process-process.php';
 
@@ -165,6 +168,7 @@ class mif_qm_init extends mif_qm_screen {
     }
 
 
+
     // 
     // Выводит всё, что связано со страницей теста
     // 
@@ -299,6 +303,12 @@ class mif_qm_init extends mif_qm_screen {
             $mif_qm_members_screen = new mif_qm_members_screen( $post->ID );
             $mif_qm_members_screen->the_members();
 
+        } elseif ( $action == 'invites' ) {
+
+            // Страница приглашений
+
+            $mif_qm_invites_screen = new mif_qm_invites_screen( $post->ID );
+            $mif_qm_invites_screen->the_invites();
 
         }
 

@@ -550,6 +550,21 @@ class mif_qm_core_core  {
     }
 
 
+
+    //
+    // Вернуть автора теста
+    //
+
+    public function get_quiz_author( $quiz_id )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+        $quiz = get_post( $quiz_id );
+        $quiz_author = $this->get_user_token( $quiz->post_author );
+
+        return $quiz_author;
+    }
+
+
 }
 
 ?>

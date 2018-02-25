@@ -143,15 +143,11 @@ class mif_qm_members_core extends mif_qm_core_core  {
             $arr = array();
             // $quiz_members_id = NULL;
 
-            // Получить список новых пользователей (из запроса)
-            
-            $new_members = $this->get_new_members();
-            
             // Получить данные из базы данных
-
+            
             $data = $this->get_members_data( $quiz_id );
-
-            // Получить массив пользователей из первого элемента данных
+            
+            // Получить массив пользователей
             
             if ( isset( $data->ID ) ) {
 
@@ -160,32 +156,26 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             }
 
-            // Если есть новые пользователи, то обновить это в массиве и в базе
+            // Обновить список на основе данных запроса
+            
+            $arr_update = $this->members_update( $arr, $quiz_id );
+            
+            // Если есть обновление, то учесть это в массиве и в базе
 
-            if ( ! empty( $new_members ) ) {
+            if ( ! ( $arr_update === false ) ) {
 
-                $flag = false;
-
-                foreach ( (array) $new_members as $item ) {
-
-                    // Если пользователь есть, то снова не добавлять
-                    if ( isset( $arr[$item] ) ) continue;
-
-                    $role = 'student'; // !!! Надо ли делать для других?
-                    $arr[$item] = array( 'role' => $role, 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
-                    $flag = true;
-
-                }
-
-                if ( $flag ) $this->update( $arr, $quiz_id );
+                $arr = $arr_update;
+                $this->update( $arr, $quiz_id );
 
             }
 
+
             // Автор теста всегда является master'ом. Добавить его, если надо
 
-            $quiz = get_post( $quiz_id );
-            $quiz_author = $this->get_user_token( $quiz->post_author );
-            if ( ! isset( $arr[$quiz_author]  ) ) $arr[$quiz_author] = array( 'role' => 'master' );
+            $quiz_author = $this->get_quiz_author( $quiz_id );
+            if ( ! isset( $arr[$quiz_author]  ) ) $arr = array_merge( array( $quiz_author => array( 'role' => 'master' ) ), $arr );
+            
+            // $arr[$quiz_author] = array( 'role' => 'master' );
 
             wp_cache_set( 'mif_qm_members', $arr, $quiz_id );
 
@@ -458,34 +448,189 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
 
     //
-    // Добавить новых пользователей, если они пришли с запросом
+    // Обновить список пользователей, если это пришло с запросом
     //
 
-    public function get_new_members()
+    public function members_update( $arr, $quiz_id = false )
     {
-        // Нет новых данных
+        $quiz_id = $this->get_quiz_id( $quiz_id );
         
-        if ( ! isset( $_REQUEST['new_members_data'] ) ) return array();
+        // p( $_REQUEST );
 
+        // // Нет новых данных
+           
+        // if ( ! isset( $_REQUEST['members'] ) ) return false;
+        
         // Текущий пользователь не может обновлять списки других пользователей
 
-        if ( ! ( $this->access_level( $quiz_id ) > 2 ) ) return array();
+        if ( ! ( $this->access_level( $quiz_id ) > 2 ) ) return false;
             
-        // Построить массив имен
+        // Очистить полученные данные и оформить как массив
 
-        $new_data = sanitize_text_field( preg_replace( '/[^0-9a-z_-]/', ' ', $_REQUEST['new_members_data'] ) );
-        $arr = explode( ' ', $new_data );
+        if ( isset( $_REQUEST['members'] ) && is_array( $_REQUEST['members'] ) ) {
+            
+            $arr_request = array_map( 'sanitize_key', $_REQUEST['members'] );
+            
+        } elseif ( isset( $_REQUEST['members'] ) && is_string( $_REQUEST['members'] ) ) {
+            
+            $arr_request[] = sanitize_key( $_REQUEST['members'] );
 
-        foreach ( (array) $arr as $key => $item ) {
+        } elseif ( ! empty( $_REQUEST['members-text'] ) ) {
+            
+            $new_data = sanitize_text_field( preg_replace( '/[^0-9a-z_-]/', ' ', $_REQUEST['members-text'] ) );
+            $arr_request = explode( ' ', $new_data );
+            
+        } else {
 
-            // Если такого пользователя нет, то удалить из списка
+            // Нет новых данных
 
-            $user_id = $this->get_user_id( $item );
-            if ( ! $user_id ) unset( $arr[$key] );
+            return false;
 
         }
-    
-        return $arr;
+
+        // Добавить или удалить
+
+        $do = ( isset( $_REQUEST['do'] ) ) ? sanitize_key( $_REQUEST['do'] ) : 'add';
+        $premise = ( isset( $_REQUEST['premise'] ) ) ? sanitize_key( $_REQUEST['premise'] ) : 'student';
+        
+        $flag = false;
+
+        // Изменение статуса студента или обработка запроса
+
+        if ( $do == 'add' ) {
+
+            // Добавить нового обучающегося самому, либо через подверждение заявки
+            
+            if ( in_array( $premise, array( 'request', 'student' ) ) ) {
+
+                foreach ( (array) $arr_request as $user_token ) {
+
+                    // Пропускать несуществующих пользователей
+                    
+                    $user_id = $this->get_user_id( $user_token );
+                    if ( ! $user_id ) continue;
+
+                    // Если пользователь в списке уже есть, то снова не добавлять
+
+                    if ( isset( $arr[$user_token] ) ) continue;
+
+                    // Добавить пользователя
+
+                    $arr[$user_token] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
+                    $flag = true;
+
+                }
+
+            }
+
+        } elseif ( $do == 'remove' ) {
+
+            // Удалить запросы
+            
+            if ( in_array( $premise, array( 'request', 'student' ) ) ) {
+
+                $this->remove_requests( $arr_request, $quiz_id );
+
+                if ( $premise == 'student' ) {
+
+                    // Удалить студентов по списку
+
+                    foreach ( (array) $arr_request as $user_token ) {
+                        
+                        unset( $arr[$user_token] );
+                        $flag = true;
+
+                    }
+
+                }
+            
+            }
+
+        } elseif ( $do == 'promotion' || $do == 'demotion' ) {
+            
+            // Изменение статуса для остальных ролей
+            
+            if ( isset( $this->roles[$premise] ) ) {
+                
+                // Узнать идентификатор нового статуса
+
+                $index = array();
+                $current = NULL;
+                $n = 0;
+
+                foreach ( $this->roles as $key => $item ) {
+
+                    if ( $premise == $key ) $current = $n;
+                    $index[$n] = $key;
+
+                    $n++;
+                }
+
+                $new_role = $premise;
+                $next = $current + 1;
+                $prev = $current - 1;
+                
+                if ( $do == 'promotion' && isset( $index[ $next ] ) ) $new_role = $index[$next];
+                if ( $do == 'demotion' && isset( $index[ $prev ] ) ) $new_role = $index[$prev];
+
+                // Установить статус
+
+                foreach ( (array) $arr_request as $user_token ) {
+                                        
+                    if ( empty( $arr[$user_token] ) ) continue;
+                    
+                    $arr[$user_token]['role'] = $new_role;
+                    $arr[$user_token]['change_time'] = $this->get_time();
+                    $arr[$user_token]['change_maker'] = $this->get_user_token();
+
+                    $flag = true;
+                    
+                }
+
+            }
+                
+        }
+
+        // Здесь чистить список запросов - удалить тех, кто в основном списке
+        // !!! Надо ли тут для инвайтов?
+
+        $requesters = $this->get_requesters( $quiz_id, 'request' );
+
+        foreach ( (array) $requesters as $user_token ) {
+
+            if ( isset( $arr[$user_token] ) ) $this->remove_requests( $user_token, $quiz_id );
+
+        }
+
+        // Здесь можно делать рассылку пользователям об изменении статуса
+
+        do_action( 'mif_qm_members_core_manage_request_notifications', $arr_request, $do, $premise );
+
+        // Сформировать результат
+
+        $ret = ( $flag ) ? $arr : false;
+
+        return $ret;
+    }
+
+
+
+    //
+    // Обновить данные о пользователях
+    //
+
+    protected function remove_requests( $arr, $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+        $data = $this->get_members_data( $quiz_id );
+
+        foreach ( (array) $arr as $item ) {
+
+            if ( empty( $item ) ) continue;
+            delete_post_meta( $data->ID, 'request', $item );
+
+        }
+
     }
 
 

@@ -222,6 +222,8 @@ class mif_qm_process_results extends mif_qm_process_core {
         $user_token = $this->get_user_token( $user_id );
         $arr = $this->get_list( $quiz_id, $user_token );
 
+        if ( ! isset( $arr[$user_token] ) ) return false;
+
         $ret = false;
 
         foreach ( (array) $arr[$user_token] as $item ) {

@@ -388,6 +388,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
         // Если нет результатов, то ссылку не выводить
 
+        if ( ! isset( $result_list[$user_token] ) ) return;
         if ( ! count( $result_list[$user_token] ) > 0 ) return;
 
         $out = '';
@@ -714,7 +715,8 @@ class mif_qm_process_screen extends mif_qm_process_core {
             $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'edit', 'bg-light' ) . '" href="' . get_edit_post_link( $post->ID ) . '"><span class="' . $class . $this->get_menu_class( 'edit', 'current' ) . '"><i class="fas fa-pencil-alt"></i></span><br /><small>' . __( 'Редактор', 'mif-qm' ) . '</small></a>';
             $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'view', 'bg-light' ) . '" href="?action=view"><span class="' . $class . $this->get_menu_class( 'view', 'current' ) . '"><i class="fas fa-check"></i></span><br /><small>' . __( 'Параметры', 'mif-qm' ) . '</small></a>';
             $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'result', 'bg-light' ) . '" href="?action=result"><span class="' . $class . $this->get_menu_class( 'result', 'current' ) . '"><i class="fas fa-chart-bar"></i></span><br /><small>' . __( 'Результаты', 'mif-qm' ) . '</small></a>';
-            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'settings', 'bg-light' ) . '" href="?action=members"><span class="' . $class . $this->get_menu_class( 'members', 'current' ) . '"><i class="far fa-user"></i></span><br /><small>' . __( 'Пользователи', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'members', 'bg-light' ) . '" href="?action=members"><span class="' . $class . $this->get_menu_class( 'members', 'current' ) . '"><i class="far fa-user"></i></span><br /><small>' . __( 'Пользователи', 'mif-qm' ) . '</small></a>';
+            $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'invites', 'bg-light' ) . '" href="?action=invites"><span class="' . $class . $this->get_menu_class( 'invites', 'current' ) . '"><i class="far fa-list-alt"></i></span><br /><small>' . __( 'Приглашения', 'mif-qm' ) . '</small></a>';
             // $menu .= '<a class="btn btn-outline-light pt-2' . $this->get_menu_class( 'settings', 'bg-light' ) . '" href="?action=settings"><span class="' . $class . $this->get_menu_class( 'settings', 'current' ) . '"><i class="fas fa-cogs"></i></span><br /><small>' . __( 'Настройки', 'mif-qm' ) . '</small></a>';
             $menu .= '</div>';
         }

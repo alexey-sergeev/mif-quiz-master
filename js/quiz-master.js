@@ -33,12 +33,18 @@ jQuery( document ).ready( function( jq ) {
 
     
     
-    // Кнопка "Далее"
-    
-    jq( 'body' ).on( 'submit', '.quiz form', function() {
+    // Кнопка различных действий в тесте - сам тест, настройка пользователей и др.
+
+    jq( 'body' ).on( 'click', '.quiz form button:not(.noajax)', function() {
         
-        var data = new FormData( this );
+        var form = jq( this ).closest( 'form' );
+        var data = new FormData( form.get(0) );
         
+        var btn_value = jq( this ).prop( 'name' );
+        if ( btn_value ) data.append( 'do', btn_value ); 
+        
+        show_loading( this );
+                    
         jq.ajax( {
             url: ajaxurl,
             type: 'POST',
@@ -50,7 +56,6 @@ jQuery( document ).ready( function( jq ) {
                 if ( response ) {
 
                     jq( '#mif-qm-ajax-container' ).html( response );
-
                     // console.log(response);
                     
                 } else {
@@ -73,6 +78,49 @@ jQuery( document ).ready( function( jq ) {
     
 
   
+    
+    // Кнопки добавления или удаления конкретных пользователей
+    
+    jq( 'body' ).on( 'click', '.member-manage-btn', function() {
+    
+        var action_do = jq( this ).attr( 'data-do' );
+        var member = jq( this ).attr( 'data-member' );
+        var form = jq( this ).closest( 'form' );
+
+        var nonce = jq( 'input[name=_wpnonce]', form ).val();
+        var quiz_id = jq( 'input[name=quiz_id]', form ).val();
+        var premise = jq( 'input[name=premise]', form ).val();
+
+        show_loading( this );        
+        // console.log(action_do);
+        // console.log(member);
+        // console.log(quiz_id);
+        // console.log(form.html());
+
+        jq.post( ajaxurl, {
+            action: 'members',
+            do: action_do,
+            members: member,
+            quiz_id: quiz_id,
+            premise: premise,
+            _wpnonce: nonce,
+        },
+        function( response ) { 
+
+            if ( response ) {
+
+                jq( '#mif-qm-ajax-container' ).html( response );
+                // console.log(response);
+
+            }
+
+        });
+        
+        return false;
+    } );
+  
+
+
     
     // Кнопки навигации по тесту
     
@@ -102,22 +150,42 @@ jQuery( document ).ready( function( jq ) {
 
         return false;
 
-    } )
+    } );
 
-
+        
+    
     // Кнопка "Добавить" (пользователей)
 
-    jq( 'body' ).on( 'click', '.add-button button', function() {
+    jq( 'body' ).on( 'click', '.quiz form button.textarea-show', function() {
+
+        var form = jq( this ).closest( 'form' );
+        var div = jq( '.add-textarea', form );
+
+        // div.show();
+        div.css( 'display', 'flex' ).hide().slideDown();
+
+        // var add_textarea = jq( '.add-textarea', add_form );
+        // var add_button = jq( '.add-button', add_form );
+
+        // add_button.slideUp( function() { add_textarea.css( 'display', 'flex' ).hide().slideDown(); } )
         
-        var add_form = jq( this ).closest( '.add-form' );
-        var add_textarea = jq( '.add-textarea', add_form );
-        var add_button = jq( '.add-button', add_form );
-
-        add_button.slideUp( function() { add_textarea.css( 'display', 'flex' ).hide().slideDown(); } )
-
         return false;
 
     } );
+
+    // // Кнопка "Добавить" (пользователей)
+
+    // jq( 'body' ).on( 'click', '.add-button button', function() {
+        
+    //     var add_form = jq( this ).closest( '.add-form' );
+    //     var add_textarea = jq( '.add-textarea', add_form );
+    //     var add_button = jq( '.add-button', add_form );
+
+    //     add_button.slideUp( function() { add_textarea.css( 'display', 'flex' ).hide().slideDown(); } )
+
+    //     return false;
+
+    // } );
 
 
     // Кнопка "Отмена" (добавления пользователей)
@@ -145,12 +213,12 @@ jQuery( document ).ready( function( jq ) {
         var quiz_id = jq( 'input[name=quiz_id]', add_form ).val();
 
         // add_textarea.slideUp( function() { add_button.css( 'display', 'flex' ).hide().slideDown(); } )
-
+        show_loading( this );
 
         jq.post( ajaxurl, {
             action: 'members',
             quiz_id: quiz_id,
-            new_members_data: data,
+            members: data,
             _wpnonce: nonce,
         },
         function( response ) { 
@@ -355,6 +423,35 @@ jQuery( document ).ready( function( jq ) {
         }, 800 );
         
     } );
+    
+    
+    
+    // "Выбрать всех" в списке пользователей
+    
+    jq( 'body' ).on( 'click', 'input[name=select_all]', function() {
+
+        var form = jq( this ).closest( 'form' );
+        var input = jq( 'input.members', form );
+
+        input.prop( 'checked', jq( this ).prop( 'checked' ) );
+
+        console.log();
+        
+    } );
+
+
+   
+    
+    //
+    // Очистить страницу каталога для новой выдачи
+    //
+    
+    function show_loading( elem )
+    {
+        var div = jq( elem ).closest( 'div' );
+        var loading = jq( '.loading', div );
+        loading.fadeIn();
+    }
 
 
 
@@ -375,6 +472,7 @@ jQuery( document ).ready( function( jq ) {
         // jq( '.catalog .stat' ).remove();
 
     }
+
 
 
 });

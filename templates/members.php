@@ -13,6 +13,8 @@
         <?php mif_qm_the_access_mode_panel(); ?>
     </div>
 
+    <?php mif_qm_the_members_requests(); ?>
+
     <div>
         <?php mif_qm_the_members_part( 'master' ); ?>
         <?php mif_qm_the_members_part( 'tutor' ); ?>

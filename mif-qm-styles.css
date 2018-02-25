@@ -1,3 +1,13 @@
+/* Индикатор обмена данными */
+
+.loading {
+     display: none;
+}
+
+.absolute {
+     position: absolute;
+}
+
 /* Главная страница */
 
 .catalog .card {

@@ -58,13 +58,94 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
 
 
+    // //
+    // // Вывести список пользователей для конкретной роли
+    // //
+
+    // public function get_members_part( $role = 'student' )
+    // {
+    //     // Если роль не мастер, то посмотреть, есть ли такие записи
+
+    //     if ( ! in_array( $role, array( 'master' ) ) ) {
+
+    //         $present = array();
+    //         foreach ( (array) $this->members as $item ) $present[$item['role']] = 'yes';
+
+    //     }
+        
+    //     // Показывать дальше, если мастер или студент или для другой роли кто-то реально есть
+
+    //     if ( ! ( isset( $present[$role] ) || in_array( $role, array( 'master', 'student' ) ) ) ) return;
+
+    //     $out = '';
+    //     $roles = $this->get_roles();
+
+    //     $out .= '<div class="mt-5">';
+    //     $out .= '<div class="row no-gutters border-bottom">';
+    //     $out .= '<div class="bg-light col-12 p-2 font-weight-bold">' . $roles[$role]['name'] . '</div>';
+    //     $out .= '</div>';
+        
+    //     foreach ( (array) $this->members as $user_token => $data ) {
+
+    //         if ( $data['role'] != $role ) continue;
+            
+    //         $out .= '<div class="row border-bottom p-2 no-gutters">';
+    //         $out .= '<div class="col-12">' . $this->get_display_name( $user_token ) . '</div>';
+    //         $out .= '</div>';
+            
+    //     }
+        
+    //     if ( $role == 'student' ) {
+            
+    //         if  ( ! isset( $present['student'] )  ) {
+
+    //             $out .= '<div class="row no-gutters border-bottom">';
+    //             $out .= '<div class="col-12 p-2 alert-warning">' . __( 'Пока никого нет', 'mif-qm' ) . '</div>';
+    //             $out .= '</div>';
+
+    //         }
+
+    //         $out .= '<div class="add-form">';
+
+    //         $out .= '<div class="row no-gutters add-textarea">';
+    //         $out .= '<div class="col-10 pt-4">' . __( 'Укажите пользователей, которых надо добавить в список', 'mif-qm' ) . '</div>';
+    //         $out .= '<div class="col-2 pt-4 text-right"><a href="#" class="cancel">' . __( 'отмена', 'mif-qm' ) . '</a></div>';
+            
+    //         $out .= '<div class="col-12 pt-4"><textarea></textarea></div>';
+
+    //         $out .= '<div class="col-12 text-center save-button">';
+    //         $out .= '<button class="btn m-2">' . __( 'Сохранить', 'mif-qm' ) . '</button>';
+    //         $out .= '<span class="loading absolute pl-2 mt-2"><i class="fas fa-spinner fa-pulse"></i></span>';
+    //         $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
+    //         $out .= '<input type="hidden" name="quiz_id" value="' . $this->quiz_id . '" />';
+    //         // $out .= '<button class="btn btn-secondary m-2">' . __( 'Отменить', 'mif-qm' ) . '</button>';
+    //         $out .= '</div>';
+
+    //         $out .= '</div>';
+            
+    //         $out .= '<div class="row no-gutters add-button">';
+    //         $out .= '<div class="col-12 text-center p-4"><button class="btn btn-primary">' . __( 'Добавить', 'mif-qm' ) . '</button></div>';
+    //         $out .= '</div>';
+            
+    //         $out .= '</div>';
+
+    //     }
+
+
+    //     $out .= '</div>';
+
+    //     return apply_filters( 'mif_qm_members_screen_get_members_part', $out, $this->members, $role );
+    // }
+
+
+
     //
     // Вывести список пользователей для конкретной роли
     //
 
     public function get_members_part( $role = 'student' )
     {
-        // Если роль не мастер и не студент, то посмотреть, есть ли такие записи
+        // Если роль не мастер, то посмотреть, есть ли такие записи
 
         if ( ! in_array( $role, array( 'master' ) ) ) {
 
@@ -80,62 +161,217 @@ class mif_qm_members_screen extends mif_qm_members_core {
         $out = '';
         $roles = $this->get_roles();
 
-        $out .= '<div class="mt-5">';
-        $out .= '<div class="row no-gutters">';
-        $out .= '<div class="bg-light col-12 p-2 font-weight-bold">' . $roles[$role]['name'] . '</div>';
-        $out .= '</div>';
+        // Вывести шапку
+
+        $out .= $this->members_list_elem( $roles[$role]['name'], 'header', $role );
         
+        // Вывести пользователей
+
         foreach ( (array) $this->members as $user_token => $data ) {
 
             if ( $data['role'] != $role ) continue;
             
-            $out .= '<div class="row border-bottom p-2 no-gutters">';
-            $out .= '<div class="col-12">' . $this->get_display_name( $user_token ) . '</div>';
+            $out .= $this->members_list_elem( $user_token, 'item', $role );
+            
+        }
+        
+        // Вывести сообщение, если студенты и их нет
+
+        if ( $role == 'student' && empty( $present['student'] ) ) {
+            
+            $out .= '<div class="row no-gutters border-bottom">';
+            $out .= '<div class="col-12 p-2 alert-warning">' . __( 'Пока никого нет', 'mif-qm' ) . '</div>';
             $out .= '</div>';
             
         }
         
-        if ( $role == 'student' ) {
-            
-            if  ( ! isset( $present['student'] )  ) {
+        // Вывести нижнюю часть
 
-                $out .= '<div class="row no-gutters border-bottom">';
-                $out .= '<div class="col-12 p-2 alert-warning">' . __( 'Пока никого нет', 'mif-qm' ) . '</div>';
-                $out .= '</div>';
-
-            }
-
-            $out .= '<div class="add-form">';
-
-            $out .= '<div class="row no-gutters add-textarea">';
-            $out .= '<div class="col-10 pt-4">' . __( 'Укажите пользователей, которых надо добавить в список', 'mif-qm' ) . '</div>';
-            $out .= '<div class="col-2 pt-4 text-right"><a href="#" class="cancel">' . __( 'отмена', 'mif-qm' ) . '</a></div>';
-            
-            $out .= '<div class="col-12 pt-4"><textarea></textarea></div>';
-
-            $out .= '<div class="col-12 text-center save-button">';
-            $out .= '<button class="btn btn-primary m-2">' . __( 'Сохранить', 'mif-qm' ) . '</button>';
-            $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
-            $out .= '<input type="hidden" name="quiz_id" value="' . $this->quiz_id . '" />';
-            // $out .= '<button class="btn btn-secondary m-2">' . __( 'Отменить', 'mif-qm' ) . '</button>';
-            $out .= '</div>';
-
-            $out .= '</div>';
-            
-            $out .= '<div class="row no-gutters add-button">';
-            $out .= '<div class="col-12 text-center p-4"><button class="btn btn-primary">' . __( 'Добавить', 'mif-qm' ) . '</button></div>';
-            $out .= '</div>';
-            
-            $out .= '</div>';
-
-        }
+        $out .= $this->members_list_elem( '', 'footer', $role );
 
 
-        $out .= '</div>';
+        // $out .= '</div>';
 
-        return apply_filters( 'mif_qm_process_screen_get_members_part', $out, $this->members, $role );
+        return apply_filters( 'mif_qm_members_screen_get_members_part', $out, $this->members, $role );
     }
 
+
+    //
+    // Вывести панель настройки режима доступа
+    //
+
+    public function get_members_requests()
+    {
+        $requests = $this->get_requesters( $this->quiz_id, 'request' );
+
+        if ( empty( $requests ) ) return;
+        
+        $out = '';
+        
+        $out .= $this->members_list_elem( __( 'Новые заявки', 'mif-qm' ), 'header', 'request' );
+        
+        foreach ( (array) $requests as $requester ) {
+            
+            $out .= $this->members_list_elem( $requester, 'item', 'request' );
+            
+        }
+        
+        $out .= $this->members_list_elem( '', 'footer', 'request' );
+
+
+        return apply_filters( 'mif_qm_members_screen_get_members_requests', $out, $this->members, $requests );
+    }
+
+
+
+
+    //
+    // Вывести элемент списка пользователей
+    //
+
+    private function members_list_elem( $data, $mode = 'item', $role = 'student' )
+    {
+        $out = '';
+        $rem_msg = ( $role == 'request' ) ? __( 'Отклонить', 'mif-qm' ) : __( 'Удалить', 'mif-qm' );
+        $add_msg = ( $role == 'student' ) ? __( 'Добавить', 'mif-qm' ) : __( 'Подтвердить', 'mif-qm' );
+        $class =  ( $role == 'request' ) ? ' alert-warning' : '';
+
+        if ( $mode == 'header' ) {
+
+            // Заголовок
+            
+            if ( $this->access_level( $this->quiz_id ) > 2 ) $out .= '<form method="POST">';
+
+            $out .= '<div class="row no-gutters border-bottom mt-5">';
+            $out .= '<div class="bg-light col-12 p-2 font-weight-bold">' . $data . '</div>';
+            $out .= '</div>';
+            
+        } elseif ( $mode == 'item' ) {
+            
+            // Элементы списка
+            
+            $out .= '<div class="row border-bottom no-gutters">';
+
+            $out .= '<div class="col-1 text-center' . $class . '">';
+
+            if ( $this->access_level( $this->quiz_id ) > 2 && in_array( $role, array( 'request', 'student' ) ) ) {
+                
+                $out .= '<label class="p-2 m-0 w-100"><input type="checkbox" name="members[]" value="' . $data . '" id="chk-' . $data . '" class="members"></label>';
+                
+            }
+
+            $out .= '</div>';
+
+            $out .= '<div class="col-9' . $class . '"><label for="chk-' . $data . '" class="p-0 pr-2 pt-2 pb-2 m-0 w-100">' . $this->get_display_name( $data ) . '</label></div>';
+            
+            // Вывести блок мелких кнопок
+
+            $out .= '<div class="col-2 text-right p-2' . $class . '">';
+
+            if ( $this->access_level( $this->quiz_id ) > 2 && ! ( $this->get_quiz_author( $this->quiz_id ) == $data ) ) {
+
+                $out .= '<span class="loading pr-2"><i class="fas fa-spinner fa-pulse"></i></span>';
+
+                if ( ! in_array( $role, array( 'request', 'master' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="promotion" data-member="' . $data . '" title="' . __( 'Повысить', 'mif-qm' ) . '"><i class="fas fa-arrow-up"></i></a>';
+                if ( ! in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="demotion" data-member="' . $data . '" title="' . __( 'Повысить', 'mif-qm' ) . '"><i class="fas fa-arrow-down"></i></a>';
+
+                if ( $role == 'request' ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="add" data-member="' . $data . '" title="' . $add_msg . '"><i class="fas fa-user-plus"></i></a>';
+                if ( in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="remove" data-member="' . $data . '" title="' . $rem_msg . '"><i class="fas fa-user-times"></i></a>';
+
+            }
+            
+            $out .= '</div>';
+            $out .= '</div>';
+            
+        } elseif ( $mode == 'footer' ) {
+            
+            // Нижняя часть
+            
+            if ( $this->access_level( $this->quiz_id ) > 2 ) {
+            
+                
+                if ( in_array( $role, array( 'request', 'student' ) ) ) {
+                    
+                    $out .= '<div class="row no-gutters">';
+
+                    $out .= '<div class="col-12"><label class="pt-3 pr-2 pb-3 p-0 m-0"><input type="checkbox" name="select_all" value="no" class="mr-2">' . __( 'выбрать всех', 'mif-qm' ) . '</label></div>';
+                
+                    $class = '';
+                    $add_form = '';
+
+                    if ( $role == 'student' ) {
+                        
+                        $class = ' noajax textarea-show';
+                        $add_form = $this->get_add_form();
+
+                    }
+
+                    $out .= '<button class="btn mr-2' . $class . '" name="add">' . $add_msg . '</button>';
+                    $out .= '<button class="btn mr-2" name="remove">' . $rem_msg . '</button>';
+                    
+                    $out .= '<span class="loading pl-2"><i class="fas fa-spinner fa-pulse"></i></span>';
+                    
+                    $out .= '</div>';
+
+                    $out .= $add_form;
+
+                }
+                    
+                
+                if ( $this->access_level( $this->quiz_id ) > 2 ) {
+                    
+                    $out .= '<input type="hidden" name="action" value="members" />';
+                    $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
+                    $out .= '<input type="hidden" name="quiz_id" value="' . $this->quiz_id . '" />';
+                    $out .= '<input type="hidden" name="premise" value="' . $role . '" />';
+                    $out .= '</form>';
+                    
+                }
+                
+                // $out .= '</div>';
+            }
+            
+        }
+
+        return apply_filters( 'mif_qm_members_screen_members_list_elem', $out, $data, $mode );
+    }
+
+
+
+
+    //
+    // Возвращает блок ввода пользователей
+    //
+
+    private function get_add_form()
+    {
+        $out = '';
+
+        // $out .= '<form method="POST" class="members-add">';
+        $out .= '<div class="add-form">';
+        
+        $out .= '<div class="add-textarea">';
+        $out .= '<div class="p-2 pl-4 pr-4 mt-4 mb-4 bg-light row no-gutters">';
+        $out .= '<div class="col-10 pt-4">' . __( 'Укажите пользователей, которых надо добавить в список', 'mif-qm' ) . '</div>';
+        $out .= '<div class="col-2 pt-4 text-right"><a href="#" class="cancel">' . __( 'отмена', 'mif-qm' ) . '</a></div>';
+        
+        $out .= '<div class="col-12 pt-4"><textarea name="members-text"></textarea></div>';
+
+        $out .= '<div class="col-12 text-center save-button">';
+        $out .= '<button class="btn m-2">' . __( 'Сохранить', 'mif-qm' ) . '</button>';
+        $out .= '<span class="loading absolute pl-2 mt-2"><i class="fas fa-spinner fa-pulse"></i></span>';
+        // $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
+        // $out .= '<input type="hidden" name="quiz_id" value="' . $this->quiz_id . '" />';
+        $out .= '</div>';
+
+        $out .= '</div>';
+        $out .= '</div>';
+        
+        $out .= '</div>';
+        // $out .= '</form>';
+
+        return apply_filters( 'mif_qm_members_screen_get_add_form', $out );
+    }
 
 
     //
@@ -184,7 +420,7 @@ class mif_qm_members_screen extends mif_qm_members_core {
         
         $out .= '</div>';
 
-        return apply_filters( 'mif_qm_process_screen_get_access_mode_panel', $out, $this->members );
+        return apply_filters( 'mif_qm_members_screen_get_access_mode_panel', $out, $this->members );
     }
 
 
