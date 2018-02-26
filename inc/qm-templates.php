@@ -36,6 +36,18 @@ function mif_qm_the_catalog()
 
 
 //
+// Выводит форму ввода инвайта
+//
+
+function mif_qm_the_invite_form()
+{
+    global $mif_qm_screen;
+    echo $mif_qm_screen->get_invite_form();
+}
+
+
+
+//
 // Выводит блок "Ваши тесты"
 //
 

@@ -72,7 +72,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
     {
     
         // 
-        // Тип записей - "Результат (снимок) теста"
+        // Тип записей - "Пользователь"
         // 
 
         register_post_type( 'quiz_members', array(
@@ -361,23 +361,23 @@ class mif_qm_members_core extends mif_qm_core_core  {
     // Сохраняет в базе запрос пользователя и возвращает результат
     //
 
-    public function set_request( $user_id, $quiz_id = false )
+    public function set_request( $user_id, $quiz_id = false, $invite = false )
     {
         $quiz_id = $this->get_quiz_id( $quiz_id );
 
         $access_mode = $this->get_access_mode( $quiz_id );
         $start_btn = ( isset( $_REQUEST['start'] ) && $_REQUEST['start'] == 'yes' ) ? true : false;
 
-        // Сохранять заявку - если пользователь нажал кнопку, или тест открытый (и доступен без кнопки)
+        // Сохранять заявку - если пользователь ввел инвайт, нажал кнопку, или тест открытый (и доступен без кнопки)
         
-        if ( ! ( $start_btn || $access_mode == 'open' ) ) return false;
+        if ( ! ( $invite || $start_btn || $access_mode == 'open' ) ) return false;
 
         $data = $this->get_members_data( $quiz_id );
         $user_token = $this->get_user_token( $user_id );
 
         // !!! Здесь проверять инвайт и ставить флаг, если да
         
-        $invite = false;
+        // $invite = false;
 
         // Добавить завпрос с учетом проверки 
 
@@ -453,6 +453,8 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
     public function members_update( $arr, $quiz_id = false )
     {
+        $flag = false;
+
         $quiz_id = $this->get_quiz_id( $quiz_id );
         
         // p( $_REQUEST );
@@ -465,6 +467,31 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
         if ( ! ( $this->access_level( $quiz_id ) > 2 ) ) return false;
             
+        // Обработать инвайты
+
+        $invited = $this->get_requesters( $quiz_id, 'invite' );
+
+        if ( $invited ) {
+
+            foreach ( (array) $invited as $item ) {
+                
+                if ( empty( $item ) ) continue;
+                if ( isset( $arr[$item] ) ) continue;
+                
+                // !!! Думать, как здесь учесть и другие данные инвайта
+                
+                $arr[$item] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
+                
+                $flag = true;
+                
+            }
+        
+            $this->remove_requests( $invited, $quiz_id, 'invite' );
+
+        }
+        
+        
+
         // Очистить полученные данные и оформить как массив
 
         if ( isset( $_REQUEST['members'] ) && is_array( $_REQUEST['members'] ) ) {
@@ -480,21 +507,20 @@ class mif_qm_members_core extends mif_qm_core_core  {
             $new_data = sanitize_text_field( preg_replace( '/[^0-9a-z_-]/', ' ', $_REQUEST['members-text'] ) );
             $arr_request = explode( ' ', $new_data );
             
-        } else {
+        } 
+        // else {
 
-            // Нет новых данных
+        //     // Нет новых данных
 
-            return false;
+        //     return false;
 
-        }
+        // }
 
         // Добавить или удалить
 
         $do = ( isset( $_REQUEST['do'] ) ) ? sanitize_key( $_REQUEST['do'] ) : 'add';
         $premise = ( isset( $_REQUEST['premise'] ) ) ? sanitize_key( $_REQUEST['premise'] ) : 'student';
         
-        $flag = false;
-
         // Изменение статуса студента или обработка запроса
 
         if ( $do == 'add' ) {
@@ -591,20 +617,19 @@ class mif_qm_members_core extends mif_qm_core_core  {
                 
         }
 
-        // Здесь чистить список запросов - удалить тех, кто в основном списке
-        // !!! Надо ли тут для инвайтов?
-
-        $requesters = $this->get_requesters( $quiz_id, 'request' );
-
-        foreach ( (array) $requesters as $user_token ) {
-
-            if ( isset( $arr[$user_token] ) ) $this->remove_requests( $user_token, $quiz_id );
-
-        }
-
         // Здесь можно делать рассылку пользователям об изменении статуса
 
         do_action( 'mif_qm_members_core_manage_request_notifications', $arr_request, $do, $premise );
+
+        // Чистить список запросов - удалить тех, кто в основном списке
+        
+        $requesters = $this->get_requesters( $quiz_id, 'request' );
+        
+        foreach ( (array) $requesters as $user_token ) {
+            
+            if ( isset( $arr[$user_token] ) ) $this->remove_requests( $user_token, $quiz_id );
+            
+        }
 
         // Сформировать результат
 
@@ -619,7 +644,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
     // Обновить данные о пользователях
     //
 
-    protected function remove_requests( $arr, $quiz_id = false )
+    protected function remove_requests( $arr, $quiz_id = false, $meta_key = 'request' )
     {
         $quiz_id = $this->get_quiz_id( $quiz_id );
         $data = $this->get_members_data( $quiz_id );
@@ -627,7 +652,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
         foreach ( (array) $arr as $item ) {
 
             if ( empty( $item ) ) continue;
-            delete_post_meta( $data->ID, 'request', $item );
+            delete_post_meta( $data->ID, $meta_key, $item );
 
         }
 

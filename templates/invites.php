@@ -8,12 +8,11 @@
     <?php mif_qm_the_quiz_menu(); ?>
 
     <?php do_action( 'mif_qm_before_invites' );  ?>
-
-    <div>
-        <?php // mif_qm_the_access_mode_panel(); ?>
-    </div>
-
-123
+    <?php mif_qm_the_invites(); ?>
+    
+    <?php do_action( 'mif_qm_before_invites_form' );  ?>
+    <?php mif_qm_the_add_form(); ?>
+    
     <?php do_action( 'mif_qm_after_invites' );  ?>
 
 </div>

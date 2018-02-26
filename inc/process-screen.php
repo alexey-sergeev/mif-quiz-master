@@ -726,6 +726,26 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
 
     //
+    // Окно входа на сайт
+    //
+
+    public function login_form( $caption )
+    {
+        $out = '';
+
+        $out .= '<div class="p-5 mt-4 mb-4 bg-light text-center">';
+        $out .= '<p>' . $caption . '</p>';
+        $out .= '<p class="p-2"><form action="' . wp_login_url() . '">';
+        $out .= '<input type="hidden" name="redirect_to" value="' . get_permalink() . '">';
+        $out .= '<button class="btn btn-lg noajax">' . __( 'Войти', 'mif-qm' ) . '</button></form></p><br />';
+        $out .= '</div>';
+
+        echo apply_filters( 'mif_qm_process_screen_alert', $out, $caption, $class );
+
+    }
+
+
+    //
     // Окно сообщения
     //
 

@@ -524,7 +524,7 @@ class mif_qm_core_core  {
         
         $quiz_post = get_post( $args['quiz'] );
         $prefix = ( ! empty( $args['user'] ) ) ? $this->get_user_token( $args['user'] ) . ' — ' : '';
-        $title = $prefix . $quiz_post->post_title . ' ('. $quiz_post->ID . ')';
+        $title = ( isset( $args['post_title'] ) ) ? $args['post_title'] : $prefix . $quiz_post->post_title . ' ('. $quiz_post->ID . ')';
         $author = $quiz_post->post_author;
         
         // Сохраняем в виде новой связанной записи
@@ -542,6 +542,7 @@ class mif_qm_core_core  {
         );
 
         if ( ! empty ( $args['user'] ) ) $companion_args['meta_input'] = array( 'owner' => $this->get_user_token( $args['user'] ) );
+        if ( ! empty ( $args['post_name'] ) ) $companion_args['post_name'] = $args['post_name'];
 
         remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
         $companion_id = wp_insert_post( $companion_args );

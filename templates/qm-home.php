@@ -5,17 +5,7 @@
         </div>
         <div class="carousel-caption d-none d-md-block col-4" style="top: 3rem; bottom: 3rem; right: 3rem; left: auto;">
         
-        <div class="card p-2">
-            <div class="card-body">
-                <h4 class="h4 text-white t-light"><?php echo __( 'Приглашения', 'mif-qm' ) ?></h4>
-                <p><?php echo __( 'введите код', 'mif-qm' ) ?>:</p>
-                <div class="input-group input-group-lg pl-lg-4 pr-lg-4 pb-4">
-                    <input type="text" class="form-control" name="invite">
-                </div>
-                <button class="btn btn-lg"><?php echo __( 'Пройти тест', 'mif-qm' ) ?></button>
-
-            </div>
-        </div>
+        <?php mif_qm_the_invite_form(); ?>
 
         </div>
     </div>

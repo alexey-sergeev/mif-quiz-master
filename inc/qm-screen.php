@@ -261,7 +261,7 @@ class mif_qm_screen extends mif_qm_core {
         // $out .= '</p>';
         // $out .= '</div>';
         
-        return apply_filters( 'mif_qm_screen_get_catalog_stat', $out, $taxes, $args );
+        return apply_filters( 'mif_qm_screen_get_catalog_stat', $out, $args );
     }
 
         
@@ -417,6 +417,36 @@ class mif_qm_screen extends mif_qm_core {
     }
 
     
+
+    //
+    // Возвращает форму ввода инвайта
+    //
+
+    public function get_invite_form() 
+    {
+        $out = '';
+
+        $out .= '<div class="card p-2 invite">';
+        $out .= '<form method="POST">';
+        $out .= '<div class="card-body">';
+        $out .= '<h4 class="h4 text-white t-light">' . __( 'Приглашения', 'mif-qm' ) . '</h4>';
+        $out .= '<p>' . __( 'введите код', 'mif-qm' ) . '</p>';
+        $out .= '<div class="input-group input-group-lg pl-lg-4 pr-lg-4 pb-4">';
+        $out .= '<input type="text" class="form-control" name="invite_code">';
+        $out .= '</div>';
+        $out .= '<button class="btn btn-lg">' . __( 'Пройти тест', 'mif-qm' ) . '</button>';
+        $out .= '</div>';
+
+        $out .= '<input type="hidden" name="action" value="invite" />';
+        $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';     
+
+        $out .= '</form>';
+        $out .= '</div>';
+
+        return apply_filters( 'mif_qm_screen_get_invite_form', $out );
+    }
+    
+
 
     //
     // Возвращает блок "Ваши тесты"

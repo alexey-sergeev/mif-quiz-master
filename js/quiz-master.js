@@ -289,6 +289,48 @@ jQuery( document ).ready( function( jq ) {
 
     
     
+    // Кнопки ввода инвайта
+    
+    jq( 'body' ).on( 'submit', '.invite form', function() {
+
+
+        var data = new FormData( this );
+
+        jq.ajax( {
+            url: ajaxurl,
+            type: 'POST',
+            contentType: false,
+            processData: false,
+            data: data,
+            success: function( response ) {
+
+                if ( response ) {
+
+                    // console.log( response );
+                    window.location.href = response;
+                    
+                } else {
+                    
+                    jq( '.invite form input[name=invite_code]' ).val( '' );
+                    // console.log( 'error 7' );
+                    
+                }
+                
+            },
+            error: function( response ) {
+                
+                console.log( 'error 8' );
+
+            },
+
+        } );
+
+
+        return false;
+    } );
+
+    
+    
     // Кнопки каталога
     
     jq( 'body' ).on( 'submit', '.catalog form', function() {
@@ -320,14 +362,14 @@ jQuery( document ).ready( function( jq ) {
                     
                 } else {
                     
-                    console.log( 'error 1' );
+                    console.log( 'error 3' );
                     
                 }
                 
             },
             error: function( response ) {
                 
-                console.log( 'error 2' );
+                console.log( 'error 4' );
 
             },
 
@@ -354,14 +396,14 @@ jQuery( document ).ready( function( jq ) {
                     
                 } else {
                     
-                    console.log( 'error 1' );
+                    console.log( 'error 5' );
                     
                 }
                 
             },
             error: function( response ) {
                 
-                console.log( 'error 2' );
+                console.log( 'error 6' );
 
             },
 
@@ -435,7 +477,7 @@ jQuery( document ).ready( function( jq ) {
 
         input.prop( 'checked', jq( this ).prop( 'checked' ) );
 
-        console.log();
+        // console.log();
         
     } );
 

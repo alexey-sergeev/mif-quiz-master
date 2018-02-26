@@ -50,8 +50,11 @@ class mif_qm_init extends mif_qm_screen {
         add_action( 'wp_ajax_result', array( $this, 'ajax_quiz_submit' ) );
         add_action( 'wp_ajax_view', array( $this, 'ajax_quiz_submit' ) );
         add_action( 'wp_ajax_members', array( $this, 'ajax_quiz_submit' ) );
+        add_action( 'wp_ajax_invites', array( $this, 'ajax_quiz_submit' ) );
 
+        add_action( 'wp_ajax_invite', array( $this, 'ajax_invite_submit' ) );
         add_action( 'wp_ajax_catalog', array( $this, 'ajax_catalog_submit' ) );
+        add_action( 'wp_ajax_nopriv_catalog', array( $this, 'ajax_catalog_submit' ) );
         // add_action( 'wp_ajax_members-manage', array( $this, 'ajax_members_manage' ) );
 
 
@@ -66,7 +69,8 @@ class mif_qm_init extends mif_qm_screen {
         global $post;
         global $mif_qm_quiz_screen;
         global $mif_qm_process_screen;
-        global $mif_qm_members_screen;
+        // global $mif_qm_members_screen;
+        
 
         $mif_qm_process_screen = new mif_qm_process_screen();
         
@@ -88,7 +92,9 @@ class mif_qm_init extends mif_qm_screen {
 
             if ( ! is_user_logged_in() ) {
                 
-                $mif_qm_process_screen->alert( __( 'У вас нет прав доступа. Возможно, вам надо просто войти.', 'mif-qm' ), 'danger' );
+                // $mif_qm_process_screen->alert( __( 'У вас нет прав доступа. Возможно, вам надо просто войти.', 'mif-qm' ), 'danger' );
+                $mif_qm_process_screen->login_form( __( 'Войдите на сайт, чтобы получить доступ к тесту', 'mif-qm' ) );
+                
                 return false;
                 
             }
@@ -179,6 +185,7 @@ class mif_qm_init extends mif_qm_screen {
         global $mif_qm_quiz_screen;
         global $mif_qm_process_screen;
         global $mif_qm_members_screen;
+        global $mif_qm_invites_screen;
 
         echo '<div id="mif-qm-ajax-container">';
 
@@ -335,13 +342,13 @@ class mif_qm_init extends mif_qm_screen {
 
 
     // 
-    // Точка входа для AJAX-запросов (главная страница)
+    // Точка входа для AJAX-запросов (каталог главной страницы)
     // 
 
 
     public function ajax_catalog_submit()
     {
-        // p($_REQUEST);
+        // f($_REQUEST);
         check_ajax_referer( 'mif-qm' );
 
         if ( isset( $_REQUEST['mode'] ) && $_REQUEST['mode'] == 'stat' ) {
@@ -353,6 +360,24 @@ class mif_qm_init extends mif_qm_screen {
             echo $this->get_catalog();
 
         }
+
+        wp_die();
+    }
+
+
+
+    // 
+    // Точка входа для AJAX-запросов (ввод инвайта)
+    // 
+
+
+    public function ajax_invite_submit()
+    {
+        // f($_REQUEST);
+        check_ajax_referer( 'mif-qm' );
+
+        $invites_core = new mif_qm_invites_core();
+        echo $invites_core->processed();
 
         wp_die();
     }

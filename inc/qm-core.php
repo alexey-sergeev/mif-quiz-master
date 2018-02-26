@@ -113,6 +113,9 @@ class mif_qm_core extends mif_qm_core_core {
         $members_core = new mif_qm_members_core();
         $members_core->post_types_init();
 
+        $invites_core = new mif_qm_invites_core();
+        $invites_core->post_types_init();
+
     }
 
 
