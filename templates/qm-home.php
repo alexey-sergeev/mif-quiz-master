@@ -89,7 +89,7 @@
 
     <div class="row no-gutters pb-4">
 
-        <div class="col-lg-3 col-sm-12 p-4 bg-light">
+        <div class="category col-lg-3 col-sm-12 p-4 bg-light">
             <h3 class="h4 underline t-light mb-5"><?php echo __( 'Параметры поиска', 'mif-qm' ) ?></h3>
 
             <?php mif_qm_the_category(); ?>

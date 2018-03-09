@@ -93,4 +93,20 @@ function hooks_list( $hook_name = '' ){
 	echo '<'.'pre>'. $out .'</pre'.'>';
 }
 
+
+
+//
+// Отключить визуальный редактор
+//
+
+add_filter( 'user_can_richedit', 'disable_richedit' );
+
+function disable_richedit( $wp_rich_edit )
+{
+    global $post;
+    if ( preg_match( '/^quiz/', $post->post_type ) ) return false;
+
+	return $wp_rich_edit;
+}
+
 ?>

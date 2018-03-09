@@ -29,6 +29,14 @@
     border-bottom: 3px solid #F14F4E;
 }
 
+.catalog .list-item {
+    font-size: 14px;
+}
+
+.catalog .category {
+    min-height: 50rem;
+}
+
 h2.underline,
 h3.underline  {
     position: relative;

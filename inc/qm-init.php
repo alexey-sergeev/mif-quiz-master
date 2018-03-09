@@ -66,6 +66,10 @@ class mif_qm_init extends mif_qm_screen {
 
     public function add_quiz_content( $content = '' )
     {
+        // Если запись отображается в ленте (архив), то не показывать содержимое
+        
+        if ( is_archive() ) return '';
+
         global $post;
         global $mif_qm_quiz_screen;
         global $mif_qm_process_screen;

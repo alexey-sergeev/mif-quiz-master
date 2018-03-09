@@ -69,13 +69,8 @@ class mif_qm_quiz_core extends mif_qm_core_core {
             $part_settings = (array) $part['param']['settings'];
             
             if ( $this->is_param( 'random', $part ) ) shuffle( $questions_index );
-            // if ( in_array( 'random', $part_settings ) ) {
-                
-            //     shuffle( $questions_index );
-                
-            // }
             
-            $questions_index = array_slice( $questions_index, 0, $number );
+            if ( $number != 0 ) $questions_index = array_slice( $questions_index, 0, $number );
 
             foreach ( $questions_index as $index ) $questions[] = $part['questions'][$index];
 
@@ -88,35 +83,6 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
         $quiz['processed']['created'] = $this->get_signature();
         
-        // Замешать вопросы в зависимости от режима и добавить индекс
-// p($quiz_settings);
-        // if ( in_array( 'random', $quiz_settings ) && in_array( 'part', $quiz_settings ) ) {
-            
-        //     // Если выбраны режим part и random - замешать разделы
-            
-        //     $index = array_keys( $quiz['parts'] );
-        //     shuffle( $index );
-        //     $quiz['processed']['index'] = $index;
-            
-        // } elseif ( in_array( 'random', $quiz_settings ) ) {
-            
-        //     // Замешать вопросы - выбраны random и не part (quiz или question)
-            
-        //     $index = array();
-            
-        //     foreach ( (array) $quiz['parts'] as $p_key => $part )
-        //     foreach ( (array) $part['questions'] as $q_key => $question ) $index[] = $p_key . '.' . $q_key;
-            
-        //     shuffle( $index );
-        //     $quiz['processed']['index'] = $index;
-                
-        // } 
-        // // else {
-
-        //     // Делать ничего не надо, т.к. уже всё хорошо. Разделы - последовательны, вопросы замешаны так, как это в их настройках
-            
-        // // }
-
         if ( $this->is_param( 'part', $quiz ) ) {
 
             // Составить индекс для режима разделов
@@ -188,10 +154,16 @@ class mif_qm_quiz_core extends mif_qm_core_core {
 
         // Записать структурированную информацию о содержимом теста
 
+        $n = 1;
         foreach( (array) $quiz_raw['parts'] as $item ) {
 
-            $data = $part->parse( $item, $quiz['param'] );
-            if ( $data ) $quiz['parts'][] = $data;
+            $data = $part->parse( $item, $quiz['param'], $n );
+            if ( $data ) {
+
+                $quiz['parts'][] = $data;
+                $n++;
+
+            }
 
         }
         

@@ -31,7 +31,7 @@ class mif_qm_part_core extends mif_qm_core_core {
     //      $params_quiz - массив параметров всего теста
     //
 
-    function parse( $text, $params_quiz = array() )
+    function parse( $text, $params_quiz = array(), $n = '' )
     {
         
         // Получить массив текстовых описаний вопросов (с ответами)
@@ -42,7 +42,8 @@ class mif_qm_part_core extends mif_qm_core_core {
 
         // Записать заголовок раздела
 
-        $part['title'] = ( isset( $part_raw['title'] ) ) ? $part_raw['title'] : 'none';
+        // $part['title'] = ( isset( $part_raw['title'] ) ) ? $part_raw['title'] : 'none';
+        $part['title'] = ( empty( $part_raw['title'] ) ) ? __( 'Раздел', 'mif-qm' ) . ' ' . $n : $part_raw['title'];
 
         // Записать структурированную информацию о параметрах
 

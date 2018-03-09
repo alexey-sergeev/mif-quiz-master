@@ -170,6 +170,7 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
             
             $btn .= '<div class="m-5 text-center">';
             $btn .= '<button type="submit" class="btn btn-primary btn-lg">' . __( 'Далее', 'mif-qm' ) . '</button>';
+            $btn .= '<span class="loading absolute pl-2 mt-2"><i class="fas fa-spinner fa-pulse"></i></span>';;
             $btn .= '</div>';
             $btn .= '<input type="hidden" name="action" value="run">';
             $btn .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
