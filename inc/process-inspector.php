@@ -35,8 +35,6 @@ class mif_qm_process_inspector extends mif_qm_process_core {
 
         // Уточнить режим оценки
 
-        $inspection_mode = $this->get_inspection_mode( $this->quiz, $inspection_mode );
-
         // if ( ! in_array( $inspection_mode, array( 'strict', 'balanced', 'detailed' ) ) ) {
 
         //     $inspection_mode = 'balanced'; 
@@ -49,8 +47,6 @@ class mif_qm_process_inspector extends mif_qm_process_core {
         
         $max_rating = $this->get_max_rating( $this->quiz );
         $max_rating_raw = $this->get_max_rating( $this->quiz, 'quiz', true );
-        p($max_rating);
-        p($max_rating_raw);
 
         $rating = round( $this->quiz['processed']['rating'][$inspection_mode] * $max_rating / $max_rating_raw );
 

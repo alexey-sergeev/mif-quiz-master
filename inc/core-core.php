@@ -387,35 +387,35 @@ class mif_qm_core_core  {
     
 
     
-    //
-    // Возвращает уровень доступа пользователя
-    //      0 - нет доступа
-    //      1 - прохождение теста (ученик)
-    //      2 - просмотр результатов (эксперт)
-    //      3 - проверка ответов (ассистент)
-    //      4 - редактирование ответов (тьютор)
-    //      5 - редактирование теста (мастер)
-    //
+    // //
+    // // Возвращает уровень доступа пользователя
+    // //      0 - нет доступа
+    // //      1 - прохождение теста (ученик)
+    // //      2 - просмотр результатов (эксперт)
+    // //      3 - проверка ответов (ассистент)
+    // //      4 - редактирование ответов (тьютор)
+    // //      5 - редактирование теста (мастер)
+    // //
 
-    public function access_level( $quiz_id = NULL, $user_id = NULL )
-    {
-        if ( $quiz_id == NULL ) {
+    // public function access_level( $quiz_id = NULL, $user_id = NULL )
+    // {
+    //     if ( $quiz_id == NULL ) {
             
-            global $post;
-            $quiz_id = $post->ID;
+    //         global $post;
+    //         $quiz_id = $post->ID;
             
-        }
+    //     }
 
-        if ( $user_id == NULL ) $user_id = get_current_user_id();
+    //     if ( $user_id == NULL ) $user_id = get_current_user_id();
 
-        $quiz = get_post( $quiz_id );
+    //     $quiz = get_post( $quiz_id );
 
-        // Автор теста всегда является мастером
+    //     // Автор теста всегда является мастером
         
-        if ( $user_id == $quiz->post_author ) return 5;
+    //     if ( $user_id == $quiz->post_author ) return 5;
 
-        return 1;
-    }
+    //     return 1;
+    // }
 
 
     //
@@ -460,7 +460,7 @@ class mif_qm_core_core  {
 
                 // Если пользователь эксперт или более
 
-                if ( $this->access_level( $quiz_id ) > 1 ) return true;
+                if ( mif_qm_access_level( $quiz_id ) > 1 ) return true;
                 
                 // Узнать владельца результата
                 

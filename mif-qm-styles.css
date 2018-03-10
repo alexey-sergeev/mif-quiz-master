@@ -271,6 +271,10 @@ a.cancel:hover {
     /* float: left; */
 }
 
+.qm-draggable.move-process {
+    cursor: move;
+}
+
 .qm-draggable .mover,
 .meta .marker {
     width: 26px;

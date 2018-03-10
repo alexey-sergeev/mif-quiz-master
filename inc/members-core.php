@@ -156,6 +156,11 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             }
 
+            // Автор теста всегда является master'ом. Добавить его, если надо
+
+            $quiz_author = $this->get_quiz_author( $quiz_id );
+            if ( ! isset( $arr[$quiz_author]  ) ) $arr = array_merge( array( $quiz_author => array( 'role' => 'master' ) ), $arr );
+
             // Обновить список на основе данных запроса
             
             $arr_update = $this->members_update( $arr, $quiz_id );
@@ -169,20 +174,39 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             }
 
-
-            // Автор теста всегда является master'ом. Добавить его, если надо
-
-            $quiz_author = $this->get_quiz_author( $quiz_id );
-            if ( ! isset( $arr[$quiz_author]  ) ) $arr = array_merge( array( $quiz_author => array( 'role' => 'master' ) ), $arr );
-            
-            // $arr[$quiz_author] = array( 'role' => 'master' );
-
             wp_cache_set( 'mif_qm_members', $arr, $quiz_id );
 
-            // p($arr);
         }
 
         return $arr;
+    }
+
+
+    
+    //
+    // Возвращает уровень доступа пользователя
+    //      0 - нет доступа
+    //      1 - прохождение теста (ученик)
+    //      2 - просмотр результатов (эксперт)
+    //      3 - проверка ответов (ассистент)
+    //      4 - редактирование ответов (тьютор)
+    //      5 - редактирование теста (мастер)
+    //
+
+    public function access_level( $quiz_id = false, $user_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+
+        if ( ! $level = wp_cache_get( 'mif_qm_access_level', $quiz_id . '-' . $user_id ) ) {
+
+            $status = $this->accessed( $quiz_id, $user_id );
+            $level = $this->member_level( $status );
+
+            wp_cache_set( 'mif_qm_access_level', $level, $quiz_id . '-' . $user_id );
+
+        }
+        
+        return $level;
     }
 
 
@@ -276,9 +300,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
         
         // Если есть нормальный статус, то отправить его
         
-        // if ( isset( $this->roles[$status] ) && $this->roles[$status]['level'] > 0 ) return $status;
         if ( $this->member_level( $status ) > 0 ) return $status;
-        // if ( $status && $status != 'request' ) return $status;
         
         // Если нет статуса, то пытаться отправить заявку (вдруг она есть?)
         
@@ -457,15 +479,14 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
         $quiz_id = $this->get_quiz_id( $quiz_id );
         
-        // p( $_REQUEST );
-
-        // // Нет новых данных
-           
-        // if ( ! isset( $_REQUEST['members'] ) ) return false;
-        
         // Текущий пользователь не может обновлять списки других пользователей
 
-        if ( ! ( $this->access_level( $quiz_id ) > 2 ) ) return false;
+        $user_token = $this->get_user_token();
+        // p($arr);
+        // p($this->member_level( $arr[$user_token]['role'] ) );
+
+        // if ( ! ( $this->access_level( $quiz_id ) > 2 ) ) return false;
+        if ( ! ( $this->member_level( $arr[$user_token]['role'] ) > 2 ) ) return false;
             
         // Обработать инвайты
 
@@ -712,7 +733,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
     {
         $quiz_id = $this->get_quiz_id( $quiz_id );
 
-        if ( isset( $_REQUEST['access_mode'] ) ) {
+        if ( isset( $_REQUEST['access_mode'] ) && mif_qm_access_level() > 2 ) {
 
             // Есть новые данные о режиме доступа. Сохранить их.
 

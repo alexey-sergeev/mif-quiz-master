@@ -387,6 +387,8 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
         $access_mode = $this->get_access_mode( $this->quiz_id );
 
+        $disabled = ( mif_qm_access_level() > 2 ) ? '' : ' disabled';
+
         $checked[$access_mode] = ' checked';
         $class[$access_mode] = ' bg-primary text-light';
         
@@ -397,22 +399,22 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
         $out .= '<div class="col-2 text-center border-right p-0' . $class['open'] . '"><label class="p-1 m-0 w-100">';
         $out .= '<span class="loading"><i class="fas fa-spinner fa-pulse"></i></span>';
-        $out .= '<input type="radio" name="access_mode" value="open"' . $checked['open'] . '><br /><small>' . __( 'Открытый', 'mif-qm' ) . '</small>';
+        $out .= '<input type="radio" name="access_mode" value="open"' . $checked['open'] . $disabled . '><br /><small>' . __( 'Открытый', 'mif-qm' ) . '</small>';
         $out .= '</label></div>';
         
         $out .= '<div class="col-2 text-center border-right p-0' . $class['request'] . '"><label class="p-1 m-0 w-100">';
         $out .= '<span class="loading"><i class="fas fa-spinner fa-pulse"></i></span>';
-        $out .= '<input type="radio" name="access_mode" value="request"' . $checked['request'] . '><br /><small>' . __( 'По заявкам', 'mif-qm' ) . '</small>';
+        $out .= '<input type="radio" name="access_mode" value="request"' . $checked['request'] . $disabled . '><br /><small>' . __( 'По заявкам', 'mif-qm' ) . '</small>';
         $out .= '</label></div>';
         
         $out .= '<div class="col-2 text-center border-right p-0' . $class['memberlist'] . '"><label class="p-1 m-0 w-100">';
         $out .= '<span class="loading"><i class="fas fa-spinner fa-pulse"></i></span>';
-        $out .= '<input type="radio" name="access_mode" value="memberlist"' . $checked['memberlist'] . '><br /><small>' . __( 'По спискам', 'mif-qm' ) . '</small>';
+        $out .= '<input type="radio" name="access_mode" value="memberlist"' . $checked['memberlist'] . $disabled . '><br /><small>' . __( 'По спискам', 'mif-qm' ) . '</small>';
         $out .= '</label></div>';
         
         $out .= '<div class="col-2 text-center p-0' . $class['closed'] . '"><label class="p-1 m-0 w-100">';
         $out .= '<span class="loading"><i class="fas fa-spinner fa-pulse"></i></span>';
-        $out .= '<input type="radio" name="access_mode" value="closed"' . $checked['closed'] . '><br /><small>' . __( 'Закрытый', 'mif-qm' ) . '</small>';
+        $out .= '<input type="radio" name="access_mode" value="closed"' . $checked['closed'] . $disabled . '><br /><small>' . __( 'Закрытый', 'mif-qm' ) . '</small>';
         $out .= '</label></div>';
 
         $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';

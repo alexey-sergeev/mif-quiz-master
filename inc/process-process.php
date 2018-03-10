@@ -43,7 +43,8 @@ class mif_qm_process_process extends mif_qm_process_core {
 
     public function get_result_list( $user_token = NULL )
     {
-        $access_level = $this->access_level( $this->quiz_id );
+        $members_core = new mif_qm_members_core();
+        $access_level = $members_core->access_level( $this->quiz_id );
         
         // Если пользователь - никто, то результаты смотреть нельзя
 

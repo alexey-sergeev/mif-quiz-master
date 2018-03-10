@@ -201,7 +201,7 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
         // Если есть новый запрос на инвайты, то добавить их
 
-        if ( isset( $_REQUEST['members-list'] ) ) {
+        if ( isset( $_REQUEST['members-list'] ) && mif_qm_access_level() > 2 ) {
 
             $list = esc_html( $_REQUEST['members-list'] );
             $arr = explode( "\n", $list );

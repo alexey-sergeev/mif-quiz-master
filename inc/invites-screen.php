@@ -36,7 +36,9 @@ class mif_qm_invites_screen extends mif_qm_invites_core {
     {
         // Смотреть приглашения может только эксперт и выше
 
-        if ( ! ( $this->access_level( $this->quiz_id ) > 1 ) ) return;
+        $members_core = new mif_qm_members_core();
+
+        if ( ! ( $members_core->access_level( $this->quiz_id ) > 1 ) ) return;
 
         // Получить список пользователей
 
@@ -63,6 +65,8 @@ class mif_qm_invites_screen extends mif_qm_invites_core {
 
     public function get_add_form()
     {
+        if ( ! ( mif_qm_access_level() > 2 ) ) return;
+        
         $out = '';
 
         $out .= '<div class="mt-5 text-center"><h4>' . __( 'Новые приглашения', 'mif-qm' ) . '</h4></div>';

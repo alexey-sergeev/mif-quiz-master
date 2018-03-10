@@ -200,7 +200,8 @@ class mif_qm_init extends mif_qm_screen {
 
             // Просмотр теста
             
-            if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
+            // if ( mif_qm_user_can( 'view-quiz', $post->ID ) ) {
+            if ( mif_qm_access_level() > 1 ) {
 
                 $quiz_core = new mif_qm_quiz_core();
                 $quiz = $quiz_core->parse( $post->ID );

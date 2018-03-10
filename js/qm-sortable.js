@@ -27,6 +27,7 @@ var DragManager = new function() {
     var elem = e.target.closest('.qm-draggable.active');
     if (!elem) return;
 
+    elem.classList.add('move-process');
     
     dragObject.elem = elem;
     
@@ -88,6 +89,11 @@ var DragManager = new function() {
   }
 
   function onMouseUp(e) {
+
+    var elements = document.querySelectorAll('.move-process');
+    for (var i = 0; i < elements.length; i++) elements[i].classList.remove('move-process');
+
+
     if (dragObject.avatar) { // если перенос идет
       // finishDrag(e);
 
@@ -136,18 +142,6 @@ var DragManager = new function() {
             input.setAttribute('value',data);
             linker.classList.add('checked'); 
         }
-
-        //   var tr = box1.closest('tr');
-        //   var input = tr.querySelector('input[type=hidden]');
-        //   var mover = tr.querySelector('.mover');
-        //   var data = mover.getAttribute('data-caption');
-        //   input.setAttribute('value',data);
-
-        //   var tr = box2.closest('tr');
-        //   var input = tr.querySelector('input[type=hidden]');
-        //   var mover = tr.querySelector('.mover');
-        //   var data = mover.getAttribute('data-caption');
-        //   input.setAttribute('value',data);
 
         }
 
