@@ -109,7 +109,7 @@ class mif_qm_param_screen extends mif_qm_param_core {
         $arr[] = '<span title="' . __( 'Количество вопросов', 'mif-qm') . '"><i class="fas fa-2x mr-2 fa-list-ul"></i>' . $number . '</span>';
         $arr[] = '<span title="' . __( 'Максимальный балл', 'mif-qm') . '"><i class="fas fa-2x fa-graduation-cap mr-2" aria-hidden="true"></i></i>' . $rating . '</span>';
         $arr[] = '<span title="' . __( 'Порог положительной оценки', 'mif-qm') . '"><i class="fas fa-2x fa-tachometer-alt mr-2" aria-hidden="true"></i>' . $success['description'] . '</span>';
-        $arr[] = '<span title="' . __( 'Ограничение времени', 'mif-qm') . '"><i class="far fa-2x fa-clock mr-2" aria-hidden="true"></i>' . $time . '</span>';
+        // !!! $arr[] = '<span title="' . __( 'Ограничение времени', 'mif-qm') . '"><i class="far fa-2x fa-clock mr-2" aria-hidden="true"></i>' . $time . '</span>';
         
         $class = ' class="p-2 m-2 bg-secondary text-light rounded"';
 

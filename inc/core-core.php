@@ -265,7 +265,7 @@ class mif_qm_core_core  {
     // Получить максимально возможное значение рейтинга
     // 
 
-    public function get_max_rating( $item = array(), $mode = 'quiz' )
+    public function get_max_rating( $item = array(), $mode = 'quiz', $raw = false )
     {
         $max_rating = 0;
 
@@ -277,7 +277,13 @@ class mif_qm_core_core  {
             // $max_rating = $rating * count( (array) $item['questions'] );
             
         } elseif ( $mode == 'quiz' && isset( $item['parts'] ) ) {
-            
+
+            $rating = $this->get_clean( 'rating', $item, $mode );
+
+            // Если максимальный балл указан и не просят сырые данные, то его и вернуть
+
+            if ( ! $raw && $rating > 0 ) return $rating;
+
             foreach ( (array) $item['parts'] as $part ) {
                 
                 $rating = $this->get_clean( 'rating', $part, 'part' );

@@ -47,9 +47,13 @@ class mif_qm_process_inspector extends mif_qm_process_core {
 
         // Рассчитать баллы, проценты и статус завершенности
         
-        $rating = round( $this->quiz['processed']['rating'][$inspection_mode] );
-
         $max_rating = $this->get_max_rating( $this->quiz );
+        $max_rating_raw = $this->get_max_rating( $this->quiz, 'quiz', true );
+        p($max_rating);
+        p($max_rating_raw);
+
+        $rating = round( $this->quiz['processed']['rating'][$inspection_mode] * $max_rating / $max_rating_raw );
+
         $percent = ( $max_rating != 0 ) ? round( 100 * $rating / $max_rating ) : 0;
 
         $success = $this->quiz['processed']['success'][$inspection_mode];
