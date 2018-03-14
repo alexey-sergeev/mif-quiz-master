@@ -35,6 +35,8 @@ class mif_qm_process_inspector extends mif_qm_process_core {
 
         // Уточнить режим оценки
 
+        $inspection_mode = $this->get_inspection_mode( $this->quiz );
+
         // if ( ! in_array( $inspection_mode, array( 'strict', 'balanced', 'detailed' ) ) ) {
 
         //     $inspection_mode = 'balanced'; 

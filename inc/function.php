@@ -91,8 +91,20 @@ function disable_richedit( $wp_rich_edit )
 {
     global $post;
     if ( preg_match( '/^quiz/', $post->post_type ) ) return false;
-
+    
 	return $wp_rich_edit;
+}
+
+
+//
+// Ообработку текста в админке
+//
+
+add_action( 'admin_init', 'disable_post_kses' );
+
+function disable_post_kses()
+{
+    remove_filter( 'content_save_pre', 'wp_filter_post_kses' );
 }
 
 ?>
