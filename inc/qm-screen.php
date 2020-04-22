@@ -426,13 +426,15 @@ class mif_qm_screen extends mif_qm_core {
     {
         $out = '';
 
+        $invite_code = ( isset( $_REQUEST['invite_code'] ) ) ? sanitize_key( $_REQUEST['invite_code'] ) : '';
+
         $out .= '<div class="card p-2 invite">';
         $out .= '<form method="POST">';
         $out .= '<div class="card-body">';
         $out .= '<h4 class="h4 text-white t-light">' . __( 'Приглашения', 'mif-qm' ) . '</h4>';
         $out .= '<p>' . __( 'введите код', 'mif-qm' ) . '</p>';
         $out .= '<div class="input-group input-group-lg pl-lg-4 pr-lg-4 pb-4">';
-        $out .= '<input type="text" class="form-control" name="invite_code">';
+        $out .= '<input type="text" class="form-control" name="invite_code" value="' . $invite_code . '">';
         $out .= '</div>';
         $out .= '<button class="btn btn-lg">' . __( 'Пройти тест', 'mif-qm' ) . '</button>';
         $out .= '</div>';

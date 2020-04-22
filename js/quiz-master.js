@@ -92,10 +92,7 @@ jQuery( document ).ready( function( jq ) {
         var premise = jq( 'input[name=premise]', form ).val();
 
         show_loading( this );        
-        // console.log(action_do);
-        // console.log(member);
-        // console.log(quiz_id);
-        // console.log(form.html());
+
 
         jq.post( ajaxurl, {
             action: 'members',
@@ -172,20 +169,6 @@ jQuery( document ).ready( function( jq ) {
         return false;
 
     } );
-
-    // // Кнопка "Добавить" (пользователей)
-
-    // jq( 'body' ).on( 'click', '.add-button button', function() {
-        
-    //     var add_form = jq( this ).closest( '.add-form' );
-    //     var add_textarea = jq( '.add-textarea', add_form );
-    //     var add_button = jq( '.add-button', add_form );
-
-    //     add_button.slideUp( function() { add_textarea.css( 'display', 'flex' ).hide().slideDown(); } )
-
-    //     return false;
-
-    // } );
 
 
     // Кнопка "Отмена" (добавления пользователей)
@@ -303,7 +286,7 @@ jQuery( document ).ready( function( jq ) {
             processData: false,
             data: data,
             success: function( response ) {
-
+                
                 if ( response ) {
 
                     // console.log( response );

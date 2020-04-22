@@ -183,6 +183,7 @@ class mif_qm_process_results extends mif_qm_process_core {
             'post_status'   => 'publish',
             'orderby'     => 'date',
             'order'       => 'DESC',
+            'numberposts' => -1,            
             'post_parent' => $quiz_id,
         );
 

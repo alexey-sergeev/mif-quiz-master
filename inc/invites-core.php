@@ -12,6 +12,9 @@ defined( 'ABSPATH' ) || exit;
 
 class mif_qm_invites_core extends mif_qm_core_core  { 
 
+
+    public $page404 = '404';
+
    
     function __construct()
     {
@@ -119,10 +122,10 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
         $args = array(
             'post_type' => 'quiz_invite',
-            'post_status' => 'publish',
+            'post_status' => array( 'publish', 'trash' ),
             'orderby' => 'date',
             'order' => 'DESC',
-            'name' => $invite_code,
+            'post_name__in' => array( $invite_code, $invite_code . '__trashed' ),
             );
 
         $data = get_posts( $args );
@@ -141,7 +144,17 @@ class mif_qm_invites_core extends mif_qm_core_core  {
     public function remove( $invite_code )
     {
         $invite = $this->get( $invite_code );
-        $ret = wp_trash_post( $invite['invite_id'] );
+
+        $invite['owner'] = $this->get_user_token();
+
+        $args = array(
+            'ID' => $invite['invite_id'],
+            'post_content' => $this->to_xml( $invite )
+            );        
+
+        $ret = $this->companion_update( $args );                        
+        
+        if ( $ret ) $ret = wp_trash_post( $invite['invite_id'] );
 
         return $ret;
     }
@@ -163,20 +176,31 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
             if ( $invite ) {
 
-                $members_core = new mif_qm_members_core();
-                $members_core->set_request( get_current_user_id(), $invite['quiz_id'], true );
+                if ( $invite['invite_status'] == 'publish' ) {
+                    
+                    $members_core = new mif_qm_members_core();
+                    $members_core->set_request( get_current_user_id(), $invite['quiz_id'], true );
+                    $this->remove( $invite_code );
 
-                $this->remove( $invite_code );
+                    return get_permalink( $invite['quiz_id'] );
 
-                return get_permalink( $invite['quiz_id'] );
+                }
+
+                if ( isset( $invite['owner'] ) && $invite['owner'] == $this->get_user_token() ) {
+
+                    return get_permalink( $invite['quiz_id'] );
+
+                } else {
+
+                    return home_url() . '/' . $this->page404;
+
+                }
 
             } else {
 
-                return false;
+                return  home_url() . '/' . $this->page404;
 
             }
-
-            // !!! Здесь еще думать про разные варианты тире
 
         } else {
 
@@ -259,6 +283,7 @@ class mif_qm_invites_core extends mif_qm_core_core  {
         $invite['invite_id'] = $invite_data->ID;
         $invite['quiz_id'] = $invite_data->post_parent;
         $invite['invite_code'] = $invite_data->post_name;
+        $invite['invite_status'] = $invite_data->post_status;
     
         return $invite;
     }        

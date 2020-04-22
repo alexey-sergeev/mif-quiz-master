@@ -53,6 +53,9 @@ class mif_qm_init extends mif_qm_screen {
         add_action( 'wp_ajax_invites', array( $this, 'ajax_quiz_submit' ) );
 
         add_action( 'wp_ajax_invite', array( $this, 'ajax_invite_submit' ) );
+        add_action( 'wp_ajax_nopriv_invite', array( $this, 'ajax_invite_submit' ) );
+
+
         add_action( 'wp_ajax_catalog', array( $this, 'ajax_catalog_submit' ) );
         add_action( 'wp_ajax_nopriv_catalog', array( $this, 'ajax_catalog_submit' ) );
         // add_action( 'wp_ajax_members-manage', array( $this, 'ajax_members_manage' ) );
@@ -379,6 +382,15 @@ class mif_qm_init extends mif_qm_screen {
     public function ajax_invite_submit()
     {
         // f($_REQUEST);
+        if ( ! is_user_logged_in() ) {
+            
+            $invite_code = ( isset( $_REQUEST['invite_code'] ) ) ? sanitize_key( $_REQUEST['invite_code'] ) : '';
+            echo wp_login_url( home_url() . '/?invite_code=' . $invite_code );
+            wp_die();
+
+        }
+
+
         check_ajax_referer( 'mif-qm' );
 
         $invites_core = new mif_qm_invites_core();

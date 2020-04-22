@@ -397,10 +397,6 @@ class mif_qm_members_core extends mif_qm_core_core  {
         $data = $this->get_members_data( $quiz_id );
         $user_token = $this->get_user_token( $user_id );
 
-        // !!! Здесь проверять инвайт и ставить флаг, если да
-        
-        // $invite = false;
-
         // Добавить завпрос с учетом проверки 
 
         $request_status = false;
@@ -502,7 +498,6 @@ class mif_qm_members_core extends mif_qm_core_core  {
                 // !!! Думать, как здесь учесть и другие данные инвайта
                 
                 $arr[$item] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
-                
                 $flag = true;
                 
             }
