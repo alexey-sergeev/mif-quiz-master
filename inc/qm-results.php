@@ -36,7 +36,7 @@ class mif_qm_results extends mif_qm_screen {
             // Получить список результатов по моим тестам
 
             $process_results = new mif_qm_process_results();
-            $results = $process_results->get_results_list( array( 'author' => get_current_user_id() ) );
+            $results = $process_results->get_results( array( 'author' => get_current_user_id() ) );
 
             // Посчитать, сколько результатов по каким тестам
             

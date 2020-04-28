@@ -4,7 +4,7 @@ Plugin Name: MIF Quiz Master
 Plugin URI: http://mif.vspu.ru
 Description: Плагин для составления тестов
 Author: Алексей Н. Сергеев
-Version: 1.0.1
+Version: 1.1.0
 Author URI: https://vk.com/alexey_sergeev
 */
 
@@ -18,8 +18,19 @@ add_action( 'init', 'qm_init' );
 
 function qm_init()
 {
+    global $qm;
     $qm = new mif_qm_init();
 }
+
+
+
+add_action( 'wp', 'qm_download' );
+
+function qm_download()
+{
+    new mif_qm_download();
+}
+
 
 
 add_action( 'wp_enqueue_scripts', 'mif_qm_customizer_styles' );
@@ -32,7 +43,7 @@ function mif_qm_customizer_styles()
 	// wp_enqueue_style( 'font-awesome' );
 
     // wp_enqueue_script( 'fa-v4-shim', plugins_url( 'lib/fontawesome/js/fa-v4-shim.js', __FILE__ ) );
-    wp_enqueue_script( 'font-awesome-js', plugins_url( 'lib/fontawesome/js/fontawesome-all.js', __FILE__ ) );
+    wp_enqueue_script( 'font-awesome-js', plugins_url( 'lib/fontawesome/js/fontawesome-all.js', __FILE__ ), '', '1.1.0' );
     
     // Twitter bootstrap
     
@@ -47,11 +58,11 @@ function mif_qm_customizer_styles()
     
     // Локальные стили
 
-    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ) );
+    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ), '', '1.1.0' );
     wp_enqueue_style( 'qm-styles' );
 
     // JS-методы
-    wp_enqueue_script( 'mif_qm_js_helper', plugins_url( 'js/quiz-master.js', __FILE__ ) );
+    wp_enqueue_script( 'mif_qm_js_helper', plugins_url( 'js/quiz-master.js', __FILE__ ), '', '1.1.0' );
 
     // Плагин сортировки
     wp_enqueue_script( 'mif_qm_sortable', plugins_url( 'js/qm-sortable.js', __FILE__ ) );

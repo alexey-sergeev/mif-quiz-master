@@ -319,7 +319,7 @@ class mif_qm_screen extends mif_qm_core {
 
             $out .= '<div class="mb-3">';
             
-            foreach ( $category_group['cats'] as $cat ) {
+            foreach ( (array) $category_group['cats'] as $cat ) {
                 
                 $out .= '<div>';
                 $out .= '<span class="list-item mr-2 p-1 text-secondary rounded"><i class="fas fa-check"></i></span>';
@@ -471,7 +471,7 @@ class mif_qm_screen extends mif_qm_core {
             // Получить список завершенных тестов
 
             $process_results = new mif_qm_process_results();
-            $results = $process_results->get_results_list( array( 'user' => get_current_user_id(), 'numberposts' => $this->my_quizess_count ) );
+            $results = $process_results->get_results( array( 'user' => get_current_user_id(), 'numberposts' => $this->my_quizess_count ) );
 
             $companions = array_slice( array_merge( $current_snapshots, $results ), 0, $this->my_quizess_count ) ;
 

@@ -5,9 +5,150 @@
 
 jQuery( document ).ready( function( jq ) {
     
+
+    // Кнопки конкретных пользователей из списка результтаов
+    
+    jq( 'body' ).on( 'click', '.result-manage-btn', function() {
+    
+        var action_do = jq( this ).attr( 'data-do' );
+        var member = jq( this ).attr( 'data-member' );
+        var form = jq( this ).closest( 'form' );
+
+        var nonce = jq( 'input[name=_wpnonce]', form ).val();
+        var quiz_id = jq( 'input[name=quiz_id]', form ).val();
+        var mode = jq( 'input[name=mode]', form ).val();
+
+        show_loading( this );        
+
+        jq.post( ajaxurl, {
+            action: 'result',
+            do: action_do,
+            members: member,
+            quiz_id: quiz_id,
+            mode: mode,
+            _wpnonce: nonce,
+        },
+        function( response ) { 
+
+            if ( response ) {
+
+                jq( '#mif-qm-ajax-container' ).html( response );
+                // console.log(response);
+
+            }
+
+        });
+        
+        return false;
+    } );
+    
+
+    // Кнопки конкретных пользователей из списка инвайтов
+    
+    jq( 'body' ).on( 'click', '.invite-manage-btn', function() {
+    
+        var action_do = jq( this ).attr( 'data-do' );
+        var invite = jq( this ).attr( 'data-invite' );
+        var form = jq( this ).closest( 'form' );
+
+        var nonce = jq( 'input[name=_wpnonce]', form ).val();
+        var quiz_id = jq( 'input[name=quiz_id]', form ).val();
+
+        show_loading( this );        
+
+        jq.post( ajaxurl, {
+            action: 'invites',
+            do: action_do,
+            invites: invite,
+            quiz_id: quiz_id,
+            _wpnonce: nonce,
+        },
+        function( response ) { 
+
+            if ( response ) {
+
+                jq( '#mif-qm-ajax-container' ).html( response );
+                // console.log(response);
+
+            }
+
+        });
+        
+        return false;
+    } );
+
+
+
+    // Кнопки выбора группы в списке результатов, инвайтов и др.
+        
+    jq( 'body' ).on( 'click', '.groups-btn a', function() {
+        
+        var group = jq( this ).attr( 'data-group' );
+        
+        var form = jq( this ).closest( 'form' );
+        var nonce = jq( 'input[name=_wpnonce]', form ).val();
+        var quiz_id = jq( 'input[name=quiz_id]', form ).val();
+        var action = jq( 'input[name=action]', form ).val();
+        var mode = jq( 'input[name=mode]', form ).val();
+        
+
+        // console.log(quiz_id);
+
+        // var member = jq( this ).attr( 'data-member' );
+
+        // var premise = jq( 'input[name=premise]', form ).val();
+
+        show_loading( this );        
+
+        jq.post( ajaxurl, {
+            action: action,
+            do: 'refresh',
+            group: group,
+            mode: mode,
+            quiz_id: quiz_id,
+            _wpnonce: nonce,
+        },
+        function( response ) { 
+
+            if ( response ) {
+
+                jq( '#mif-qm-ajax-container' ).html( response );
+                // console.log(response);
+                
+            } else {
+                
+                console.log( 'error 9' );
+
+            }
+
+        });
+        
+        return false;
+    } );
+
+
+
+    // Подробные сведения инвайта
+
+    jq( 'body' ).on( 'click', '.invites a.beak', function() {
+
+        // jq( '.result_list .row.all' ).css( 'display', 'none' );
+        var item = jq( this ).closest( '.invite-item' );
+        var ul = jq( '.wrap', item );
+
+        jq( ul ).slideToggle();
+        jq( this ).toggleClass( 'active ');
+
+        // console.log(jq(ul).innerHTML());
+
+        return false;
+        
+    } );
+    
+    
     // Кнопка "Актуальные"
 
-    jq( '.result_list' ).on( 'click', 'a.show-current', function() {
+    jq( 'body' ).on( 'click', '.result_list a.show-current', function() {
 
         // jq( '.result_list .row.all' ).css( 'display', 'none' );
         jq( '.result_list .row.all' ).slideUp();
@@ -20,7 +161,7 @@ jQuery( document ).ready( function( jq ) {
     
     // Кнопка "Все"
     
-    jq( '.result_list' ).on( 'click', 'a.show-all', function() {
+    jq( 'body' ).on( 'click', '.result_list a.show-all', function() {
         
         // jq( '.result_list .row.all' ).css( 'display', 'flex' );
         jq( '.result_list .row.all' ).css( 'display', 'flex' ).hide().slideDown();
@@ -44,7 +185,7 @@ jQuery( document ).ready( function( jq ) {
         if ( btn_value ) data.append( 'do', btn_value ); 
         
         show_loading( this );
-                    
+        
         jq.ajax( {
             url: ajaxurl,
             type: 'POST',
@@ -464,11 +605,27 @@ jQuery( document ).ready( function( jq ) {
         
     } );
 
+    
+    
+    
+    // Закрыть алерт
 
-   
+    jq( 'body' ).on( 'click', '.alert button', function() {
+
+        var alert = jq( this ).closest( '.alert' );
+
+        jq( alert ).alert('close');
+        
+        return false;        
+    } );
+
+
+
+
+
     
     //
-    // Очистить страницу каталога для новой выдачи
+    // Показать значок загрузки
     //
     
     function show_loading( elem )

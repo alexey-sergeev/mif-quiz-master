@@ -12,9 +12,13 @@ defined( 'ABSPATH' ) || exit;
 
 class mif_qm_process_core extends mif_qm_core_core { 
 
+    
+
+
     function __construct( $quiz_id = NULL )
     {
         parent::__construct();
+        $this->quiz_id = $this->get_quiz_id( $quiz_id );
     }
 
 

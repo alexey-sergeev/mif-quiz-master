@@ -36,7 +36,7 @@ class mif_qm_profile extends mif_qm_screen {
             // Получить список результатов по тестам, которые проходил пользователь
 
             $process_results = new mif_qm_process_results();
-            $results = $process_results->get_results_list( array( 'user' => get_current_user_id() ) );
+            $results = $process_results->get_results( array( 'user' => get_current_user_id() ) );
 
             // Вывести на экран
 

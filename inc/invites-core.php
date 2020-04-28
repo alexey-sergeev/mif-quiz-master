@@ -80,12 +80,12 @@ class mif_qm_invites_core extends mif_qm_core_core  {
     // Добавить новый инвайт
     //
     
-    public function add( $quiz_id, $data = array() )
+    public function add( $quiz_id, $data = array(), $emailer = false )
     {
         // Добавить данные о создании
   
-        $data['creator'] = $this->get_user_token();
-        $data['time'] = $this->get_time();
+        $data['invite_creator'] = $this->get_user_token();
+        $data['invite_time'] = $this->get_time();
 
         // Сформировать предполагаемый код приглашения
 
@@ -103,8 +103,17 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
         $invation_id = $this->companion_insert( $args );
 
-        $invite_data = get_post( $data_id );
+        $invite_data = get_post( $invation_id );
 
+        // Сделать рассылку?
+        
+        if ( $emailer ) {
+            
+            $invite = $this->get_invite_from_data( $invite_data );
+            do_action( 'mif_qm_invate_emailer', $invite, $quiz_id );
+
+        }    
+        
         return $invite_data;
     }
 
@@ -141,21 +150,33 @@ class mif_qm_invites_core extends mif_qm_core_core  {
     // Удалить инвайт по его коду
     //
 
-    public function remove( $invite_code )
+    public function remove( $invite_code, $delete = false )
     {
         $invite = $this->get( $invite_code );
-
-        $invite['owner'] = $this->get_user_token();
-
-        $args = array(
-            'ID' => $invite['invite_id'],
-            'post_content' => $this->to_xml( $invite )
-            );        
-
-        $ret = $this->companion_update( $args );                        
         
-        if ( $ret ) $ret = wp_trash_post( $invite['invite_id'] );
+        if ( $delete ) {
 
+            // Удалить насовсем
+
+            $ret = wp_delete_post( $invite['invite_id'] );
+
+        } else {
+            
+            // В корзину
+
+            $invite['owner'] = $this->get_user_token();
+            
+            $args = array(
+                'ID' => $invite['invite_id'],
+                'post_content' => $this->to_xml( $invite )
+            );        
+            
+            $ret = $this->companion_update( $args );                        
+            
+            if ( $ret ) $ret = wp_trash_post( $invite['invite_id'] );
+
+        }
+            
         return $ret;
     }
 
@@ -179,7 +200,7 @@ class mif_qm_invites_core extends mif_qm_core_core  {
                 if ( $invite['invite_status'] == 'publish' ) {
                     
                     $members_core = new mif_qm_members_core();
-                    $members_core->set_request( get_current_user_id(), $invite['quiz_id'], true );
+                    $members_core->set_request( get_current_user_id(), $invite['quiz_id'], $invite );
                     $this->remove( $invite_code );
 
                     return get_permalink( $invite['quiz_id'] );
@@ -223,6 +244,55 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
         // p($_REQUEST);
 
+        $arr_request = array();
+
+        if ( isset( $_REQUEST['invites'] ) ) {
+
+            if ( is_array( $_REQUEST['invites'] ) ) {
+                
+                $arr_request = array_map( 'sanitize_key', $_REQUEST['invites'] );
+                
+            } else {
+
+                $arr_request[] = sanitize_key( $_REQUEST['invites'] );
+
+            } 
+
+        }
+        
+        if ( isset( $_REQUEST['do'] ) && mif_qm_access_level() > 2 ) {
+            
+            // Запрос на удаление инвайтов
+            
+            if ( $_REQUEST['do'] == 'remove' ) {
+
+                foreach ( $arr_request as $item ) {
+
+                    $invite = $this->get( $item );
+                    if ( $quiz_id != $invite['quiz_id'] ) continue;
+
+                    $this->remove( $item, true );
+                }
+
+            }
+
+            // Запрос на повторную рассылку сообщений
+            
+            if ( $_REQUEST['do'] == 'emailer' ) {
+
+                foreach ( $arr_request as $item ) {
+
+                    $invite = $this->get( $item );
+                    if ( $quiz_id != $invite['quiz_id'] ) continue;
+
+                    do_action( 'mif_qm_invate_emailer', $invite, $quiz_id );
+                }
+
+            }
+
+
+        }
+
         // Если есть новый запрос на инвайты, то добавить их
 
         if ( isset( $_REQUEST['members-list'] ) && mif_qm_access_level() > 2 ) {
@@ -231,13 +301,80 @@ class mif_qm_invites_core extends mif_qm_core_core  {
             $arr = explode( "\n", $list );
             $arr = array_map( 'trim', $arr );
             $arr = array_diff( $arr, array( '' ) );
-            $arr = array_reverse( $arr );
+            // $arr = array_reverse( $arr );
             
             // !!! Здесь можно более глубоко смотреть строку - искать почту для рассылки и др.
 
-            // Добавить инвайты
+            // p($arr);
 
-            foreach ( (array) $arr as $item ) $this->add( $quiz_id, array( 'fullname' => $item ) );
+            $arr2 = array();
+            $group = ( isset( $_REQUEST['new-group'] ) ) ? trim( sanitize_text_field( $_REQUEST['new-group'] ), '= ' ) : '';
+
+            foreach ( $arr as $item ) {
+
+                if ( preg_match( '/^=/', $item ) ) {
+
+                    $group = trim( $item, '= ' );
+                    continue;
+
+                }
+
+                $data = array();
+
+                $item = preg_replace( '/\s+/', ' ', $item );
+
+                $arr3 = explode( ' ', $item );
+                $fullname_arr = array();
+
+                foreach ( $arr3 as $item2 ) {
+
+                    if ( preg_match( '/^@/', $item2 ) ) {
+                    
+                        // Нашли системное имя пользователя (логин)
+                        
+                        $data['username'] = trim( $item2, '@ ' );
+                        continue;
+                        
+                    }
+                    
+                    if ( preg_match( '/\S@/', $item2 ) ) {
+                        
+                        // Нашли email
+
+                        $data['email'] = $item2;
+                        continue;
+
+                    }
+
+                    // Здесь можем еще что-то найти
+
+                    $data = apply_filters( 'mif_qm_invates_core_get_list_data', $data, $item2 );
+                    
+                    // А здесь ничего не нашли. Это часть имени человека
+
+                    $fullname_arr[] = $item2;
+
+                }
+
+                $fullname = implode( ' ', $fullname_arr );
+
+                if ( empty( $fullname ) ) continue;
+
+                $data['fullname'] = $fullname;
+                if ( $group) $data['group'] = $group;
+
+                $arr2[] = $data;
+            }
+
+            // p( $arr2 );
+
+            // Добавить инвайты
+            
+            // $arr2 = array_reverse( $arr2 );
+            
+            $emailer = ( isset( $_REQUEST['emailer_now'] ) ) ? sanitize_key( $_REQUEST['emailer_now'] ) : false;
+
+            foreach ( (array) $arr2 as $invite ) $this->add( $quiz_id, $invite, $emailer );
 
         }
 
@@ -256,18 +393,47 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
         foreach ( (array) $data as $invite_data ) {
 
-            // $invite = $this->to_array( $invite_data->post_content );
-            // $invite['quiz_id'] = $invite_data->post_parent;
-            // $invite['invite_code'] = $invite_data->post_name;
-
-            // $invites[] = $invite;
-
             $invites[] = $this->get_invite_from_data( $invite_data );
 
         }
 
         return $invites;
     }
+
+
+
+    //
+    // Получить группы из инвайтов
+    //
+
+    // protected function get_groups( $invites )
+    // {
+    //     $qm_members_core = new mif_qm_members_core();
+    //     return $qm_members_core->get_groups( $invites );
+
+    //     // $index = array();
+
+    //     // foreach ( (array) $invites as $invite ) {
+
+    //     //     // if ( ! isset( $invite['group'] ) ) continue;
+    //     //     $group = ( isset( $invite['group'] ) ) ? $invite['group'] : '';
+    //     //     $index[$invite['group']] = true;
+            
+    //     // }
+
+    //     // $groups = ( count( $index ) > 0 ) ? array_keys( $index ) : array();
+
+    //     // sort( $groups );
+        
+    //     // if ( $groups[0] == '' ) {
+
+    //     //     unset( $groups[0] );
+    //     //     $groups[] = '';
+
+    //     // }
+
+    //     // return $groups;
+    // }        
 
 
 
@@ -287,6 +453,94 @@ class mif_qm_invites_core extends mif_qm_core_core  {
     
         return $invite;
     }        
+
+
+
+    //
+    // Получить массив для формирования docx-файла
+    //
+
+    public function get_docx_arr( $quiz_id )
+    {
+        $arr = array();
+
+        $arr['testname'] = get_the_title( $quiz_id );
+        $arr['time'] = $this->get_time();
+
+        $invites = $this->get_list( $quiz_id );
+
+        $qm_members_core = new mif_qm_members_core();
+        $groups = $qm_members_core->get_groups( $invites );
+
+        foreach ( $groups as $g ) {
+
+            $group = ( $g ) ? $g : __( 'Без группы', 'mif-qm' );
+
+            $arr['fullname'][] = array( 'fullname' => '== ' . $group, 'invite_code' => '', 'site' => '' );
+
+            foreach ( $invites as $i ) {
+
+                if ( $i['group'] != $g ) continue;
+                $arr['fullname'][] = array( 'fullname' => $i['fullname'], 'invite_code' => $i['invite_code'], 'site' => home_url() );
+                
+            }
+            
+        }
+        return $arr;
+    }
+
+
+    //
+    // Получить массив для формирования xlsx-файла
+    //
+
+    public function get_xlsx_arr( $quiz_id )
+    {
+        $arr = array();
+
+        $invites = $this->get_list( $quiz_id );
+
+        $cells = array( 
+            'n' => __( '№', 'mif-qm' ), 
+            'fullname' => __( 'Ф. И. О.', 'mif-qm' ), 
+            'group' => __( 'Группа', 'mif-qm' ), 
+            'invite_code' => __( 'Код', 'mif-qm' ), 
+            'email' => __( 'Email', 'mif-qm' ), 
+            'username' => __( 'Имя пользователя', 'mif-qm' ), 
+            'invite_creator' => __( 'Кем создано', 'mif-qm' ), 
+            'invite_time' => __( 'Дата', 'mif-qm' ), 
+        );
+
+        $cells = apply_filters( 'mif_qm_invites_core_get_xlsx_arr_cells', $cells, $quiz_id );
+
+        $arr[] = array();
+        $arr[] = array( __( 'Приглашения', 'mif-qm' ) );
+        $arr[] = array();
+        $arr[] = array( __( 'Тест:', 'mif-qm' ), get_the_title( $quiz_id ) );
+        $arr[] = array( __( 'URL:', 'mif-qm' ), get_permalink( $quiz_id ) );
+        $arr[] = array( __( 'Дата:', 'mif-qm' ), $this->get_time() );
+        $arr[] = array();
+        $arr[] = array();
+
+        $row = array();
+        foreach ( $cells as $key => $value ) $row[] = $value;
+
+        $arr[] = $row;
+
+        $n = 1;
+        foreach ( $invites as $i ) {
+
+            $i['n'] = $n++;
+
+            $row = array();
+            foreach ( $cells as $key => $value ) $row[] = ( isset( $i[$key] ) ) ? $i[$key] : '';
+
+            $arr[] = $row;
+
+        }
+
+        return $arr;
+    }
 
 
 

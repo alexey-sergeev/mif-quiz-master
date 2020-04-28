@@ -265,6 +265,36 @@ class mif_qm_members_core extends mif_qm_core_core  {
     }
 
 
+    //
+    // Получить группы из списка пользователей
+    //
+
+    public function get_groups( $members )
+    {
+        $index = array();
+
+        foreach ( (array) $members as $m ) {
+
+            $group = ( isset( $m['group'] ) ) ? $m['group'] : '';
+            $index[$m['group']] = true;
+            
+        }
+
+        $groups = ( count( $index ) > 0 ) ? array_keys( $index ) : array();
+
+        sort( $groups );
+        
+        if ( $groups[0] == '' ) {
+
+            unset( $groups[0] );
+            $groups[] = '';
+
+        }
+
+        return $groups;
+    }    
+
+
     // //
     // // Пытается добавить пользователя в массив новых пользователей
     // //
@@ -378,6 +408,24 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
 
     
+    //
+    // Получает данные инвайта
+    //
+
+    public function get_invite_data( $quiz_id = false, $user_token = '' )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+        $data = $this->get_members_data( $quiz_id );
+
+        $arr = get_post_meta( $data->ID, 'invite_' . $user_token );
+
+        $ret = ( isset( $arr[0] ) ) ? $arr[0] : array();
+
+        return $ret;
+    }
+
+
+    
 
     //
     // Сохраняет в базе запрос пользователя и возвращает результат
@@ -423,8 +471,11 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
         if ( $request_status ) {
 
-            $arr = get_post_meta( $data->ID, $request_status );
-            if ( ! in_array( $user_token, $arr ) ) $ret = add_post_meta( $data->ID, $request_status, $user_token );
+            // $arr = get_post_meta( $data->ID, $request_status );
+            // if ( ! in_array( $user_token, $arr ) ) $ret = add_post_meta( $data->ID, $request_status, $user_token );
+
+            $ret = add_post_meta( $data->ID, $request_status, $user_token );
+            if ( $request_status == 'invite' ) update_post_meta( $data->ID, 'invite_' . $user_token, $invite );
 
         }
 
@@ -456,8 +507,6 @@ class mif_qm_members_core extends mif_qm_core_core  {
             if ( $access_mode == 'request' ) return 'request';
             return false;
         }
-        
-
 
         return $request_status;        
     }
@@ -472,16 +521,12 @@ class mif_qm_members_core extends mif_qm_core_core  {
     public function members_update( $arr, $quiz_id = false )
     {
         $flag = false;
-
+        
         $quiz_id = $this->get_quiz_id( $quiz_id );
         
         // Текущий пользователь не может обновлять списки других пользователей
 
         $user_token = $this->get_user_token();
-        // p($arr);
-        // p($this->member_level( $arr[$user_token]['role'] ) );
-
-        // if ( ! ( $this->access_level( $quiz_id ) > 2 ) ) return false;
         if ( ! ( $this->member_level( $arr[$user_token]['role'] ) > 2 ) ) return false;
             
         // Обработать инвайты
@@ -496,8 +541,17 @@ class mif_qm_members_core extends mif_qm_core_core  {
                 if ( isset( $arr[$item] ) ) continue;
                 
                 // !!! Думать, как здесь учесть и другие данные инвайта
-                
-                $arr[$item] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
+
+                $data = $this->get_invite_data( $quiz_id, $item );
+
+                $data['role'] = 'student';
+                $data['time'] = $this->get_time();
+                $data['creator'] = $this->get_user_token();
+
+                // $arr[$item] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
+
+                $arr[$item] = $data;
+
                 $flag = true;
                 
             }
@@ -505,7 +559,6 @@ class mif_qm_members_core extends mif_qm_core_core  {
             $this->remove_requests( $invited, $quiz_id, 'invite' );
 
         }
-        
         
 
         // Очистить полученные данные и оформить как массив
@@ -558,7 +611,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
                     // Добавить пользователя
 
-                    $arr[$user_token] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
+                    $arr[$user_token] = array( 'role' => 'student', 'time' => $this->get_time(), 'creator' => $this->get_user_token() );
                     $flag = true;
 
                 }
@@ -631,6 +684,30 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             }
                 
+        } elseif ( $do == 'result-archive' || $do == 'result-unarchive' ) {
+
+            foreach ( (array) $arr_request as $user_token ) {
+                                        
+                if ( empty( $arr[$user_token] ) ) continue;
+                
+                if ( $do == 'result-archive' ) {
+
+                    $arr[$user_token]['result'] = 'archive';
+                    
+                } else {
+                    
+                    unset( $arr[$user_token]['result'] );
+
+                }
+                
+                $arr[$user_token]['change_time'] = $this->get_time();
+                $arr[$user_token]['change_maker'] = $this->get_user_token();
+
+                $flag = true;
+                
+            }
+
+
         }
 
         // Здесь можно делать рассылку пользователям об изменении статуса
@@ -670,6 +747,8 @@ class mif_qm_members_core extends mif_qm_core_core  {
             if ( empty( $item ) ) continue;
             delete_post_meta( $data->ID, $meta_key, $item );
 
+            if ( $meta_key == 'invite' ) delete_post_meta( $data->ID, 'invite_' . $item );
+
         }
 
     }
@@ -680,7 +759,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
     // Обновить данные о пользователях
     //
 
-    private function update( $arr = array(), $quiz_id = NULL )
+    public function update( $arr = array(), $quiz_id = NULL )
     {
      
         $data = $this->get_members_data( $quiz_id );
@@ -697,27 +776,81 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             $res = $this->companion_update( $args );            
 
+            wp_cache_delete( 'mif_qm_members', $quiz_id );
+
         } 
         
-        // else {
-            
-        //     // Данных в базе нет, надо создавать
-
-        //     $args = array(
-        //         'post_type' => 'quiz_members',
-        //         'post_content' => $this->to_xml( $arr ),
-        //         'post_status' => 'publish',
-        //         'quiz' => $quiz_id,
-        //         'user' => false,
-        //         );
-
-        //     $res = $this->companion_insert( $args );
-
-        // }
-
         return $res;
     }
 
+
+
+    // //
+    // // Обновить статус пользователей
+    // //
+
+    // private function update_status( $members = array(), $status = 'active', $quiz_id = NULL )
+    // {
+    //     $arr = $this->get( $quiz_id );
+
+    //     foreach ( (array) $members as $member ) {
+
+    //         if ( isset( $arr['member'] ) ) $arr['member']['status'] = $status;
+
+    //     }
+
+    //     $res = $this->update( $arr, $quiz_id );
+        
+    //     return $res;
+    // }
+
+
+
+    //
+    // Возвращает все данные пользователя
+    //
+
+    public function get_member( $user_token = '', $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+
+        $members = $this->get();
+        $member = ( isset( $members[$user_token] ) ) ? $members[$user_token] : false;
+
+        return $member;
+    }
+
+
+
+    //
+    // Возвращает имя с учетом данных инвайта
+    //
+
+    public function get_fullname( $user_token = '', $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+
+        $members = $this->get();
+        $fullname = ( isset( $members[$user_token]['fullname'] ) ) ? $members[$user_token]['fullname'] : $this->get_display_name( $user_token );
+
+        return $fullname;
+    }
+
+
+
+    //
+    // Возвращает группу пользователя (если есть)
+    //
+
+    public function get_group( $user_token = '', $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+
+        $members = $this->get();
+        $group = ( isset( $members[$user_token]['group'] ) ) ? $members[$user_token]['group'] : '';
+
+        return $group;
+    }
 
 
     //
@@ -747,19 +880,22 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
 
 
-    // //
-    // // Установить режим доступа к тесту
-    // //
+    // 
+    // Вывести аватар пользователя
+    // 
 
-    // public function set_access_mode( $quiz_id = false )
-    // {
-    //     $access_mode = $this->access_mode_default;
+    function get_avatar( $user_token, $size = 25 )
+    {
+        $out = '';
 
-    //     // !!! Сделать нормально
+        $user_id = $this->get_user_id( $user_token );
+        $display_name = $this->get_display_name( $user_token );
+        $link = $this->get_user_link( $user_token );
 
-    //     return $access_mode;
-    // }
+        $out .= '<span class="user-avatar"><a href="' . $link . '" title="' . $display_name . '">' . get_avatar( $user_id, $size, '', '', array( 'class' => 'rounded-circle' ) ) . '</a></span>';
 
+        return $out;
+    }
     
 
     //

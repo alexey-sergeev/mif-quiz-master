@@ -14,7 +14,7 @@ include_once dirname( __FILE__ ) . '/members-templates.php';
 
 class mif_qm_members_screen extends mif_qm_members_core { 
 
-    private $quiz_id;
+    // private $quiz_id;
     
     // Массив пользователей
 
@@ -56,86 +56,6 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
     }
 
-
-
-    // //
-    // // Вывести список пользователей для конкретной роли
-    // //
-
-    // public function get_members_part( $role = 'student' )
-    // {
-    //     // Если роль не мастер, то посмотреть, есть ли такие записи
-
-    //     if ( ! in_array( $role, array( 'master' ) ) ) {
-
-    //         $present = array();
-    //         foreach ( (array) $this->members as $item ) $present[$item['role']] = 'yes';
-
-    //     }
-        
-    //     // Показывать дальше, если мастер или студент или для другой роли кто-то реально есть
-
-    //     if ( ! ( isset( $present[$role] ) || in_array( $role, array( 'master', 'student' ) ) ) ) return;
-
-    //     $out = '';
-    //     $roles = $this->get_roles();
-
-    //     $out .= '<div class="mt-5">';
-    //     $out .= '<div class="row no-gutters border-bottom">';
-    //     $out .= '<div class="bg-light col-12 p-2 font-weight-bold">' . $roles[$role]['name'] . '</div>';
-    //     $out .= '</div>';
-        
-    //     foreach ( (array) $this->members as $user_token => $data ) {
-
-    //         if ( $data['role'] != $role ) continue;
-            
-    //         $out .= '<div class="row border-bottom p-2 no-gutters">';
-    //         $out .= '<div class="col-12">' . $this->get_display_name( $user_token ) . '</div>';
-    //         $out .= '</div>';
-            
-    //     }
-        
-    //     if ( $role == 'student' ) {
-            
-    //         if  ( ! isset( $present['student'] )  ) {
-
-    //             $out .= '<div class="row no-gutters border-bottom">';
-    //             $out .= '<div class="col-12 p-2 alert-warning">' . __( 'Пока никого нет', 'mif-qm' ) . '</div>';
-    //             $out .= '</div>';
-
-    //         }
-
-    //         $out .= '<div class="add-form">';
-
-    //         $out .= '<div class="row no-gutters add-textarea">';
-    //         $out .= '<div class="col-10 pt-4">' . __( 'Укажите пользователей, которых надо добавить в список', 'mif-qm' ) . '</div>';
-    //         $out .= '<div class="col-2 pt-4 text-right"><a href="#" class="cancel">' . __( 'отмена', 'mif-qm' ) . '</a></div>';
-            
-    //         $out .= '<div class="col-12 pt-4"><textarea></textarea></div>';
-
-    //         $out .= '<div class="col-12 text-center save-button">';
-    //         $out .= '<button class="btn m-2">' . __( 'Сохранить', 'mif-qm' ) . '</button>';
-    //         $out .= '<span class="loading absolute pl-2 mt-2"><i class="fas fa-spinner fa-pulse"></i></span>';
-    //         $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
-    //         $out .= '<input type="hidden" name="quiz_id" value="' . $this->quiz_id . '" />';
-    //         // $out .= '<button class="btn btn-secondary m-2">' . __( 'Отменить', 'mif-qm' ) . '</button>';
-    //         $out .= '</div>';
-
-    //         $out .= '</div>';
-            
-    //         $out .= '<div class="row no-gutters add-button">';
-    //         $out .= '<div class="col-12 text-center p-4"><button class="btn btn-primary">' . __( 'Добавить', 'mif-qm' ) . '</button></div>';
-    //         $out .= '</div>';
-            
-    //         $out .= '</div>';
-
-    //     }
-
-
-    //     $out .= '</div>';
-
-    //     return apply_filters( 'mif_qm_members_screen_get_members_part', $out, $this->members, $role );
-    // }
 
 
 
@@ -262,7 +182,23 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
             $out .= '</div>';
 
-            $out .= '<div class="col-9' . $class . '"><label for="chk-' . $data . '" class="p-0 pr-2 pt-2 pb-2 m-0 w-100">' . $this->get_display_name( $data ) . '</label></div>';
+            $display_name = $this->get_display_name( $data );
+            $fullname = $this->get_fullname( $data );
+            $link = $this->get_user_link( $data );
+
+            if ( $display_name == $fullname ) {
+
+                $out .= '<div class="col-9' . $class . '"><label for="chk-' . $data . '" class="p-0 pr-2 pt-2 pb-2 m-0 w-100"><a href="' . $link . '">' . $display_name . '</a></label></div>';
+
+            } else {
+                
+                $out .= '<div class="col-9' . $class . '"><label for="chk-' . $data . '" class="p-0 pr-2 pt-2 pb-2 m-0 w-100">' . $fullname . ' (<a href="' . $link . '">' . $data . '</a>)</label></div>';
+
+            }
+
+
+            // $out .= '<div class="col-9' . $class . '"><label for="chk-' . $data . '" class="p-0 pr-2 pt-2 pb-2 m-0 w-100">' . $this->get_display_name( $data ) . '</label></div>';
+            // $out .= '<div class="col-9' . $class . '"><label for="chk-' . $data . '" class="p-0 pr-2 pt-2 pb-2 m-0 w-100">' . $this->get_fullname( $data, $this->quiz_id ) . '</label></div>';
             
             // Вывести блок мелких кнопок
 
@@ -273,7 +209,7 @@ class mif_qm_members_screen extends mif_qm_members_core {
                 $out .= '<span class="loading pr-2"><i class="fas fa-spinner fa-pulse"></i></span>';
 
                 if ( ! in_array( $role, array( 'request', 'master' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="promotion" data-member="' . $data . '" title="' . __( 'Повысить', 'mif-qm' ) . '"><i class="fas fa-arrow-up"></i></a>';
-                if ( ! in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="demotion" data-member="' . $data . '" title="' . __( 'Повысить', 'mif-qm' ) . '"><i class="fas fa-arrow-down"></i></a>';
+                if ( ! in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="demotion" data-member="' . $data . '" title="' . __( 'Понизить', 'mif-qm' ) . '"><i class="fas fa-arrow-down"></i></a>';
 
                 if ( $role == 'request' ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="add" data-member="' . $data . '" title="' . $add_msg . '"><i class="fas fa-user-plus"></i></a>';
                 if ( in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="remove" data-member="' . $data . '" title="' . $rem_msg . '"><i class="fas fa-user-times"></i></a>';
@@ -423,6 +359,53 @@ class mif_qm_members_screen extends mif_qm_members_core {
         $out .= '</div>';
 
         return apply_filters( 'mif_qm_members_screen_get_access_mode_panel', $out, $this->members );
+    }
+
+
+
+
+    //
+    // Вывести панель вывода группы пользователя
+    //
+
+    public function get_groups_panel( $members = array() )
+    {
+        $out = '';
+
+        $groups = $this->get_groups( $members );
+
+        if ( count( $groups ) > 1 ) {
+            
+            $group_rq = ( isset( $_REQUEST['group'] ) ) ? sanitize_key( $_REQUEST['group'] ) : '';
+            
+            $out .= '<div class="row mb-4 justify-content-center groups-btn">';
+            
+            $primary = 'btn-primary text-white m-1';
+            $secondary = 'btn-light text-secondary m-1';
+            
+            $class = ( ! $group_rq ) ? $primary : $secondary;
+            
+            $out .= '<a class="btn ' . $class . '" href="#" role="button" data-group="">' . __( 'Все', 'mif-qm' ) . '</a>';
+            
+            foreach ( $groups as $g ) {
+                
+                $class = $secondary;
+                $group = ( $g ) ? $g : __( 'без группы', 'mif-qm' );
+                
+                $md = md5( $g );
+                $class = ( $group_rq == $md ) ? $primary : $secondary;
+                
+                $out .= '<a class="btn ' . $class . '" href="#" role="button" data-group="' . $md . '">' . $group . '</a>';
+                
+            }
+            
+            $out .= '<span class="loading p-2" style="margin-right: -32px"><i class="fas fa-spinner fa-pulse"></i></span>';
+            
+            $out .= '</div>';
+            
+        }
+
+        return apply_filters( 'mif_qm_members_screen_get_groups_panel', $out, $members, $groups );
     }
 
 

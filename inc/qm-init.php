@@ -15,6 +15,10 @@ include_once dirname( __FILE__ ) . '/qm-workroom.php';
 include_once dirname( __FILE__ ) . '/qm-results.php';
 include_once dirname( __FILE__ ) . '/qm-profile.php';
 
+include_once dirname( __FILE__ ) . '/qm-download.php';
+include_once dirname( __FILE__ ) . '/xlsx-core.php';
+include_once dirname( __FILE__ ) . '/docx-core.php';
+
 include_once dirname( __FILE__ ) . '/quiz-core.php';
 include_once dirname( __FILE__ ) . '/quiz-screen.php';
 
@@ -60,7 +64,8 @@ class mif_qm_init extends mif_qm_screen {
         add_action( 'wp_ajax_nopriv_catalog', array( $this, 'ajax_catalog_submit' ) );
         // add_action( 'wp_ajax_members-manage', array( $this, 'ajax_members_manage' ) );
 
-
+        global $qm_message;
+        $qm_message = array();
     }
 
     //
@@ -78,9 +83,6 @@ class mif_qm_init extends mif_qm_screen {
         global $mif_qm_process_screen;
         // global $mif_qm_members_screen;
         
-
-        $mif_qm_process_screen = new mif_qm_process_screen();
-        
         // Установить текущую запись. Используется при обработке AJAX-запросов.
         
         if ( empty( $post ) ) {
@@ -89,8 +91,13 @@ class mif_qm_init extends mif_qm_screen {
             $post = get_post( $post_id );
             
         }
+
+        // Объект для работы с экраном
+
+        $mif_qm_process_screen = new mif_qm_process_screen( $post_id );
         
-        
+        // Обработка запросов
+
         if ( $post->post_type == 'quiz' ) {
 
             // Если отображается тест
@@ -105,7 +112,7 @@ class mif_qm_init extends mif_qm_screen {
                 return false;
                 
             }
-
+            
             $content = $this->the_quiz();
 
         } elseif ( $post->post_type == 'page' ) {
@@ -304,9 +311,10 @@ class mif_qm_init extends mif_qm_screen {
 
                 // Список всех результатов теста
                 
-                $user_token = ( isset( $_REQUEST['user'] ) ) ? sanitize_key( $_REQUEST['user'] ) : NULL;
+                $user_token = ( isset( $_REQUEST['user'] ) ) ? sanitize_key( $_REQUEST['user'] ) : false;
+                $archive_flag = ( isset( $_REQUEST['mode'] ) && $_REQUEST['mode'] == 'archive' ) ? 'archive' : false;
 
-                $result_list = $process->get_result_list( $user_token );
+                $result_list = $process->get_result_list( $user_token, $archive_flag );
                 $mif_qm_process_screen->the_result_list( $result_list );
 
             }    

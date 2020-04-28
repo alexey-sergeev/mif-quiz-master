@@ -16,7 +16,7 @@ include_once dirname( __FILE__ ) . '/xml-core.php';
 class mif_qm_core_core  {
 
     // Идентификатор теста.
-    private $quiz_id = NULL;
+    public $quiz_id = NULL;
 
     // // Идентификатор записи, где хранится снимок теста.
     // private $snapshot_id = NULL;
@@ -209,6 +209,32 @@ class mif_qm_core_core  {
         }
 
     }
+
+
+    
+    //
+    // Получить ссылку на страницу пользователя по его токену
+    //
+
+    public function get_user_link( $user_token = '' )
+    {
+      
+        if ( $user = get_user_by( 'slug', $user_token ) ) {
+            
+            $link = ( function_exists( 'bp_core_get_user_domain' ) ) ? bp_core_get_user_domain( $user->ID ) : get_the_author_meta( 'url' );
+
+            return apply_filters( 'mif_qm_core_core_get_user_link', $link, $user_token);
+
+        } else {
+
+            return false;
+
+        }
+
+    }
+
+
+
 
     
     //
@@ -569,6 +595,59 @@ class mif_qm_core_core  {
         $quiz_author = $this->get_user_token( $quiz->post_author );
 
         return $quiz_author;
+    }
+
+
+
+    // 
+    // Вернуть блок сообщения
+    // 
+
+    public function get_message()
+    {
+        global $qm_messages;
+
+        // $qm_messages['emailer']['warning']['message'] = 'Не удалось отправить:';
+        // $qm_messages['emailer']['warning']['list'][] = $invite['fullname'];
+        // $qm_messages['emailer']['success']['message'] = 'Отправлены приглашения:';
+        // $qm_messages['emailer']['success']['list'][] = $invite['fullname'];
+
+        $out = '';
+
+        $classes = array(
+            'primary',
+            'secondary',
+            'success',
+            'danger',
+            'warning',
+            'info',
+            'light',
+            'dark',
+            'white',
+        );
+
+        foreach ( (array) $qm_messages as $key => $data ) {
+
+            foreach ( $classes as $class ) {
+
+                if ( empty( $data[$class] ) ) continue;
+
+                $item = $data[$class];
+
+                $out .= '<div class="mb-4 p-3 pl-4 pt-4 border-' . $class . ' alert-' . $class . ' ' . $key . ' alert alert-dismissible fade show" style="border-width: 0 0 0 0.3rem!important" role="alert">';
+                $out .= '<button type="button" class="close noajax"><span aria-hidden="true">&times;</span></button>';
+                
+                if ( isset( $item['message'] ) ) $out .= '<p>' . $item['message'] . '</p>';
+                if ( isset( $item['list'] ) ) $out .= '<p>' . implode( '<br />', $item['list'] ) . '</p>';
+                
+
+                $out .= '</div>';
+
+            }
+
+        }
+
+        return apply_filters( 'mif_qm_core_core_get_message', $out, $qm_messages ); 
     }
 
 

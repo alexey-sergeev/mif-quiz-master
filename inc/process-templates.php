@@ -10,15 +10,15 @@ defined( 'ABSPATH' ) || exit;
 
 
 
-//
-// Ссылка на тест с результатов пользователя
-//
+// //
+// // Ссылка на тест с результатов пользователя
+// //
 
-function mif_qm_the_result_back()
-{
-    global $mif_qm_process_screen;
-    echo $mif_qm_process_screen->get_result_back();
-}
+// function mif_qm_the_result_back()
+// {
+//     global $mif_qm_process_screen;
+//     echo $mif_qm_process_screen->get_result_back();
+// }
 
 
 
@@ -29,7 +29,7 @@ function mif_qm_the_result_back()
 function mif_qm_the_result_list()
 {
     global $mif_qm_process_screen;
-    echo $mif_qm_process_screen->get_result_list();
+    echo $mif_qm_process_screen->get_result_screen();
 }
 
 

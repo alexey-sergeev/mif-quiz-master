@@ -10,6 +10,80 @@ defined( 'ABSPATH' ) || exit;
 
 
 
+//
+// Отправка уведомлений (инвайты)
+//
+
+add_action( 'mif_qm_invate_emailer', 'mif_qm_emailer_invite', 10, 2 );
+
+function mif_qm_emailer_invite( $invite, $quiz_id )
+{
+    // Пока так
+
+    global $qm;
+    global $qm_messages;
+
+    $email = '';
+    
+    if ( isset( $invite['email'] ) ) {
+        
+        $email = $invite['email'];
+        
+    } elseif ( isset( $invite['username'] ) ) {
+        
+        $user_id = $qm->get_user_id( $invite['username'] );
+        
+        if ( $user_id ) {
+
+            $user = get_userdata( $user_id );
+            $email = $user->user_email;
+
+        }
+
+    }
+
+    if ( ! $email ) {
+     
+        $qm_messages['emailer']['warning']['message'] = '<strong>Не удалось отправить:</strong>';
+        $qm_messages['emailer']['warning']['list'][] = $invite['fullname'];
+
+        return;
+
+    }
+
+    $to = $email;
+    // $subject = '[Quiz Master] Новый тест';
+
+    $quiz = get_post( $quiz_id );
+    $subject = '[Новый тест] ' . $quiz->post_title;
+
+    $message = "";
+
+    $message .= $invite['fullname'] . "\n";
+    $message .= "\n";
+    $message .= "Вам отправлено приглашение для прохождения теста\n";
+    $message .= "\n";
+    $message .= "Код приглашения: " . $invite['invite_code'] . "\n";
+    $message .= "Ссылка: " . home_url() . '/?invite_code=' . $invite['invite_code'] . "\n";
+    $message .= "\n";
+    $message .= "Кем отправлено: " . $qm->get_display_name( $invite['invite_creator'] ) . "\n";
+    $message .= "Дата: " . $invite['invite_time'] . "\n";
+    $message .= "\n";
+    $message .= "---\n";
+    $message .= "Всегда ваш,\n";
+    $message .= "робот образовательного портала\n";
+
+    $headers = 'From: Quiz Master <qm@edu.vspu.ru>';
+
+    wp_mail( $to, $subject, $message, $headers );
+
+    $qm_messages['emailer']['success']['message'] = '<strong>Отправлены приглашения:</strong>';
+    $qm_messages['emailer']['success']['list'][] = $invite['fullname'];
+
+}
+
+
+
 
 
 //
@@ -39,45 +113,6 @@ function mif_qm_access_level( $quiz_id = false, $user_id = false )
     $members_core = new mif_qm_members_core();
     return $members_core->access_level( $quiz_id, $user_id );
 }
-
-
-
-
-// function hooks_list( $hook_name = '' ){
-// 	global $wp_filter;
-// 	$wp_hooks = $wp_filter;
-
-// 	// для версии 4.4 - переделаем в массив
-// 	if( is_object( reset($wp_hooks) ) ){
-// 		foreach( $wp_hooks as & $object ) $object = $object->callbacks;
-// 		unset($object);
-// 	}
-
-// 	if( $hook_name ){
-// 		$hooks[ $hook_name ] = $wp_hooks[ $hook_name ];
-
-// 		if( ! is_array($hooks[$hook_name]) ){
-// 			trigger_error( "Nothing found for '$hook_name' hook", E_USER_WARNING );
-// 			return;
-// 		}
-// 	}
-// 	else {
-// 		$hooks = $wp_hooks;
-// 		ksort( $wp_hooks );
-// 	}
-
-// 	$out = '';
-// 	foreach( $hooks as $name => $funcs_data ){
-// 		ksort( $funcs_data );
-// 		$out .= "\nхук\t<b>$name</b>\n";
-// 		foreach( $funcs_data as $priority => $functions ){
-// 			$out .= "$priority";
-// 			foreach( array_keys($functions) as $func_name ) $out .= "\t$func_name\n";
-// 		}
-// 	}
-
-// 	echo '<'.'pre>'. $out .'</pre'.'>';
-// }
 
 
 

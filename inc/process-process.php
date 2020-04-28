@@ -20,7 +20,7 @@ class mif_qm_process_process extends mif_qm_process_core {
     // // Идентификатор записи, где хранится снимок теста.
     
     // private $snapshot_id = NULL;
-    private $quiz_id = NULL;
+    // private $quiz_id = NULL;
     private $quiz = array();
 
 
@@ -41,21 +41,29 @@ class mif_qm_process_process extends mif_qm_process_core {
     // Получить список результатов теста
     // 
 
-    public function get_result_list( $user_token = NULL )
+    public function get_result_list( $user_token = false, $arhive_flag = false )
     {
-        $members_core = new mif_qm_members_core();
-        $access_level = $members_core->access_level( $this->quiz_id );
+        // $members_core = new mif_qm_members_core();
+        // $access_level = $members_core->access_level( $this->quiz_id );
+        
+        // // Если пользователь - никто, то результаты смотреть нельзя
+
+        // if ( $access_level == 0 ) return array();
+        
+        // // Если пользователь - ученик, то может смотеть только свои результаты
+
+        // if ( $access_level == 1 ) $user_token = $this->get_user_token();
         
         // Если пользователь - никто, то результаты смотреть нельзя
 
-        if ( $access_level == 0 ) return array();
+        if ( mif_qm_access_level( $this->quiz_id ) == 0 ) return array();
         
         // Если пользователь - ученик, то может смотеть только свои результаты
 
-        if ( $access_level == 1 ) $user_token = $this->get_user_token();
+        if ( mif_qm_access_level( $this->quiz_id ) == 1 ) $user_token = $this->get_user_token();
         
         $process_results = new mif_qm_process_results();
-        $result_list = $process_results->get_list( $this->quiz_id, $user_token );
+        $result_list = $process_results->get_list( $this->quiz_id, $user_token, $arhive_flag );
 
         return $result_list;
     }

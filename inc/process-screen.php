@@ -20,13 +20,14 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
 
     private $result_list = array();
-    private $quiz_id = NULL;
+    // private $quiz_id = NULL;
     private $quiz = array();
 
 
-    function __construct()
+    function __construct( $quiz_id )
     {
-        parent::__construct();
+        parent::__construct( $quiz_id );
+        // $this->quiz_id = $quiz_id;
     }
 
 
@@ -117,55 +118,219 @@ class mif_qm_process_screen extends mif_qm_process_core {
     // Возвращает список результатов
     // 
     
-    public function get_result_list( $result_list = NULL )
+    public function get_result_screen( $result_list = NULL )
     {
         $out = '';
 
         if ( $result_list ) $this->result_list = $result_list;
-
+        
         // Если нет результатов, то выйти
 
-        if ( empty( $this->result_list ) ) {
+        // if ( empty( $this->result_list ) ) {
 
-            $out .= $this->alert( __( 'Результатов пока ещё нет', 'mif-qm'), 'warning' );
-            return apply_filters( 'mif_qm_process_screen_get_result_list_empty', $out, $this->result_list );
+        //     $out .= $this->alert( __( 'Результатов пока ещё нет', 'mif-qm'), 'warning' );
+        //     return apply_filters( 'mif_qm_process_screen_get_result_list_empty', $out, $this->result_list );
 
-        }
+        // }
 
         $user_token = $this->get_user_token();
 
-        $title = ( count( $this->result_list ) == 1 && isset( $this->result_list[$user_token] ) ) ? __( 'Ваши результаты', 'mif-qm') : __( 'Все результаты', 'mif-qm');
+        $mode = 'follow';
+        if ( count( $this->result_list ) == 1 && isset( $this->result_list[$user_token] ) ) $mode = 'single';
+        if ( isset( $_REQUEST['mode'] ) && $_REQUEST['mode'] == 'archive' ) $mode = 'archive';
+
+        $title = __( 'Таблица результатов', 'mif-qm');
+        if ( $mode == 'single' ) $title = __( 'Ваши результаты', 'mif-qm');
+        if ( $mode == 'archive' ) $title = __( 'Архив результатов', 'mif-qm');
         
+        $out .= '<form>';
+
         $out .= '<div class="mt-5 text-center"><h3>' . $title . '</h3></div>';
+
+        $qm_members_screen = new mif_qm_members_screen( $this->quiz_id );
+        $members = $qm_members_screen->get();
+
+        if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
+    
+            // Оставить только тех пользователей, для которых есть результат
+
+            $members = array_intersect_key( $members, (array) $this->result_list );
+    
+            // Кнопки выбора группы (если они есть)
+    
+            $out .= $qm_members_screen->get_groups_panel( $members );
+            
+        }
 
         $class = ( count( $this->result_list ) == 1 ) ? ' all' : '';
 
         $out .= '<div class="result_list container' . $class . '">';
+
         
-        $out .= '<div class="p-2 pr-0 text-right">';
+        // Кнопки скачивания
+
+        $out .= '<div class="row">';
+        $out .= '<div class="col-6 p-0 mb-3">';
+
+        if (  $mode == 'follow' ) $out .= '<a href="' . get_permalink( $this->quiz_id ) . '?download=results-xlsx" class="btn p-2 pl-3 pr-3 mr-2 bg-light"><i class="fas fa-file-excel"></i> xlsx</a>';
+        if (  $mode == 'archive' ) $out .= '<a href="' . get_permalink( $this->quiz_id ) . '?download=results-archive-xlsx" class="btn p-2 pl-3 pr-3 mr-2 bg-light"><i class="fas fa-file-excel"></i> xlsx</a>';
+
+        $out .= '</div>';
+
+        $out .= '<div class="col-6 p-0 pt-3 mb-3 text-right">';
         $out .= '<a href="#" class="show-current">' . __( 'актуальные', 'mif-qm') . '</a>';
         $out .= '<span class="show-all">' . __( 'актуальные', 'mif-qm') . '</span>';
         $out .= ' | ';
         $out .= '<a href="#" class="show-all">' . __( 'все', 'mif-qm') . '</a>';
         $out .= '<span class="show-current">' . __( 'все', 'mif-qm') . '</span>';
         $out .= '</div>';
+        
+        $out .= '</div>';
+
+        // Выбрать то, что просили показать
+
+        $results_filtered = array();
+        $group_rq = ( isset( $_REQUEST['group'] ) ) ? sanitize_key( $_REQUEST['group'] ) : '';
 
         foreach ( (array) $this->result_list as $owner => $item ) {
+
+            if ( $group_rq ) {
+
+                $group_id = ( isset( $members[$owner]['group'] ) ) ? md5( $members[$owner]['group'] ) : md5( '' );
+                if ( $group_rq != $group_id ) continue;
+
+            }
+
+            $results_filtered[$owner] = $item;
+
+        }
+
+        // Результаты
+
+        if ( $results_filtered ) {
+
+            foreach ( $results_filtered as $owner => $item ) {
             
-            $fio = ( $owner ) ? $this->get_display_name( $owner ) : 'anonymous';
-            $out .= '<div class="row bg-light p-2 font-weight-bold">';
-            $out .= '<div>' . $fio . '</div>';
+                $fio = ( $owner ) ? $qm_members_screen->get_fullname( $owner ) : 'anonymous';
+                $group = ( isset( $members[$owner]['group'] ) ) ? '<span> (' . $members[$owner]['group'] . ')</span>' : '';
+                
+                $out .= '<div class="row bg-light pt-2 pb-2">';
+                
+                $out .= '<div class="col-1 text-center">';
+                
+                if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
+                    
+                    if ( isset( $members[$owner] ) ) $out .= '<label class="p-0 m-0 w-100"><input type="checkbox" name="members[]" value="' . $owner . '" id="chk-' . $owner . '" class="members"></label>';
+
+                }
+                
+                $out .= '</div>';
+                
+                $out .= '<div class="col-8 pl-0 pr-0"><strong>' . $fio . '</strong>' . $group . '</div>';
+                
+                $link = $this->get_user_link( $owner );
+                
+                $out .= '<div class="col-3 text-right text-secondary pr-2 pl-0">';
+                
+                $out .= '<a href="' . $link . '" class="mr-3">' . $owner . '</a>';
+                
+                
+                if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
+                    
+                    if ( $mode == 'follow' ) $out .= '<a href="#" class="result-manage-btn text-secondary mr-2" data-do="result-archive" 
+                                                        data-member="' . $owner . '" title="' . __( 'В архив', 'mif-qm' ) . '"><i class="fas fa-times"></i></a>';
+                    
+                    if ( $mode == 'archive' ) {
+
+                        if ( isset( $members[$owner] ) ) {
+   
+                            $out .= '<a href="#" class="result-manage-btn text-secondary mr-2" data-do="result-unarchive" 
+                                data-member="' . $owner . '" title="' . __( 'Восстановить из архива', 'mif-qm' ) . '"><i class="fas fa-undo"></i></a>';
+                           
+                        } else {
+
+                            $out .= '<span class="text-secondary mr-2" style="opacity: 0.25;"><i class="fas fa-undo"></i></span>';
+
+                        }
+
+                    }
+                    
+                }
+                
+                $out .= '</div>';
+                $out .= '</div>';
+                
+                $out .= $this->get_owner_results( $owner );
+                
+            }
+            
+            if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
+                
+                $out .= '<div class="row">';
+                
+                $out .= '<div class="col-12"><label class="pt-3 pr-2 pb-3 p-0 m-0"><input type="checkbox" name="select_all" value="no" class="mr-2">' . __( 'выбрать всех', 'mif-qm' ) . '</label></div>';
+                
+                $out .= '<div>';
+                if ( $mode == 'follow') $out .= '<button class="btn mr-2" name="result-archive">' . __( 'Отправить в архив', 'mif-qm' ) . '</button>';
+                if ( $mode == 'archive') $out .= '<button class="btn mr-2" name="result-unarchive">' . __( 'Восстановить из архива', 'mif-qm' ) . '</button>';
+                $out .= '<span class="loading pl-2"><i class="fas fa-spinner fa-pulse"></i></span>';
+                $out .= '</div>';
+                
+                $out .= '</div>';
+
+                
+            }
+            
+        } else {
+
+            $out .= '<div class="row">';
+            $out .= '<div class="col-12 p-2 pl-3 alert-warning">' . __( 'Результаты отсутствуют', 'mif-qm' ) . '</div>';
             $out .= '</div>';
 
-            $out .= $this->get_owner_results( $owner );
+        }
+        
+        if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
+                
+            $out .= '<div class="row">';
+            $out .= '<div class="col p-2 mt-5 mb-3 text-center bg-light">';
+            
+            if ( $mode == 'archive' ) {
+                
+                $out .= '<a href="?action=result" class="font-weight-bold">' . __( 'Таблица результатов', 'mif-qm' ) . '</a>';
+                
+            } else {
+                
+                $out .= '<a href="?action=result&mode=archive" class="font-weight-bold">' . __( 'Архив результатов', 'mif-qm' ) . '</a>';
+                
+            }
+            
+            $out .= '</div>';
+            $out .= '</div>';
+            
+        }
+        
+        if ( $mode == 'single' ) {
+            
+            $out .= '<div class="row">';
+            $out .= '<div class="col p-2 mt-5 mb-3 text-center bg-light">';
+            $out .= '<a href="' . get_permalink( $this->quiz_id ). '" class="font-weight-bold">' . __( 'Вернуться к тесту', 'mif-qm') . '</a>';
+            $out .= '</div>';
+            $out .= '</div>';
             
         }
 
-        $out .= '</div>';
+        $out .= '<input type="hidden" name="action" value="result" />';
+        $out .= '<input type="hidden" name="_wpnonce" value="' . wp_create_nonce( 'mif-qm' ) . '" />';
+        $out .= '<input type="hidden" name="quiz_id" value="' . $this->quiz_id . '" />';
+        
+        if ( $mode == 'archive' ) $out .= '<input type="hidden" name="mode" value="archive" />';
 
+        $out .= '</form>';
+        $out .= '</div>';
+        
         // p($this->result_list);
 
-        return apply_filters( 'mif_qm_process_screen_get_result_list', $out, $this->result_list );
+        return apply_filters( 'mif_qm_process_screen_get_result_screen', $out, $this->result_list );
     }
 
 
@@ -347,27 +512,27 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
     
 
-    // 
-    // Возвращает ссылку на тест
-    // 
+    // // 
+    // // Возвращает ссылку на тест
+    // // 
     
-    public function get_result_back()
-    {
-        $out = '';
+    // public function get_result_back()
+    // {
+    //     $out = '';
 
-        $user_id = false; // !!! Здесь думать, где брать для анонимных
-        $user_token = $this->get_user_token( $user_id );
+    //     $user_id = false; // !!! Здесь думать, где брать для анонимных
+    //     $user_token = $this->get_user_token( $user_id );
 
-        if ( ! ( count( $this->result_list ) == 1 && isset( $this->result_list[$user_token] ) ) ) return;
+    //     if ( ! ( count( $this->result_list ) == 1 && isset( $this->result_list[$user_token] ) ) ) return;
 
-        // Делать ссылку, если показывается результат только одного пользователя - текущего
+    //     // Делать ссылку, если показывается результат только одного пользователя - текущего
 
-        $out .= '<div class="p-2 mt-5 mb-3 text-center bg-light">';
-        $out .= '<a href="' . get_permalink( $this->quiz_id ). '" class="font-weight-bold">' . __( 'Вернуться к тесту', 'mif-qm') . '</a>';
-        $out .= '</div>';
+    //     $out .= '<div class="p-2 mt-5 mb-3 text-center bg-light">';
+    //     $out .= '<a href="' . get_permalink( $this->quiz_id ). '" class="font-weight-bold">' . __( 'Вернуться к тесту', 'mif-qm') . '</a>';
+    //     $out .= '</div>';
 
-        return apply_filters( 'mif_qm_process_screen_get_result_back', $out );
-    }
+    //     return apply_filters( 'mif_qm_process_screen_get_result_back', $out );
+    // }
 
 
     

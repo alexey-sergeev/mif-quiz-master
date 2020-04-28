@@ -165,6 +165,18 @@ class mif_qm_process_results extends mif_qm_process_core {
 
         }
 
+        $qm_members_core = new mif_qm_members_core();
+        $members = $qm_members_core->get( $quiz_id );
+        
+        $user_token = $this->get_user_token( $user_id );
+
+        if ( isset( $members[$user_token]['result'] ) && $members[$user_token]['result'] == 'archive' ) {
+
+            unset( $members[$user_token]['result'] );
+            $qm_members_core->update( $members, $quiz_id );
+
+        };
+
         return $res;
     }
 
@@ -174,7 +186,88 @@ class mif_qm_process_results extends mif_qm_process_core {
     // Получить данные о текущих оценках многих пользователей для теста
     //
 
-    public function get_list( $quiz_id, $user_token = NULL )
+    public function get_xlsx_arr( $quiz_id, $archive = false )
+    {
+        $arr = array();
+
+        $cells = array( 
+            'n' => __( '№', 'mif-qm' ), 
+            'fullname' => __( 'Ф. И. О.', 'mif-qm' ), 
+            'group' => __( 'Группа', 'mif-qm' ), 
+            'rating' => __( 'Оценка', 'mif-qm' ), 
+            'max' => __( 'Макс.', 'mif-qm' ), 
+            'percent' => __( '%', 'mif-qm' ), 
+            'success' => __( 'Результат', 'mif-qm' ), 
+            'duration' => __( 'Секунд', 'mif-qm' ), 
+            'time' => __( 'Дата', 'mif-qm' ), 
+        );
+
+        $success_desc = array( 
+            'yes' => __( 'Принято', 'mif-qm' ),
+            'no' => __( 'Не принято', 'mif-qm' )
+        );
+
+        $arr[] = array();
+        $arr[] = array( __( 'Результаты', 'mif-qm' ) );
+        $arr[] = array();
+        $arr[] = array( __( 'Тест:', 'mif-qm' ), get_the_title( $quiz_id ) );
+        $arr[] = array( __( 'URL:', 'mif-qm' ), get_permalink( $quiz_id ) );
+        $arr[] = array( __( 'Дата:', 'mif-qm' ), $this->get_time() );
+        $arr[] = array();
+        $arr[] = array();
+
+        $row = array();
+        foreach ( $cells as $key => $value ) $row[] = $value;
+        $arr[] = $row;
+
+        $qm_members_core = new mif_qm_members_core();
+
+        $result_list = $this->get_list( $quiz_id, false, $archive );
+
+        $n = 1;
+
+        foreach ( (array) $result_list as $member => $results ) {
+
+            $result = $this->get_current_result( $quiz_id, $member );
+
+            $row = array(
+                    $n++,
+                    $qm_members_core->get_fullname( $member, $quiz_id ),
+                    $qm_members_core->get_group( $member, $quiz_id ),
+                    $result['rating'],
+                    $result['max'],
+                    $result['percent'],
+                    $success_desc[$result['success']],
+                    $result['duration'],
+                    $result['time'],
+            );
+
+            $arr[] = $row;
+
+            // $arr[] = array(
+            //         'n' => $n++,
+            //         'fullname' => $qm_members_core->get_fullname( $member, $quiz_id ),
+            //         'group' => $qm_members_core->get_fullname( $member, $quiz_id ),
+            //         'rating' => $result['rating'],
+            //         'max' => $result['max'],
+            //         'percent' => $result['percent'],
+            //         'success' => $success_desc[$result['success']],
+            //         'duration' => $result['duration'],
+            //         'time' => $result['time'],
+            // );
+                
+        }
+
+
+        return $arr;
+    }
+
+
+    //
+    // Получить данные о текущих оценках многих пользователей для теста
+    //
+
+    public function get_list( $quiz_id, $user_token = false, $archive = false )
     {
         $arr = array();
 
@@ -194,13 +287,33 @@ class mif_qm_process_results extends mif_qm_process_core {
             $result_args['meta_key'] = 'owner';
             $result_args['meta_value'] = $user_token;
 
-        }
+        } else {
+
+            $qm_members_screen = new mif_qm_members_screen( $quiz_id );
+            $members = $qm_members_screen->get( $quiz_id );
+
+            $arr2 = array();
+
+            foreach ( $members as $owner => $member ) {
+                
+                if ( isset( $member['result'] ) && $member['result'] == 'archive' ) continue;
+                $arr2[] = $owner;
+
+            };
+
+            $result_args['meta_key'] = 'owner';
+            $result_args['meta_value'] = $arr2;
+            
+            if ( $archive)  $result_args['meta_compare'] = 'NOT IN';
+            
+         }
 
         $results = get_posts( $result_args );
 
         foreach ( (array) $results as $result ) {
             
             $owner = get_post_meta( $result->ID, 'owner', true );
+            
             $result_data = $this->to_array( $result->post_content );
             
             $arr[$owner] = $result_data;
@@ -218,9 +331,11 @@ class mif_qm_process_results extends mif_qm_process_core {
     // Получить текущий результат пользователя
     //
 
-    public function get_current_result( $quiz_id, $user_id = false )
+    public function get_current_result( $quiz_id, $user_token = false )
     {
-        $user_token = $this->get_user_token( $user_id );
+        // $user_token = $this->get_user_token( $user_id );
+        if ( is_numeric( $user_token ) ) $user_token = $this->get_user_token( $user_token );
+
         $arr = $this->get_list( $quiz_id, $user_token );
 
         if ( ! isset( $arr[$user_token] ) ) return false;
@@ -286,7 +401,7 @@ class mif_qm_process_results extends mif_qm_process_core {
     // Получить список тестов, по которым есть результат у пользователя
     //
 
-    public function get_results_list( $args = array() )
+    public function get_results( $args = array() )
     {
         // $user_id = ( ! empty( $args['user'] ) ) ? $args['user'] : get_current_user_id();
 

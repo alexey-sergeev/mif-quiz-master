@@ -1,3 +1,23 @@
+/* Клюв */
+
+.beak {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.beak.active {
+    transform: rotate(90deg);
+    transition: all 0.3s ease;
+}
+
+
+/* Глобально, чтобы что-то убирать */
+
+.mif-none {
+    display: none;
+}
+
+
 /* Индикатор обмена данными */
 
 .loading {
