@@ -132,7 +132,7 @@ class mif_qm_invites_core extends mif_qm_core_core  {
         $args = array(
             'post_type' => 'quiz_invite',
             'post_status' => array( 'publish', 'trash' ),
-            'orderby' => 'date',
+            'orderby' => 'ID',
             'order' => 'DESC',
             'post_name__in' => array( $invite_code, $invite_code . '__trashed' ),
             );
@@ -300,7 +300,8 @@ class mif_qm_invites_core extends mif_qm_core_core  {
             $list = esc_html( $_REQUEST['members-list'] );
             $arr = explode( "\n", $list );
             $arr = array_map( 'trim', $arr );
-            $arr = array_diff( $arr, array( '' ) );
+            // $arr = array_diff( $arr, array( '' ) );
+            
             // $arr = array_reverse( $arr );
             
             // !!! Здесь можно более глубоко смотреть строку - искать почту для рассылки и др.
@@ -311,6 +312,9 @@ class mif_qm_invites_core extends mif_qm_core_core  {
             $group = ( isset( $_REQUEST['new-group'] ) ) ? trim( sanitize_text_field( $_REQUEST['new-group'] ), '= ' ) : '';
 
             foreach ( $arr as $item ) {
+
+                if ( empty( $item ) ) continue;
+                if ( preg_match( '/^#/', $item ) ) continue;
 
                 if ( preg_match( '/^=/', $item ) ) {
 
@@ -370,7 +374,7 @@ class mif_qm_invites_core extends mif_qm_core_core  {
 
             // Добавить инвайты
             
-            // $arr2 = array_reverse( $arr2 );
+            $arr2 = array_reverse( $arr2 );
             
             $emailer = ( isset( $_REQUEST['emailer_now'] ) ) ? sanitize_key( $_REQUEST['emailer_now'] ) : false;
 
@@ -384,7 +388,7 @@ class mif_qm_invites_core extends mif_qm_core_core  {
             'numberposts' => -1,
             'post_type' => 'quiz_invite',
             'post_status' => 'publish',
-            'orderby' => 'date',
+            'orderby' => 'ID',
             'order' => 'DESC',
             'post_parent' => $quiz_id,
             );
