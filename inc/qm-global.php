@@ -134,7 +134,10 @@ class mif_qm_global extends mif_qm_core_core {
 
         $arr['url'] = get_permalink( $quiz_id );
         $arr['name'] = get_the_title( $quiz_id );
-        
+
+        $post = get_post( $quiz_id );
+        $arr['excerpt'] = $post->post_excerpt;        
+
         // Записать параметры в глобальную таблицу
 
         $ret = update_global_postmeta( 
@@ -180,7 +183,7 @@ class mif_qm_global extends mif_qm_core_core {
         }
 
         $arr['status'] = 'reject';
-        if ( isset( $result['success'] ) && $result['success'] == 'yes' ) $arr['status'] = 'accept';
+        if ( isset( $result['success'] ) && $result['success'] == 'yes' ) $arr['status'] = 'success';
         
         // Здесь думать, как учитывать другие состояния
         // 
