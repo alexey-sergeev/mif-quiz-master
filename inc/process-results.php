@@ -157,23 +157,36 @@ class mif_qm_process_results extends mif_qm_process_core {
 
         }
         
-        if ( $res && isset( $new_result['snapshot'] ) ) {
-
-            // Если данные о результатах успешно записано и известен ID снимка, то снать со снимка статус черновика
+        if ( $res ) {
             
-            $this->companion_update( array( 'ID' => $new_result['snapshot'], 'post_status' => 'publish' ) );
+            // Обновить результаты в данных плобального рейтинга, если такой рейтинг ведется
 
-        }
+            do_action( 'mif_qm_process_result_update_global', $data, $quiz_id, $user_id );
 
-        $qm_members_core = new mif_qm_members_core();
-        $members = $qm_members_core->get( $quiz_id );
-        
-        $user_token = $this->get_user_token( $user_id );
+            // Если известен ID снимка, то снать со снимка статус черновика
 
-        if ( isset( $members[$user_token]['result'] ) && $members[$user_token]['result'] == 'archive' ) {
+            if ( isset( $new_result['snapshot'] ) ) {
+            
+                $this->companion_update( array( 'ID' => $new_result['snapshot'], 'post_status' => 'publish' ) );
 
-            unset( $members[$user_token]['result'] );
-            $qm_members_core->update( $members, $quiz_id );
+            }
+
+            // Снять статус архивного результата, если он есть
+
+            $qm_members_core = new mif_qm_members_core();
+            $user_token = $this->get_user_token( $user_id );
+
+            $qm_members_core->member_from_archive( $user_token, $quiz_id );
+            
+            // $members = $qm_members_core->get( $quiz_id );
+            
+
+            // if ( isset( $members[$user_token]['result'] ) && $members[$user_token]['result'] == 'archive' ) {
+
+            //     unset( $members[$user_token]['result'] );
+            //     $qm_members_core->update( $members, $quiz_id );
+
+            // };
 
         };
 
@@ -291,12 +304,14 @@ class mif_qm_process_results extends mif_qm_process_core {
 
             $qm_members_screen = new mif_qm_members_screen( $quiz_id );
             $members = $qm_members_screen->get( $quiz_id );
+            $archive_members = $qm_members_screen->get_archive_members( $quiz_id );
 
             $arr2 = array();
 
             foreach ( $members as $owner => $member ) {
                 
-                if ( isset( $member['result'] ) && $member['result'] == 'archive' ) continue;
+                // if ( isset( $member['result'] ) && $member['result'] == 'archive' ) continue;
+                if ( in_array( $owner, $archive_members ) ) continue;
                 $arr2[] = $owner;
 
             };

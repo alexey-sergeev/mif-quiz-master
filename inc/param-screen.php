@@ -15,14 +15,19 @@ class mif_qm_param_screen extends mif_qm_param_core {
 
     private $param = array();
     private $mode = 'quiz';
+    private $code = 'e:XX:YYYY';
 
 
     function __construct( $param = array(), $mode = 'quiz' )
     {
+        global $post;
+        
         parent::__construct();
 
         $this->param = $param;
         $this->mode = $mode;
+
+        $this->code = 'e:' . get_current_blog_id() . ':' . $post->ID;
 
     }
 
@@ -33,7 +38,6 @@ class mif_qm_param_screen extends mif_qm_param_core {
 
     public function get_show( $quiz = array() )
     {
-        
         $out = '';
         
         $out .= '<div class="bg-light p-3 mb-3">';
@@ -51,7 +55,14 @@ class mif_qm_param_screen extends mif_qm_param_core {
 
         $out .= '<hr />';
         $out .= '<div>';
-        
+
+        if ( $this->mode == 'quiz' ) {
+
+            $out .= '<span class="float-right p-1 pl-3 pr-3 bg-white rounded">' . $this->code . '</span>';
+            
+        }
+
+
         foreach ( (array) $this->param as $key => $value ) {
             
             if ( $key == 'settings' ) continue;
@@ -77,9 +88,9 @@ class mif_qm_param_screen extends mif_qm_param_core {
             $out .= '<div class="p-1">';
             $out .= $param_interpretation->get_interpretation( $yes . '</div><div class="p-1">' );
             $out .= $yes . '</div>';
-
+            
         }
-
+    
         $out .= '</div>';
         $out .= '</div>';
 

@@ -15,6 +15,8 @@ include_once dirname( __FILE__ ) . '/qm-workroom.php';
 include_once dirname( __FILE__ ) . '/qm-results.php';
 include_once dirname( __FILE__ ) . '/qm-profile.php';
 
+include_once dirname( __FILE__ ) . '/qm-global.php';
+
 include_once dirname( __FILE__ ) . '/qm-download.php';
 include_once dirname( __FILE__ ) . '/xlsx-core.php';
 include_once dirname( __FILE__ ) . '/docx-core.php';
@@ -63,6 +65,8 @@ class mif_qm_init extends mif_qm_screen {
         add_action( 'wp_ajax_catalog', array( $this, 'ajax_catalog_submit' ) );
         add_action( 'wp_ajax_nopriv_catalog', array( $this, 'ajax_catalog_submit' ) );
         // add_action( 'wp_ajax_members-manage', array( $this, 'ajax_members_manage' ) );
+
+        $qm_global = new mif_qm_global();
 
         global $qm_message;
         $qm_message = array();
@@ -205,7 +209,12 @@ class mif_qm_init extends mif_qm_screen {
 
         $process = new mif_qm_process_process( $post->ID );
         $action = $process->get_action();
+
+        // Выполнить действие перед началом работы с тестом
+
+        do_action( 'mif_qm_init_the_quiz_before', $post->ID, $action );
         
+
         if ( $action == 'view' ) {
 
             // Просмотр теста
@@ -336,6 +345,10 @@ class mif_qm_init extends mif_qm_screen {
         }
 
         echo '</div>';
+
+        // Выполнить действие после работы с тестом
+
+        do_action( 'mif_qm_init_the_quiz_after', $post->ID, $action );
 
         return false;
     }

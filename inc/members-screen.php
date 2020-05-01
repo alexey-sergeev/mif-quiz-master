@@ -91,7 +91,9 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
             if ( $data['role'] != $role ) continue;
             
-            $out .= $this->members_list_elem( $user_token, 'item', $role );
+            $origin = ( isset( $data['origin'] ) ) ? $data['origin'] : 'local';
+
+            $out .= $this->members_list_elem( $user_token, 'item', $role, $origin );
             
         }
         
@@ -149,7 +151,7 @@ class mif_qm_members_screen extends mif_qm_members_core {
     // Вывести элемент списка пользователей
     //
 
-    private function members_list_elem( $data, $mode = 'item', $role = 'student' )
+    private function members_list_elem( $data, $mode = 'item', $role = 'student', $origin = 'local' )
     {
         $out = '';
         $rem_msg = ( $role == 'request' ) ? __( 'Отклонить', 'mif-qm' ) : __( 'Удалить', 'mif-qm' );
@@ -174,7 +176,7 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
             $out .= '<div class="col-1 text-center' . $class . '">';
 
-            if ( $this->access_level( $this->quiz_id ) > 2 && in_array( $role, array( 'request', 'student' ) ) ) {
+            if ( $this->access_level( $this->quiz_id ) > 2 && in_array( $role, array( 'request', 'student' ) ) && $origin == 'local' ) {
                 
                 $out .= '<label class="p-2 m-0 w-100"><input type="checkbox" name="members[]" value="' . $data . '" id="chk-' . $data . '" class="members"></label>';
                 
@@ -208,12 +210,19 @@ class mif_qm_members_screen extends mif_qm_members_core {
 
                 $out .= '<span class="loading pr-2"><i class="fas fa-spinner fa-pulse"></i></span>';
 
-                if ( ! in_array( $role, array( 'request', 'master' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="promotion" data-member="' . $data . '" title="' . __( 'Повысить', 'mif-qm' ) . '"><i class="fas fa-arrow-up"></i></a>';
-                if ( ! in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="demotion" data-member="' . $data . '" title="' . __( 'Понизить', 'mif-qm' ) . '"><i class="fas fa-arrow-down"></i></a>';
+                if ( $origin == 'external' ) {
+                    
+                    $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="add" data-member="' . $data . '" title="' . __( 'Записать локально', 'mif-qm' ) . '"><i class="fas fa-cloud-download-alt"></i></a>';
 
-                if ( $role == 'request' ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="add" data-member="' . $data . '" title="' . $add_msg . '"><i class="fas fa-user-plus"></i></a>';
-                if ( in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="remove" data-member="' . $data . '" title="' . $rem_msg . '"><i class="fas fa-user-times"></i></a>';
-
+                } else {
+                    
+                    if ( ! in_array( $role, array( 'request', 'master' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="promotion" data-member="' . $data . '" title="' . __( 'Повысить', 'mif-qm' ) . '"><i class="fas fa-arrow-up"></i></a>';
+                    if ( ! in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="demotion" data-member="' . $data . '" title="' . __( 'Понизить', 'mif-qm' ) . '"><i class="fas fa-arrow-down"></i></a>';
+                    
+                    if ( $role == 'request' ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="add" data-member="' . $data . '" title="' . $add_msg . '"><i class="fas fa-user-plus"></i></a>';
+                    if ( in_array( $role, array( 'request', 'student' ) ) ) $out .= '<a href="#" class="member-manage-btn text-secondary mr-2" data-do="remove" data-member="' . $data . '" title="' . $rem_msg . '"><i class="fas fa-user-times"></i></a>';
+                    
+                }
             }
             
             $out .= '</div>';

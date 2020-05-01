@@ -159,7 +159,16 @@ class mif_qm_members_core extends mif_qm_core_core  {
             // Автор теста всегда является master'ом. Добавить его, если надо
 
             $quiz_author = $this->get_quiz_author( $quiz_id );
-            if ( ! isset( $arr[$quiz_author]  ) ) $arr = array_merge( array( $quiz_author => array( 'role' => 'master' ) ), $arr );
+            
+            if ( isset( $arr[$quiz_author]  ) ) {
+                
+                $arr[$quiz_author]['role'] = 'master';
+                
+            } else {
+                
+                $arr[$quiz_author] = array( 'role' => 'master', 'origin' => 'external' );
+
+            }
 
             // Обновить список на основе данных запроса
             
@@ -174,11 +183,32 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             }
 
+            // Добавить данные по внешним пользователям, если они есть
+
+            $arr = apply_filters( 'mif_qm_members_core_get_external', $arr, $quiz_id );
+
+            $arr = $this->sort( $arr );
+
             wp_cache_set( 'mif_qm_members', $arr, $quiz_id );
 
         }
 
         return $arr;
+    }
+
+
+
+    // 
+    // Сортирует список пользовтелей
+    // 
+
+    private function sort( $arr )
+    {
+        // Думать про более интересные способы сортировки
+
+        ksort( $arr );
+
+        return apply_filters( 'mif_qm_members_core_sort', $arr );
     }
 
 
@@ -688,28 +718,20 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             foreach ( (array) $arr_request as $user_token ) {
                                         
-                if ( empty( $arr[$user_token] ) ) continue;
-                
                 if ( $do == 'result-archive' ) {
 
-                    $arr[$user_token]['result'] = 'archive';
+                    $this->member_to_archive( $user_token, $quiz_id );
                     
                 } else {
                     
-                    unset( $arr[$user_token]['result'] );
+                    $this->member_from_archive( $user_token, $quiz_id );
 
                 }
                 
-                $arr[$user_token]['change_time'] = $this->get_time();
-                $arr[$user_token]['change_maker'] = $this->get_user_token();
-
-                $flag = true;
-                
             }
 
-
-        }
-
+        } 
+        
         // Здесь можно делать рассылку пользователям об изменении статуса
 
         do_action( 'mif_qm_members_core_manage_request_notifications', $arr_request, $do, $premise );
@@ -727,6 +749,54 @@ class mif_qm_members_core extends mif_qm_core_core  {
         // Сформировать результат
 
         $ret = ( $flag ) ? $arr : false;
+
+        return $ret;
+    }
+
+
+
+    //
+    // Получить список архивных пользователей
+    //
+
+    public function get_archive_members( $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+        $data = $this->get_members_data( $quiz_id );
+
+        $arr = get_post_meta( $data->ID, 'archive' );
+
+        return $arr;
+    }
+
+
+
+    //
+    // Удалить у пользователя статус архивных результатов
+    //
+
+    public function member_from_archive( $user_token, $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+        $data = $this->get_members_data( $quiz_id );
+
+        $ret = delete_post_meta( $data->ID, 'archive', $user_token );
+
+        return $ret;
+    }
+
+
+
+    //
+    // Добавить пользователю статус архивных результатов
+    //
+
+    public function member_to_archive( $user_token, $quiz_id = false )
+    {
+        $quiz_id = $this->get_quiz_id( $quiz_id );
+        $data = $this->get_members_data( $quiz_id );
+
+        $ret = add_post_meta( $data->ID, 'archive', $user_token );
 
         return $ret;
     }
@@ -761,6 +831,16 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
     public function update( $arr = array(), $quiz_id = NULL )
     {
+        // Подготовить данные для записи
+
+        $arr2 = array();
+        
+        foreach ( $arr as $member_token => $data ) {
+
+            if ( isset( $data['origin'] ) && $data['origin'] == 'external' ) continue;
+            $arr2[$member_token] = $data;
+
+        }
      
         $data = $this->get_members_data( $quiz_id );
         $quiz_members_id = $data->ID;
@@ -771,7 +851,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             $args = array(
                 'ID' => $quiz_members_id,
-                'post_content' => $this->to_xml( $arr )
+                'post_content' => $this->to_xml( $arr2 )
                 );
 
             $res = $this->companion_update( $args );            

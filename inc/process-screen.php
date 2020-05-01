@@ -213,11 +213,13 @@ class mif_qm_process_screen extends mif_qm_process_core {
             
                 $fio = ( $owner ) ? $qm_members_screen->get_fullname( $owner ) : 'anonymous';
                 $group = ( isset( $members[$owner]['group'] ) ) ? '<span> (' . $members[$owner]['group'] . ')</span>' : '';
+                // $origin = ( isset( $members[$owner]['origin'] ) ) ? $members[$owner]['origin'] : 'local';
                 
                 $out .= '<div class="row bg-light pt-2 pb-2">';
                 
                 $out .= '<div class="col-1 text-center">';
                 
+                // if ( mif_qm_access_level( $this->quiz_id ) > 2 && $origin == 'local' ) {
                 if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
                     
                     if ( isset( $members[$owner] ) ) $out .= '<label class="p-0 m-0 w-100"><input type="checkbox" name="members[]" value="' . $owner . '" id="chk-' . $owner . '" class="members"></label>';
@@ -237,24 +239,32 @@ class mif_qm_process_screen extends mif_qm_process_core {
                 
                 if ( mif_qm_access_level( $this->quiz_id ) > 2 ) {
                     
+                    // if ( $origin == 'external' ) {
+                        
+                    //     $out .= '<span class="text-secondary mr-2" style="opacity: 0.25;" title=""><i class="fas fa-times"></i></span>';
+
+                    // } else {
+
                     if ( $mode == 'follow' ) $out .= '<a href="#" class="result-manage-btn text-secondary mr-2" data-do="result-archive" 
-                                                        data-member="' . $owner . '" title="' . __( 'В архив', 'mif-qm' ) . '"><i class="fas fa-times"></i></a>';
+                                                    data-member="' . $owner . '" title="' . __( 'В архив', 'mif-qm' ) . '"><i class="fas fa-times"></i></a>';
                     
                     if ( $mode == 'archive' ) {
-
+                        
                         if ( isset( $members[$owner] ) ) {
-   
+                            
                             $out .= '<a href="#" class="result-manage-btn text-secondary mr-2" data-do="result-unarchive" 
-                                data-member="' . $owner . '" title="' . __( 'Восстановить из архива', 'mif-qm' ) . '"><i class="fas fa-undo"></i></a>';
-                           
+                                    data-member="' . $owner . '" title="' . __( 'Восстановить из архива', 'mif-qm' ) . '"><i class="fas fa-undo"></i></a>';
+                            
                         } else {
-
+                            
                             $out .= '<span class="text-secondary mr-2" style="opacity: 0.25;"><i class="fas fa-undo"></i></span>';
-
+                            
                         }
-
+                        
                     }
-                    
+                        
+                    // }
+
                 }
                 
                 $out .= '</div>';
