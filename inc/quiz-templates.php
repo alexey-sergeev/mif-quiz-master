@@ -36,6 +36,18 @@ function mif_qm_the_quiz_navigation()
 
 
 //
+// Выводит панель истечения времени теста
+//
+
+function mif_qm_the_timeout()
+{
+    global $mif_qm_quiz_screen;
+    echo $mif_qm_quiz_screen->get_timeout();
+}
+
+
+
+//
 // Выводит кнопку продолжения теста
 //
 
@@ -89,6 +101,19 @@ function mif_qm_the_edit_post_link()
     global $post;
     echo get_edit_post_link( $post->ID );
 }
+
+
+
+//
+// Выводит таймер
+//
+
+function mif_qm_the_timer()
+{
+    global $mif_qm_quiz_screen;
+    echo $mif_qm_quiz_screen->get_timer();
+}
+
 
 
 // //

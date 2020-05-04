@@ -82,7 +82,19 @@ class mif_qm_quiz_core extends mif_qm_core_core {
         // Добавить метку о создании экземпляра
 
         $quiz['processed']['created'] = $this->get_signature();
-        
+
+        // Добавить данные об ограничении времени (если есть)
+
+        $time = $this->get_clean( 'time', $quiz, 'quiz', true );
+
+        if ( isset( $time['second'] ) ) {
+
+            $timestamp = $this->get_timestamp();
+            $quiz['processed']['deadline']['start'] = $timestamp;
+            $quiz['processed']['deadline']['end'] = $timestamp + $time['second'];
+
+        }
+
         if ( $this->is_param( 'part', $quiz ) ) {
 
             // Составить индекс для режима разделов

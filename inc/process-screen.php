@@ -24,7 +24,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
     private $quiz = array();
 
 
-    function __construct( $quiz_id )
+    function __construct( $quiz_id = NULL )
     {
         parent::__construct( $quiz_id );
         // $this->quiz_id = $quiz_id;
@@ -443,6 +443,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
         $result = ( isset( $this->result[$key] ) ) ? $this->result[$key] : '';
         return apply_filters( 'mif_qm_process_screen_get_result', $result, $key, $this->result );
     }
+
 
 
     // 
@@ -899,7 +900,7 @@ class mif_qm_process_screen extends mif_qm_process_core {
 
         return apply_filters( 'mif_qm_process_screen_get_menu_class', $out );
     }
-    
+
 
             
     // 

@@ -119,7 +119,7 @@ class mif_qm_param_core extends mif_qm_core_core {
                 array(
                     'name' => 'time',
                     'alias' => 't times',
-                    'pattern' => '/^\d+s$|^\d+m$/', // 30s или 15m (30 секунд или 15 минут)
+                    'pattern' => '/^\d+s$|^\d+m$|^\d+h$/', // 30s или 15m (30 секунд или 15 минут)
                     'apply' => 'quiz',
                     'description' => __( 'Ограничение времени', 'mif-qm' )
                 ),

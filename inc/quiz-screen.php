@@ -152,14 +152,38 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
 
         return apply_filters( 'mif_qm_question_screen_get_quiz_navigation', $nav, $this->quiz );
     }
+    
+    
+    
+    // 
+    // Возвращает панель завершения времени теста
+    // 
+    
+    public function get_timeout()
+    {
+        $out = '';
+        
+        if ( $this->action == 'run' && isset( $this->quiz['processed']['deadline']['end'] ) ) {
 
+            $out .= '<div class="quiz-timeout text-center text-secondary mt-4 pt-5 pb-4 bg-light mif-none">';
+            $out .= '<p><i class="far fa-5x fa-clock"></i></p>';
+            $out .= '<p>' . __( 'Истекло время выполнения теста', 'mif-qm' ) . '</p>';
+            
+            $out .= $this->get_quiz_next_button( 'timeout' );
+            
+            $out .= '</div>';
+
+        }
+
+        return apply_filters( 'mif_qm_question_screen_get_quiz_timeout', $out, $this->action, $this->quiz );
+    }
     
             
     // 
     // Возвращает кнопку продолжения
     // 
     
-    public function get_quiz_next_button()
+    public function get_quiz_next_button( $mode = '' )
     {
         global $post;
         $quiz_id = $post->ID; // !!! думать, как сделать для шорткодов
@@ -168,8 +192,11 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
 
         if ( $this->action == 'run' ) {
             
+            $caption = __( 'Далее', 'mif-qm' );
+            if ( $mode == 'timeout' ) $caption = __( 'Результат', 'mif-qm' );
+
             $btn .= '<div class="m-5 text-center">';
-            $btn .= '<button type="submit" class="btn btn-primary btn-lg">' . __( 'Далее', 'mif-qm' ) . '</button>';
+            $btn .= '<button type="submit" class="btn btn-primary btn-lg">' . $caption . '</button>';
             $btn .= '<span class="loading absolute pl-2 mt-2"><i class="fas fa-spinner fa-pulse"></i></span>';;
             $btn .= '</div>';
             $btn .= '<input type="hidden" name="action" value="run">';
@@ -224,7 +251,32 @@ class mif_qm_quiz_screen extends mif_qm_quiz_core {
         $header = ( isset( $this->quiz['title'] ) ) ? $this->quiz['title'] : '';
         return apply_filters( 'mif_qm_question_screen_get_quiz_header', $header, $this->quiz );
     }
+    
+    
+    
+    // 
+    // Возвращает таймер
+    // 
+    
+    public function get_timer()
+    {
+        if ( $this->action != 'run' ) return;
+        if ( ! isset( $this->quiz['processed']['deadline']['end'] ) ) return;
 
+        $out = '';
+
+        $current_time = $this->get_timestamp();
+        $end_time = (int) $this->quiz['processed']['deadline']['end'];
+
+        $delta = $end_time - $current_time;
+        if ( $delta < 0 ) $delta = 0;
+
+        $out .= '<span id="timerbox" class="bg-light text-secondary p-2 pl-3 pr-3 rounded" data-time="' . $delta . '">';
+        $out .= '<span style="opacity: 0">00:00</span>';
+        $out .= '</span>';
+
+        return apply_filters( 'mmif_qm_question_screen_get_timer', $out );
+    }
         
     
     // 

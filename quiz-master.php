@@ -4,7 +4,7 @@ Plugin Name: MIF Quiz Master
 Plugin URI: https://github.com/alexey-sergeev/mif-quiz-master
 Description: Плагин для составления тестов
 Author: Алексей Н. Сергеев
-Version: 1.2.1
+Version: 1.3.0
 Author URI: https://vk.com/alexey_sergeev
 */
 

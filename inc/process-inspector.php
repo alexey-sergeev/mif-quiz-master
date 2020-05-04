@@ -122,71 +122,91 @@ class mif_qm_process_inspector extends mif_qm_process_core {
 
                 $count = 0;
                 $total = 0;
+                $rating = 0;
 
-                if ( in_array( $question['type'], array( 'single', 'multiple' ) ) ) {
+                if ( isset( $question['processed']['expired'] ) && $question['processed']['expired'] == 'yes' ) {
 
-                    // Выбор. Сопоставить результаты.
-                    
-                    foreach ( (array) $question['answers'] as $a_key => $answer ) {
-
-                        // if ( $answer['status'] == 'no' && $answer['result'] == 'no' ) continue;
-                        // if ( $answer['status'] == 'yes' ) $corrected++;
-
-                        $total++;
-
-                        if ( $answer['status'] == $answer['result'] ) {
-                            
-                            $count++;
-                            $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'correct';
-
-                        } else {
-
-                            $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'incorrect';
-
-                        }
-
-                    }
-                    
-                    $rating = $this->calculate_rating( $count, $total, $question['type'] );
-                    
-                } elseif ( in_array( $question['type'], array( 'sort', 's-sort', 'm-sort', 'text' ) ) ) {
-                    
-                    // Сортировки и текст. Сопоставить результаты.
-                    // Правильно - совпало
-                    // Неправильно - не совпало
-
-                    $count = 0;
-                    $total = 0;
+                    // Время истекло. Поставить нулевые результаты
 
                     foreach ( (array) $question['answers'] as $a_key => $answer ) {
-
-                        $result = mb_strtoupper( $answer['result'] );
-                        $meta = array_map( 'mb_strtoupper', (array) $answer['meta'] );
-
-                        $total++;
-
-                        if ( in_array( $result, $meta ) ) {
-                            
-                            $count++;
-                            $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'correct';
-
-                        } else {
-
-                            $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'incorrect';
-
-                        }
+                        
+                        $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'incorrect';
+                        $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['expired'] = 'yes';
 
                     }
+
+                    $rating = 0;
+
+                } else {
+
+                    // Вычислить рейтинг
                     
-                    $rating = $this->calculate_rating( $count, $total, $question['type'] );
-                    
-                } elseif ( in_array( $question['type'], array( 'open' ) ) ) {
-                    
-                    $q_open_flag = true;
-                    $p_open_flag = true;
+                    if ( in_array( $question['type'], array( 'single', 'multiple' ) ) ) {
+                        
+                        // Выбор. Сопоставить результаты.
+                        
+                        foreach ( (array) $question['answers'] as $a_key => $answer ) {
+                            
+                            // if ( $answer['status'] == 'no' && $answer['result'] == 'no' ) continue;
+                            // if ( $answer['status'] == 'yes' ) $corrected++;
+                            
+                            $total++;
+                            
+                            if ( $answer['status'] == $answer['result'] ) {
+                                
+                                $count++;
+                                $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'correct';
+                                
+                            } else {
+                                
+                                $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'incorrect';
+                                
+                            }
+                            
+                        }
+                        
+                        $rating = $this->calculate_rating( $count, $total, $question['type'] );
+                        
+                    } elseif ( in_array( $question['type'], array( 'sort', 's-sort', 'm-sort', 'text' ) ) ) {
+                        
+                        // Сортировки и текст. Сопоставить результаты.
+                        // Правильно - совпало
+                        // Неправильно - не совпало
+                        
+                        $count = 0;
+                        $total = 0;
+                        
+                        foreach ( (array) $question['answers'] as $a_key => $answer ) {
+                            
+                            $result = mb_strtoupper( $answer['result'] );
+                            $meta = array_map( 'mb_strtoupper', (array) $answer['meta'] );
+                            
+                            $total++;
+                            
+                            if ( in_array( $result, $meta ) ) {
+                                
+                                $count++;
+                                $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'correct';
+                                
+                            } else {
+                                
+                                $quiz['parts'][$p_key]['questions'][$q_key]['answers'][$a_key]['resume'] = 'incorrect';
+                                
+                            }
+                            
+                        }
+                        
+                        $rating = $this->calculate_rating( $count, $total, $question['type'] );
+                        
+                    } elseif ( in_array( $question['type'], array( 'open' ) ) ) {
+                        
+                        $q_open_flag = true;
+                        $p_open_flag = true;
+                        
+                    }
                     
                 }
-                
+
                 $quiz['parts'][$p_key]['questions'][$q_key]['processed']['rating'] = $rating;
                 // p($quiz['parts'][$p_key]['questions'][$q_key]);
 

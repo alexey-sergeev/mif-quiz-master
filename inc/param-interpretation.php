@@ -115,19 +115,29 @@ class mif_qm_param_interpretation {
 
             case 'time':
 
-                // Взять число (секунды) и уточнить, если это минуты
+                // Взять число (секунды) и уточнить, если это минуты или часы
 
                 $arr['value'] = (int) $this->value;
                 $arr['unit'] = 'second';
                 $arr['description'] = $arr['value'] . ' ' . __( 'сек.', 'mif-qm' );
+                $arr['second'] = $arr['value'];
 
                 if ( preg_match( '/^[\d]+[\s]?[m]$/', $this->value ) ) {
                     
                     $arr['unit'] = 'minute';
                     $arr['description'] = $arr['value'] . ' ' . __( 'мин.', 'mif-qm' );
+                    $arr['second'] = $arr['value'] * 60;
+                    
+                } 
+                
+                if ( preg_match( '/^[\d]+[\s]?[h]$/', $this->value ) ) {
+                    
+                    $arr['unit'] = 'hours';
+                    $arr['description'] = $arr['value'] . ' ' . __( 'час.', 'mif-qm' );
+                    $arr['second'] = $arr['value'] * 3600;
 
                 } 
-    
+   
             break;
 
             // case 'competences':

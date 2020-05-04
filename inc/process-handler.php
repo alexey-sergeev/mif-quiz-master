@@ -28,8 +28,20 @@ class mif_qm_process_handler extends mif_qm_core_core {
 
     public function parse_request_answers()
     {
+        $timeout = false;
 
-        if ( empty( $_REQUEST['answers'] ) ) return $this->quiz;
+        if ( isset( $this->quiz['processed']['deadline']['end'] ) ) {
+
+            $end = (int) $this->quiz['processed']['deadline']['end'];
+            $now = $this->get_timestamp();
+
+            // Время теста истекло
+            
+            if ( $now > $end ) $timeout = true;
+
+        };
+
+        if ( empty( $_REQUEST['answers'] ) && ! $timeout ) return $this->quiz;
 
         $answers_data = $this->get_answers_data();
 
@@ -39,6 +51,22 @@ class mif_qm_process_handler extends mif_qm_core_core {
         foreach ( (array) $this->quiz['parts'] as $p_key => $part ) {
 
             foreach ( (array) $part['questions'] as $q_key => $question ) {
+            
+                // Отметить сразу, если вышло время теста
+
+                if ( $timeout ) {
+
+                    if ( empty( $this->quiz['parts'][$p_key]['questions'][$q_key]['processed']['submitted'] ) ) {
+
+                        $this->quiz['parts'][$p_key]['questions'][$q_key]['processed']['submitted'] = $this->get_time();
+                        $this->quiz['parts'][$p_key]['questions'][$q_key]['processed']['expired'] = 'yes';
+                        $this->is_modified = true;
+                        
+                    }
+                    
+                    continue;
+
+                }
 
                 // !!! Здесь проверять - если данные есть, а в настройках теста исправлять нельзя, то пропускать
 
@@ -202,9 +230,9 @@ class mif_qm_process_handler extends mif_qm_core_core {
                     $this->is_modified = true;
 
                 }
-                                
-            }
 
+            }
+                            
             // Проверить, все ли вопросы раздела в итоге завершены
 
             $p_flag = true;

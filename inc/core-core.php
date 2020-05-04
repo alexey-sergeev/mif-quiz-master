@@ -100,9 +100,9 @@ class mif_qm_core_core  {
     // Получить метку времени по переданным данным
     //
     
-    public function get_timestamp( $time )
+    public function get_timestamp( $time = '' )
     {
-        if ( empty( $time ) ) return;
+        if ( empty( $time ) ) return (int) current_time('timestamp');
         $timestamp = mysql2date( 'U', $time );
         return apply_filters( 'mif_qm_core_core_get_timestamp', $timestamp );
     }

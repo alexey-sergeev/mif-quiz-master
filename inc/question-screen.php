@@ -471,8 +471,9 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
             // if ( $this->answer['data']['resume'] == 'correct' ) $out .= '<i class="fas fa-plus text-success"></i>';
             // if ( $this->answer['data']['resume'] == 'incorrect' ) $out .= '<i class="fas fa-minus text-danger"></i>';
-            if ( $this->answer['data']['resume'] == 'correct' ) $out .= '<span class="result-caption bg-success p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'правильно', 'mif-qm' ) . '</span>';
-            if ( $this->answer['data']['resume'] == 'incorrect' ) $out .= '<span class="result-caption bg-danger p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'ошибка', 'mif-qm' ) . '</span>';
+            if ( $this->answer['data']['resume'] == 'correct' ) $out = '<span class="result-caption bg-success p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'правильно', 'mif-qm' ) . '</span>';
+            if ( $this->answer['data']['resume'] == 'incorrect' ) $out = '<span class="result-caption bg-danger p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'ошибка', 'mif-qm' ) . '</span>';
+            if ( isset( $this->answer['data']['expired'] ) && $this->answer['data']['expired'] == 'yes' ) $out = '<span class="result-caption bg-warning p-1 pl-2 pr-2 m-3 text-light rounded">' . __( 'время', 'mif-qm' ) . '</span>';
 
         }
       

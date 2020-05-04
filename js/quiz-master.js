@@ -197,6 +197,7 @@ jQuery( document ).ready( function( jq ) {
                 if ( response ) {
 
                     jq( '#mif-qm-ajax-container' ).html( response );
+                    start_timer();
                     // console.log(response);
                     
                 } else {
@@ -280,6 +281,7 @@ jQuery( document ).ready( function( jq ) {
             if ( response ) {
 
                 jq( '#mif-qm-ajax-container' ).html( response );
+                start_timer();
                 // console.log(response);
 
             }
@@ -655,6 +657,55 @@ jQuery( document ).ready( function( jq ) {
 
     }
 
+
+    // Управление отсчетом времени
+
+    var deadline;
+    var timer_id;
+
+    start_timer();
+
+    function start_timer()
+    {
+        var now = new Date().getTime();
+        var time = jq( '#timerbox' ).attr( 'data-time' );
+        
+        deadline = now + time * 1000;
+        
+        timer();
+        
+        clearTimeout( timer_id );
+        if ( time ) timer_id = setInterval( timer, 1000 );
+    }
+    
+    
+    function timer() 
+    {
+        var now = new Date().getTime();
+        var time = deadline - now;
+
+        var hours = Math.trunc( time / 3600000 );
+        var minutes = Math.trunc( ( time - hours * 3600000 ) / 60000 );
+        var seconds = Math.ceil( ( time - hours * 3600000 - minutes * 60000 ) / 1000 );
+
+        if ( hours < 0 ) hours = 0;
+        if ( minutes < 0 ) minutes = 0;
+        if ( seconds < 0 ) seconds = 0;
+
+        var h = ( hours < 10 ) ? '0' + hours : hours;
+        var m = ( minutes < 10 ) ? '0' + minutes : minutes;
+        var s = ( seconds < 10 ) ? '0' + seconds : seconds;
+
+        var str = ( h == '00' ) ? '' : h + ':';
+        str = str + m + ':' + s;
+
+        jq( '#timerbox' ).html( str );
+
+        // Показать старницу завершения, если закончилось время
+
+        if ( time < 0 ) jq( '.quiz-body' ).fadeOut( function() { jq( '.quiz-timeout' ).fadeIn() } )
+
+    }
 
 
 });
