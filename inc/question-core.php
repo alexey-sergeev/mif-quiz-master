@@ -69,7 +69,6 @@ class mif_qm_question_core extends mif_qm_core_core {
         $title = trim( preg_replace( $this->pattern_question, '', $title ) );
         $answers_txt = array_map( 'trim', $answers_txt );
         
-        
         $answers = $this->parse_answers( $answers_txt );
         
         $question['title'] = $title;

@@ -16,6 +16,7 @@ include_once dirname( __FILE__ ) . '/qm-results.php';
 include_once dirname( __FILE__ ) . '/qm-profile.php';
 
 include_once dirname( __FILE__ ) . '/qm-global.php';
+include_once dirname( __FILE__ ) . '/qm-parser.php';
 
 include_once dirname( __FILE__ ) . '/qm-download.php';
 include_once dirname( __FILE__ ) . '/xlsx-core.php';

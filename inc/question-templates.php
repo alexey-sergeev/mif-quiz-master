@@ -28,7 +28,7 @@ function mif_qm_the_question_header()
 function mif_qm_the_question_question()
 {
     global $mif_qm_question_screen;
-    echo $mif_qm_question_screen->get_question_data( 'title' );
+    echo $mif_qm_question_screen->get_question_question();
 }    
 
 

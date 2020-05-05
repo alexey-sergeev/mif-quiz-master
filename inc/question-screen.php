@@ -355,6 +355,20 @@ class mif_qm_question_screen extends mif_qm_question_core {
         
     
     // 
+    // Возвращает вопрос вопроса
+    // 
+    
+    public function get_question_question()
+    {
+        $qm_parser = new mif_qm_parser();
+        
+        $title = $qm_parser->parse( $this->question['title'] );
+
+        return apply_filters( 'mif_qm_question_screen_get_question_question', $title, $this->question );
+    }
+        
+    
+    // 
     // Возвращает параметр вопроса
     // 
     

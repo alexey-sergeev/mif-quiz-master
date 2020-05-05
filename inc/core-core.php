@@ -523,9 +523,11 @@ class mif_qm_core_core  {
     {
         // if ( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'mif-qm') ) return false;
         if ( empty( $args['ID'] ) ) return false;
-
+        
         remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-        $res = wp_update_post( $args );
+        
+        $res = wp_update_post( wp_slash( $args ) );
+        // $res = wp_update_post( $args );
 
         return $res;
     }
@@ -576,8 +578,11 @@ class mif_qm_core_core  {
         if ( ! empty ( $args['user'] ) ) $companion_args['meta_input'] = array( 'owner' => $this->get_user_token( $args['user'] ) );
         if ( ! empty ( $args['post_name'] ) ) $companion_args['post_name'] = $args['post_name'];
 
+        // p( esc_html( $companion_args['post_content'] ) );
         remove_filter( 'content_save_pre', 'wp_filter_post_kses' ); 
-        $companion_id = wp_insert_post( $companion_args );
+
+        $companion_id = wp_insert_post( wp_slash( $companion_args ) );
+        // $companion_id = wp_insert_post( $companion_args );
         
         return $companion_id;
     }
@@ -606,11 +611,6 @@ class mif_qm_core_core  {
     public function get_message()
     {
         global $qm_messages;
-
-        // $qm_messages['emailer']['warning']['message'] = 'Не удалось отправить:';
-        // $qm_messages['emailer']['warning']['list'][] = $invite['fullname'];
-        // $qm_messages['emailer']['success']['message'] = 'Отправлены приглашения:';
-        // $qm_messages['emailer']['success']['list'][] = $invite['fullname'];
 
         $out = '';
 

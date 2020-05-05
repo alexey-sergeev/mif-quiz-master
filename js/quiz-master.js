@@ -198,6 +198,7 @@ jQuery( document ).ready( function( jq ) {
 
                     jq( '#mif-qm-ajax-container' ).html( response );
                     start_timer();
+                    if ( typeof MathJax != "undefined" ) MathJax.typeset();
                     // console.log(response);
                     
                 } else {

@@ -150,7 +150,7 @@ class mif_qm_quiz_core extends mif_qm_core_core {
         // Получить массив текстовых описаний разделов теста
         
         $quiz_raw = $this->get_parts_raw( $quiz_txt );
-        
+
         $quiz = array();
         $part = new mif_qm_part_core();
 
@@ -242,7 +242,7 @@ class mif_qm_quiz_core extends mif_qm_core_core {
             
             $item = strim( $item );
             
-            if ( $item == '' ) continue;
+            // ### if ( $item == '' ) continue;
             
             // Заменить среднее и длинное тире в начале строк на обычный -
 
