@@ -58,11 +58,11 @@ function mif_qm_customizer_styles()
     
     // Локальные стили
 
-    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ), '', '1.1.0' );
+    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ), '', '1.4.0' );
     wp_enqueue_style( 'qm-styles' );
 
     // JS-методы
-    wp_enqueue_script( 'mif_qm_js_helper', plugins_url( 'js/quiz-master.js', __FILE__ ), '', '1.1.0' );
+    wp_enqueue_script( 'mif_qm_js_helper', plugins_url( 'js/quiz-master.js', __FILE__ ), '', '1.4.0' );
 
     // Плагин сортировки
     wp_enqueue_script( 'mif_qm_sortable', plugins_url( 'js/qm-sortable.js', __FILE__ ) );

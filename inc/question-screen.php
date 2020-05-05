@@ -328,7 +328,7 @@ class mif_qm_question_screen extends mif_qm_question_core {
 
             $inspection_mode = $this->get_inspection_mode( $this->quiz );
 
-            $rating = ( isset( $this->question['processed']['rating'][$inspection_mode] ) ) ? $this->question['processed']['rating'][$inspection_mode] : '';
+            $rating = ( isset( $this->question['processed']['rating'][$inspection_mode] ) ) ? $this->question['processed']['rating'][$inspection_mode] : 0;
             // $success = ( isset( $this->part['processed']['success'][$inspection_mode] ) ) ? $this->part['processed']['success'][$inspection_mode] : '';
             
             // $class = ( $success == 'no' ) ? ' text-danger' : ' text-success';
