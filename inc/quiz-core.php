@@ -242,7 +242,8 @@ class mif_qm_quiz_core extends mif_qm_core_core {
             
             $item = strim( $item );
             
-            // ### if ( $item == '' ) continue;
+            // if ( $item == '' ) continue;
+            if ( $flag && $item == '' ) continue;
             
             // Заменить среднее и длинное тире в начале строк на обычный -
 

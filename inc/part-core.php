@@ -101,7 +101,8 @@ class mif_qm_part_core extends mif_qm_core_core {
 
             $item = strim( $item );
 
-            // ### if ( $item == '' ) continue;
+            // if ( $item == '' ) continue;
+            if ( $flag && $item == '' ) continue;
             
             if ( preg_match( $this->pattern_part, $item ) ) {
 
