@@ -501,10 +501,10 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
         if ( $request_status ) {
 
-            // $arr = get_post_meta( $data->ID, $request_status );
-            // if ( ! in_array( $user_token, $arr ) ) $ret = add_post_meta( $data->ID, $request_status, $user_token );
+            $arr = get_post_meta( $data->ID, $request_status );
+            if ( ! in_array( $user_token, $arr ) ) $ret = add_post_meta( $data->ID, $request_status, $user_token );
 
-            $ret = add_post_meta( $data->ID, $request_status, $user_token );
+            // $ret = add_post_meta( $data->ID, $request_status, $user_token );
             if ( $request_status == 'invite' ) update_post_meta( $data->ID, 'invite_' . $user_token, $invite );
 
         }
