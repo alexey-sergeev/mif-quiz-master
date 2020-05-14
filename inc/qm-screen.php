@@ -128,6 +128,12 @@ class mif_qm_screen extends mif_qm_core {
             $args['s'] = sanitize_text_field( $_REQUEST['quiz_search'] );
     
         }
+        
+        if ( isset( $_REQUEST['owner'] ) ) {
+            
+            $args['author_name'] = sanitize_key( $_REQUEST['owner'] );
+    
+        }
 
         // Добавить информацию о категориях
         
@@ -325,7 +331,7 @@ class mif_qm_screen extends mif_qm_core {
                 $out .= '<span class="list-item mr-2 p-1 text-secondary rounded"><i class="fas fa-check"></i></span>';
                 // $out .= '<a href="#" class="font-weight-bold category" data-group="' . $group . '" data-name="' . $cat['slug'] . ' ">' . $cat['name'] . '</a>';
                 // $out .= '<a href="#" class="font-weight-bold category" data-id="' . $cat['id'] . ' ">' . $cat['name'] . '</a>';
-                $out .= '<a href="#" class="font-weight-bold category" data-name="' . $cat['slug'] . ' ">' . $cat['name'] . '</a>';
+                $out .= '<a href="#" class="font-weight-bold category" data-name="' . $cat['slug'] . '">' . $cat['name'] . '</a>';
                 // $out .= '<input type="hidden" name="cats[]" value="">';
                 $out .= '<input type="hidden" name="cats[' . $group . '][]" value="">';
                 $out .= '</div>';
@@ -334,6 +340,20 @@ class mif_qm_screen extends mif_qm_core {
             
             $out .= '</div>';
 
+        }
+
+        // Блок галочки, что только свои
+
+        if ( $this->get_count_quiz() ) {
+
+            $out .= '<div class="mb-3">';
+            $out .= '<div>';
+            $out .= '<span class="list-item mr-2 p-1 text-secondary rounded"><i class="fas fa-check"></i></span>';
+            $out .= '<a href="#" class="font-weight-bold category" data-name="' . $this->get_user_token() . '">' . __( 'Я автор', 'mif_qm' ) . '</a>';
+            $out .= '<input type="hidden" name="owner" value="">';
+            $out .= '</div>';
+            $out .= '</div>';
+            
         }
 
         // p($categories);

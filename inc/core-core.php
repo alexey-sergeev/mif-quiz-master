@@ -514,6 +514,28 @@ class mif_qm_core_core  {
 
     
 
+    // 
+    // Возвращает количество тестов указанного пользователя
+    // 
+
+    public function get_count_quiz( $user_id = false )
+    {
+        if ( ! $user_id ) {
+            
+            if ( ! is_user_logged_in() ) return 0;
+            $user_id = wp_get_current_user()->ID;
+
+        }
+
+        $count = count_user_posts( $user_id, 'quiz' );
+
+        // Здесь думать про другой способ подсчета, который будет учитывать не только
+        // авторов постов, но и преподавателей
+
+        return $count;
+    }
+    
+
 
     // 
     // Обновляет связанные записи (снимки теста, результаты или др.)
