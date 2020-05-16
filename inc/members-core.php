@@ -489,10 +489,11 @@ class mif_qm_members_core extends mif_qm_core_core  {
 
             // Без инвайта - только для открытых и request-тестов
 
-            if ( in_array( $access_mode, array( 'open', 'request' ) ) ) {
+            // if ( in_array( $access_mode, array( 'open', 'request' ) ) ) {
+            if ( ( $access_mode == 'request' ) || ( $access_mode == 'open' && $start_btn ) ) {
                 
                 $request_status = 'request';
-                
+
             }
             
         }
@@ -589,7 +590,20 @@ class mif_qm_members_core extends mif_qm_core_core  {
             $this->remove_requests( $invited, $quiz_id, 'invite' );
 
         }
-        
+                
+
+        // Автоматически обработать запросы для открытых тестов
+
+        $access_mode = $this->get_access_mode( $quiz_id, false );
+
+        if ( $access_mode == 'open' ) {
+
+            $requesters = $this->get_requesters( $quiz_id, 'request' );
+            foreach ( $requesters as $user_token ) $arr[$user_token] = array( 'role' => 'student', 'time' => $this->get_time(), 'creator' => $this->get_user_token() );
+            $flag = true;
+
+        }
+
 
         // Очистить полученные данные и оформить как массив
 
@@ -607,13 +621,7 @@ class mif_qm_members_core extends mif_qm_core_core  {
             $arr_request = explode( ' ', $new_data );
             
         } 
-        // else {
 
-        //     // Нет новых данных
-
-        //     return false;
-
-        // }
 
         // Добавить или удалить
 
@@ -937,20 +945,25 @@ class mif_qm_members_core extends mif_qm_core_core  {
     // Возвращает режим доступа к тесту
     //
 
-    public function get_access_mode( $quiz_id = false )
+    public function get_access_mode( $quiz_id = false, $update = true )
     {
         $quiz_id = $this->get_quiz_id( $quiz_id );
+        if ( isset( $_REQUEST['quiz_id'] ) ) $quiz_id = (int) $_REQUEST['quiz_id'];
 
-        if ( isset( $_REQUEST['access_mode'] ) && mif_qm_access_level() > 2 ) {
-
-            // Есть новые данные о режиме доступа. Сохранить их.
-
-            $access_mode = sanitize_key( $_REQUEST['access_mode'] );
-            $target_quiz_id = ( isset( $_REQUEST['quiz_id'] ) ) ? (int) $_REQUEST['quiz_id'] : $quiz_id;
-
-            update_post_meta( $target_quiz_id, 'access_mode', $access_mode );
-
-        }    
+        if ( $update ) {
+    
+            if ( isset( $_REQUEST['access_mode'] ) && mif_qm_access_level( $quiz_id ) > 2 ) {
+                
+                // Есть новые данные о режиме доступа. Сохранить их.
+                
+                $access_mode = sanitize_key( $_REQUEST['access_mode'] );
+                // $target_quiz_id = ( isset( $_REQUEST['quiz_id'] ) ) ? (int) $_REQUEST['quiz_id'] : $quiz_id;
+                
+                update_post_meta( $quiz_id, 'access_mode', $access_mode );
+                
+            }    
+            
+        }
 
         $access_mode_from_db = get_post_meta( $quiz_id, 'access_mode', true );
         $access_mode =  ( ! empty( $access_mode_from_db ) ) ? $access_mode_from_db : $this->access_mode_default;
