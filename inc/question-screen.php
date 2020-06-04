@@ -174,7 +174,10 @@ class mif_qm_question_screen extends mif_qm_question_core {
         } else {
             
             $caption = $this->get_hash( $this->answer['data']['caption'] );
-            $mover .= '<div class="mover" data-caption="' . $caption . '" title="' . __( 'Перетащите вверх или вниз', 'mif-qm' ) . '"><i class="fa fa-sort" aria-hidden="true"></i></div>';
+            $mover .= '<div class="moverbox" data-caption="' . $caption . '">';
+            $mover .= '<div class="mover down"><i class="fas fa-caret-down"></i></div>';
+            $mover .= '<div class="mover up mr-2"><i class="fas fa-caret-up"></i></div>';
+            $mover .= '</div>';
 
         }
 

@@ -4,7 +4,7 @@ Plugin Name: MIF Quiz Master
 Plugin URI: https://github.com/alexey-sergeev/mif-quiz-master
 Description: Плагин для составления тестов
 Author: Алексей Н. Сергеев
-Version: 1.4.3
+Version: 1.4.4
 Author URI: https://vk.com/alexey_sergeev
 */
 
@@ -58,14 +58,14 @@ function mif_qm_customizer_styles()
     
     // Локальные стили
 
-    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ), '', '1.4.0' );
+    wp_register_style( 'qm-styles', plugins_url( 'mif-qm-styles.css', __FILE__ ), '', '1.4.4' );
     wp_enqueue_style( 'qm-styles' );
 
     // JS-методы
-    wp_enqueue_script( 'mif_qm_js_helper', plugins_url( 'js/quiz-master.js', __FILE__ ), '', '1.4.0' );
+    wp_enqueue_script( 'mif_qm_js_helper', plugins_url( 'js/quiz-master.js', __FILE__ ), '', '1.4.4' );
 
     // Плагин сортировки
-    wp_enqueue_script( 'mif_qm_sortable', plugins_url( 'js/qm-sortable.js', __FILE__ ) );
+    wp_enqueue_script( 'mif_qm_sortable', plugins_url( 'js/qm-sortable.js', __FILE__ ), '', '1.4.4' );
 
 }
 

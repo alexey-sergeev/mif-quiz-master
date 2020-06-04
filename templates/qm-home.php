@@ -3,9 +3,14 @@
         <div class="carousel-item active">
             <img class="d-block w-100" src="<?php echo plugins_url('../pictures/header-bg.jpg', __FILE__); ?>">
         </div>
-        <div class="carousel-caption d-none d-md-block col-4" style="top: 3rem; bottom: 3rem; right: 3rem; left: auto;">
+        <div class="carousel-caption d-none d-lg-block col-4" style="top: 3rem; bottom: 3rem; right: 3rem; left: auto;">
         
         <?php mif_qm_the_invite_form(); ?>
+
+        </div>
+        <div class="mobile-iv-form d-block d-lg-none">
+
+            <?php mif_qm_the_invite_form(); ?>
 
         </div>
     </div>

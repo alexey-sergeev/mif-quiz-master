@@ -115,7 +115,7 @@ var DragManager = new function() {
         
         // Поменять элементы местами
         var box1 = dragObject.elem.parentNode;
-        var box2 = targetElem.parentNode;;
+        var box2 = targetElem.parentNode;
         
         if (!box1) return;
         if (!box2) return;
@@ -130,18 +130,20 @@ var DragManager = new function() {
 
         // Записать данные выбора
 
-        var table = box1.closest('table');
-        var elements = table.querySelectorAll('tr');
+        saveSelect( box1 );
 
-        for (var i = 0; i < elements.length; i++) {
+        // var table = box1.closest('table');
+        // var elements = table.querySelectorAll('tr');
 
-            var input = elements[i].querySelector('input[type=hidden]');
-            var mover = elements[i].querySelector('.mover');
-            var linker = elements[i].querySelector('.linker');
-            var data = mover.getAttribute('data-caption');
-            input.setAttribute('value',data);
-            linker.classList.add('checked'); 
-        }
+        // for (var i = 0; i < elements.length; i++) {
+
+        //     var input = elements[i].querySelector('input[type=text]');
+        //     var mover = elements[i].querySelector('.mover-wrap');
+        //     var linker = elements[i].querySelector('.linker');
+        //     var data = mover.getAttribute('data-caption');
+        //     input.setAttribute('value',data);
+        //     linker.classList.add('checked'); 
+        // }
 
         }
 
@@ -219,3 +221,70 @@ function getCoords(elem) { // кроме IE8-
   };
 
 }
+
+function saveSelect( box )
+{
+  
+  // Записать данные выбора
+
+  var table = box.closest('table');
+  var elements = table.querySelectorAll('tr');
+  
+  for (var i = 0; i < elements.length; i++) {
+    
+    var input = elements[i].querySelector('input[type=hidden]');
+    var mover = elements[i].querySelector('.moverbox');
+    var linker = elements[i].querySelector('.linker');
+    var data = mover.getAttribute('data-caption');
+    input.setAttribute('value',data);
+    linker.classList.add('checked'); 
+
+  }
+
+}
+
+// Перенос по нажатию кнопок
+
+window.onclick = function() {
+
+  var elem = event.target;
+  var mover = elem.closest('div');
+
+  if ( mover.classList.contains('mover') ) {
+
+    if ( mover.classList.contains('up') || mover.classList.contains('down') ) {
+
+      var tbody = mover.closest('tbody');
+
+      if ( mover.classList.contains('up') ) {
+
+        var tbody_prev = tbody.previousElementSibling;
+
+      } else {
+
+        var tbody_prev = tbody.nextElementSibling;
+
+      }
+      
+      if ( ! tbody_prev ) return
+      
+      var div = mover.closest('.qm-draggable');
+      var div_prev = tbody_prev.querySelector('.qm-draggable');
+
+      var box1 = div.parentNode;
+      var box2 = div_prev.parentNode;
+      
+      box1.appendChild(div_prev);
+      box2.appendChild(div);
+
+    }    
+
+    saveSelect( box1);
+
+  }
+
+
+
+
+}
+

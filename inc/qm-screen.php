@@ -288,7 +288,7 @@ class mif_qm_screen extends mif_qm_core {
 
         $out = '';
 
-        $out .= '<div class="card p-3 col-4"><div class="bg-light h-100">';
+        $out .= '<div class="card p-3 col-12 col-sm-6 col-lg-4"><div class="bg-light h-100">';
         
         if ( has_post_thumbnail( $data->ID ) ) {
 

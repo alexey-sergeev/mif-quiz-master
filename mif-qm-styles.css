@@ -60,7 +60,15 @@
 }
 
 .catalog .category {
-    min-height: 50rem;
+    min-height: 5rem;
+}
+
+@media (min-width: 992px) {
+    
+    .catalog .category {
+        min-height: 50rem;
+    }
+    
 }
 
 h2.underline,
@@ -111,6 +119,11 @@ h3.underline:before {
 h2.underline:before, h2.underline:after {
     box-sizing: inherit;
 } */
+
+.mobile-iv-form {
+    color: #fff;
+    text-align: center;
+}
 
 .site-description {
     margin-top: -1rem!important;
@@ -261,9 +274,9 @@ a.cancel:hover {
     width: 0.85rem!important;
 }
 
-.linker.checked {
-    /* background-color: #C2E5CB; */
-}
+/* .linker.checked {
+    background-color: #C2E5CB;
+} */
 
 .linker span.link,
 .active .linker span.unlink,
@@ -308,6 +321,7 @@ a.cancel:hover {
     text-align: center;
     background-color: #dee2e6;
     float: right;
+    transition-duration: .2s;
 }
 
 .qm-draggable.reflexion {
@@ -334,8 +348,13 @@ a.cancel:hover {
     transition-duration: .2s;
 }
 
-.qm-draggable.avatar .mover,
-.qm-draggable:hover .mover {
+.qm-draggable.avatar .mover {
+    background-color: #0062cc;
+    color: #fff;
+    transition-duration: .2s;
+}
+
+.qm-draggable .mover:hover {
     background-color: #0062cc;
     color: #fff;
     transition-duration: .2s;
@@ -345,6 +364,14 @@ a.cancel:hover {
     box-shadow: 0 0 5px;
     transition-duration: .2s;
 }
+
+/* .qm-draggable {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+} */
 
 
 @keyframes swing
