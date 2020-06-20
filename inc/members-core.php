@@ -108,7 +108,8 @@ class mif_qm_members_core extends mif_qm_core_core  {
             //'capabilities'      => 'post', // массив дополнительных прав для этого типа записи
             'map_meta_cap'      => true, // Ставим true чтобы включить дефолтный обработчик специальных прав
             'hierarchical'        => true,
-            'supports'            => array( 'title', 'editor', 'author', 'custom-fields', 'revisions' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
+            // 'supports'            => array( 'title', 'editor', 'author', 'custom-fields', 'revisions' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
+            'supports'            => array( 'title', 'editor', 'author', 'custom-fields' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
             'taxonomies'          => array(),
             'has_archive'         => true,
             'rewrite'             => array( 'slug' => 'quiz_members' ),
@@ -563,23 +564,19 @@ class mif_qm_members_core extends mif_qm_core_core  {
         // Обработать инвайты
 
         $invited = $this->get_requesters( $quiz_id, 'invite' );
-
+        
         if ( $invited ) {
-
+            
             foreach ( (array) $invited as $item ) {
                 
                 if ( empty( $item ) ) continue;
-                if ( isset( $arr[$item] ) ) continue;
+                // if ( isset( $arr[$item] ) ) continue;
                 
-                // !!! Думать, как здесь учесть и другие данные инвайта
-
                 $data = $this->get_invite_data( $quiz_id, $item );
 
                 $data['role'] = 'student';
                 $data['time'] = $this->get_time();
                 $data['creator'] = $this->get_user_token();
-
-                // $arr[$item] = array( 'role' => 'student', 'time' => $this->get_time(), 'maker' => $this->get_user_token() );
 
                 $arr[$item] = $data;
 

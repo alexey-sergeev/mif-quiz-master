@@ -63,7 +63,8 @@ class mif_process_snapshots extends mif_qm_process_core {
             //'capabilities'      => 'post', // массив дополнительных прав для этого типа записи
             'map_meta_cap'      => true, // Ставим true чтобы включить дефолтный обработчик специальных прав
             'hierarchical'        => true,
-            'supports'            => array( 'title', 'editor', 'author', 'custom-fields', 'revisions' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
+            // 'supports'            => array( 'title', 'editor', 'author', 'custom-fields', 'revisions' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
+            'supports'            => array( 'title', 'editor', 'author', 'custom-fields' ), // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
             'taxonomies'          => array(),
             'has_archive'         => true,
             'rewrite'             => array( 'slug' => 'quiz_snapshot' ),
