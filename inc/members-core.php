@@ -401,12 +401,12 @@ class mif_qm_members_core extends mif_qm_core_core  {
             $ret = ( isset( $arr[$user_token]['role'] ) ) ? $arr[$user_token]['role'] : true;
 
         } else {
-            
-            $invites = $this->get_requesters( $quiz_id, 'invite' );
-            if ( in_array( $user_token, (array) $invites ) ) $ret = $this->get_context_role( 'invite', $quiz_id );
 
             $requests = $this->get_requesters( $quiz_id, 'request' );
             if ( in_array( $user_token, (array) $requests ) ) $ret = $this->get_context_role( 'request', $quiz_id );
+            
+            $invites = $this->get_requesters( $quiz_id, 'invite' );
+            if ( in_array( $user_token, (array) $invites ) ) $ret = $this->get_context_role( 'invite', $quiz_id );
 
         }
 
